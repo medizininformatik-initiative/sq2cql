@@ -6,8 +6,10 @@
 
 ```
 var neoplasm = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71", "Malignant neoplasm of brain");
+var mappings = Map.of(neoplasm, Mapping.of(neoplasm, "Condition"));
+var conceptTree = ConceptNode.of(neoplasm);
 var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
-var mappingContext = MappingContext.of(Map.of(neoplasm, Mapping.of(neoplasm, "Condition")), codeSystemAliases);
+var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
 Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
         List.of(ConceptCriterion.of(neoplasm)))));
