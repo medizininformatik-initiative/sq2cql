@@ -40,6 +40,18 @@ public final class RangeCriterion extends AbstractCriterion {
         return new RangeCriterion(concept, minValue, maxValue, unit);
     }
 
+    public BigDecimal getLowerBound() {
+        return lowerBound;
+    }
+
+    public BigDecimal getUpperBound() {
+        return upperBound;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
     @Override
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
         return retrieveExpr(mappingContext).map(retrieveExpr -> {

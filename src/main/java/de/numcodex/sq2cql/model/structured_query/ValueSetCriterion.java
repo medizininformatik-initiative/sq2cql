@@ -44,6 +44,10 @@ public final class ValueSetCriterion extends AbstractCriterion {
         return new ValueSetCriterion(concept, selectedConcepts);
     }
 
+    public List<TermCode> getSelectedConcepts() {
+        return selectedConcepts;
+    }
+
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
         return retrieveExpr(mappingContext).flatMap(retrieveExpr -> {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));

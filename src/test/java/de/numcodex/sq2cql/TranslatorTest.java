@@ -34,7 +34,7 @@ class TranslatorTest {
     public static final TermCode LIPID = TermCode.of("http://fhir.de/CodeSystem/dimdi/atc", "C10AA",
             "lipid lowering drugs");
 
-    private final static Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
+    public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10",
             "http://loinc.org", "loinc",
             "https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample",

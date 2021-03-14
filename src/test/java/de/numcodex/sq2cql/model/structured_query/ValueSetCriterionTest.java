@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -9,10 +10,12 @@ import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.PrintContext;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static de.numcodex.sq2cql.model.common.Comparator.GREATER_THAN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -26,7 +29,7 @@ class ValueSetCriterionTest {
     public static final TermCode MALE = TermCode.of("http://hl7.org/fhir/administrative-gender", "male", "Male");
     public static final TermCode FEMALE = TermCode.of("http://hl7.org/fhir/administrative-gender", "female", "Female");
 
-    private final static Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
+    public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
             "http://snomed.info/sct", "snomed",
             "http://hl7.org/fhir/administrative-gender", "gender");
@@ -40,6 +43,39 @@ class ValueSetCriterionTest {
             "http://snomed.info/sct");
     public static final CodeSystemDefinition GENDER_CODE_SYSTEM_DEF = CodeSystemDefinition.of("gender",
             "http://hl7.org/fhir/administrative-gender");
+
+    @Test
+    void fromJson() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var criterion = (ValueSetCriterion) mapper.readValue("""
+                {
+                  "termCode": {
+                    "system": "http://loinc.org", 
+                    "code": "76689-9",
+                    "display": "Sex assigned at birth"
+                  },
+                  "valueFilter": {
+                    "type": "concept",
+                    "selectedConcepts": [
+                      {
+                        "system": "http://hl7.org/fhir/administrative-gender",
+                        "code": "male",
+                        "display": "Male"
+                      },
+                      {
+                        "system": "http://hl7.org/fhir/administrative-gender",
+                        "code": "female",
+                        "display": "Female"
+                      }
+                    ]
+                  }
+                }
+                """, Criterion.class);
+
+        assertEquals(SEX, criterion.getTermCode());
+        assertEquals(List.of(MALE, FEMALE), criterion.getSelectedConcepts());
+    }
 
     @Test
     void toCql_OneConcept() {

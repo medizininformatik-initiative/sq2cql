@@ -1,5 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.Comparator;
@@ -48,6 +50,18 @@ public final class NumericCriterion extends AbstractCriterion {
      */
     public static NumericCriterion of(TermCode concept, Comparator comparator, BigDecimal value, String unit) {
         return new NumericCriterion(concept, comparator, value, unit);
+    }
+
+    public Comparator getComparator() {
+        return comparator;
+    }
+
+    public BigDecimal getValue() {
+        return value;
+    }
+
+    public String getUnit() {
+        return unit;
     }
 
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {

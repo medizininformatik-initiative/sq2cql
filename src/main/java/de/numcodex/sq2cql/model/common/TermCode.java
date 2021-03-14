@@ -1,5 +1,8 @@
 package de.numcodex.sq2cql.model.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 /**
@@ -28,7 +31,9 @@ public final class TermCode {
      * @param display a human readable string of the concept coded
      * @return the terminology code
      */
-    public static TermCode of(String system, String code, String display) {
+    @JsonCreator
+    public static TermCode of(@JsonProperty("system") String system, @JsonProperty("code") String code,
+                              @JsonProperty("display") String display) {
         return new TermCode(system, code, display);
     }
 

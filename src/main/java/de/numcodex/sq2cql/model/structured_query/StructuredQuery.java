@@ -1,5 +1,8 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,9 +24,12 @@ public final class StructuredQuery {
                 List.of(List.of()));
     }
 
-    public static StructuredQuery of(List<List<Criterion>> inclusionCriteria, List<List<Criterion>> exclusionCriteria) {
+    @JsonCreator
+    public static StructuredQuery of(@JsonProperty("inclusionCriteria") List<List<Criterion>> inclusionCriteria,
+                                     @JsonProperty("exclusionCriteria") List<List<Criterion>> exclusionCriteria) {
         return new StructuredQuery(inclusionCriteria.stream().map(List::copyOf).collect(Collectors.toUnmodifiableList()),
-                exclusionCriteria.stream().map(List::copyOf).collect(Collectors.toUnmodifiableList()));
+                exclusionCriteria == null ? List.of(List.of()) : exclusionCriteria.stream().map(List::copyOf)
+                        .collect(Collectors.toUnmodifiableList()));
     }
 
     public List<List<Criterion>> getInclusionCriteria() {

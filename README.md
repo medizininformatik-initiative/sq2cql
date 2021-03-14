@@ -2,6 +2,8 @@
 
 ## Usage
 
+### Translator
+
 ```
 var neoplasm = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71", "Malignant neoplasm of brain");
 var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
@@ -20,6 +22,13 @@ assertEquals("""
         define InInitialPopulation:
           exists([Condition: Code 'C71' from icd10])
         """, library.print(ZERO));
+```
+
+### JSON Deserialization of Structured Query
+
+```
+var mapper = new ObjectMapper();
+var structuredQuery = mapper.readValue("...", StructuredQuery.class);
 ```
 
 ## License

@@ -1,9 +1,17 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
+import de.numcodex.sq2cql.model.common.Comparator;
+import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
+
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * A single, atomic criterion in Structured Query.
@@ -21,6 +29,33 @@ public interface Criterion {
      * A criterion that always evaluates to {@code false}.
      */
     Criterion FALSE = mappingContext -> Container.of(BooleanExpression.FALSE);
+
+    @JsonCreator
+    static Criterion create(@JsonProperty("termCode") TermCode concept,
+                            @JsonProperty("valueFilter") ObjectNode valueFilter) {
+        if (valueFilter == null) {
+            return ConceptCriterion.of(concept);
+        }
+
+        var type = valueFilter.get("type").asText();
+        if ("quantity-comparator".equals(type)) {
+            return NumericCriterion.of(concept, Comparator.fromJson(valueFilter.get("comparator").asText()),
+                    valueFilter.get("value").decimalValue(),
+                    valueFilter.get("quantityUnit").get("code").asText());
+        }
+        if ("quantity-range".equals(type)) {
+            return RangeCriterion.of(concept,
+                    valueFilter.get("minValue").decimalValue(),
+                    valueFilter.get("maxValue").decimalValue(),
+                    valueFilter.get("quantityUnit").get("code").asText());
+        }
+        if ("concept".equals(type)) {
+            return ValueSetCriterion.of(concept, StreamSupport.stream(valueFilter.get("selectedConcepts").spliterator(),
+                    false).map(node -> TermCode.of(node.get("system").asText(), node.get("code").asText(),
+                    node.get("display").asText())).collect(Collectors.toList()));
+        }
+        throw new IllegalArgumentException("unknown valueFilter type: " + type);
+    }
 
     /**
      * Translates this criterion into a CQL expression.
