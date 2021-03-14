@@ -22,7 +22,7 @@ assertEquals("""
         codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'                
                         
         define InInitialPopulation:
-          exists([Condition: Code 'C71' from icd10])
+          exists [Condition: Code 'C71' from icd10]
         """, library.print(ZERO));
 ```
 

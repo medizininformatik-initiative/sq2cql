@@ -5,16 +5,18 @@ package de.numcodex.sq2cql.model.common;
  */
 public enum Comparator {
 
-    EQUAL("="),
-    LESS_EQUAL("<="),
-    LESS_THAN("<"),
-    GREATER_EQUAL(">="),
-    GREATER_THAN(">");
+    EQUAL("=", 6),
+    LESS_EQUAL("<=", 9),
+    LESS_THAN("<", 9),
+    GREATER_EQUAL(">=", 9),
+    GREATER_THAN(">", 9);
 
     private final String s;
+    private final int precedence;
 
-    Comparator(String s) {
+    Comparator(String s, int precedence) {
         this.s = s;
+        this.precedence = precedence;
     }
 
     public static Comparator fromJson(String s) {
@@ -26,6 +28,10 @@ public enum Comparator {
             case "gt" -> GREATER_THAN;
             default -> throw new IllegalArgumentException("unknown JSON comparator: " + s);
         };
+    }
+
+    public int getPrecedence() {
+        return precedence;
     }
 
     public String toString() {

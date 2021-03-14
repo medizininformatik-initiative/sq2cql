@@ -20,8 +20,8 @@ public final class QueryExpression implements Expression {
 
     @Override
     public String print(PrintContext printContext) {
-        var newPrintContext = printContext.increase();
-        return "%s\n%s%s".formatted(sourceClause.toCql(printContext), newPrintContext.getIndent(),
-                whereClause.toCql(newPrintContext));
+        var wherePrintContext = printContext.increase();
+        return "%s\n%s%s".formatted(sourceClause.toCql(printContext.resetPrecedence()), wherePrintContext.getIndent(),
+                whereClause.toCql(wherePrintContext));
     }
 }

@@ -14,14 +14,12 @@ import static java.util.stream.Collectors.joining;
  */
 public final class OrExpression implements BooleanExpression {
 
+    public static final int PRECEDENCE = 3;
+
     private final List<BooleanExpression> expressions;
 
     private OrExpression(List<BooleanExpression> expressions) {
         this.expressions = expressions;
-    }
-
-    public static OrExpression of() {
-        return new OrExpression(List.of());
     }
 
     public static OrExpression of(BooleanExpression e1, BooleanExpression e2) {
@@ -35,10 +33,9 @@ public final class OrExpression implements BooleanExpression {
 
     @Override
     public String print(PrintContext printContext) {
-        return expressions.stream()
-                .map(e -> e.print(printContext))
-                .map("(%s)"::formatted)
-                .collect(joining(" or\n" + printContext.getIndent()));
+        return printContext.parenthesize(PRECEDENCE, expressions.stream()
+                .map(e -> e.print(printContext.withPrecedence(PRECEDENCE)))
+                .collect(joining(" or\n" + printContext.getIndent())));
     }
 }
 

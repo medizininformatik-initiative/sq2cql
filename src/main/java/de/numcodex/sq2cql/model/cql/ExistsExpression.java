@@ -6,6 +6,8 @@ import java.util.Objects;
 
 public final class ExistsExpression implements BooleanExpression {
 
+    public static final int PRECEDENCE = 11;
+
     private final Expression expression;
 
     private ExistsExpression(Expression expression) {
@@ -18,6 +20,7 @@ public final class ExistsExpression implements BooleanExpression {
 
     @Override
     public String print(PrintContext printContext) {
-        return "exists(%s)".formatted(expression.print(printContext));
+        return printContext.parenthesize(PRECEDENCE, "exists " + expression.print(printContext
+                .withPrecedence(PRECEDENCE)));
     }
 }

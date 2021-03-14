@@ -85,8 +85,8 @@ class ValueSetCriterionTest {
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists(from [Observation: Code '94500-6' from loinc] O
-                          where (O.value.coding) contains (Code 'positive' from snomed))""",
+                        exists from [Observation: Code '94500-6' from loinc] O
+                          where O.value.coding contains Code 'positive' from snomed""",
                 container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -98,9 +98,9 @@ class ValueSetCriterionTest {
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists(from [Observation: Code '76689-9' from loinc] O
-                          where ((O.value.coding) contains (Code 'male' from gender)) or
-                          ((O.value.coding) contains (Code 'female' from gender)))""",
+                        exists from [Observation: Code '76689-9' from loinc] O
+                          where O.value.coding contains Code 'male' from gender or
+                          O.value.coding contains Code 'female' from gender""",
                 container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, GENDER_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }

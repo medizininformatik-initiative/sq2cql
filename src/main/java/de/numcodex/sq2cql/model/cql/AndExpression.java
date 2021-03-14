@@ -14,14 +14,12 @@ import static java.util.stream.Collectors.joining;
  */
 public final class AndExpression implements BooleanExpression {
 
+    public static final int PRECEDENCE = 4;
+
     private final List<BooleanExpression> expressions;
 
     private AndExpression(List<BooleanExpression> expressions) {
         this.expressions = expressions;
-    }
-
-    public static AndExpression of() {
-        return new AndExpression(List.of());
     }
 
     public static AndExpression of(BooleanExpression e1, BooleanExpression e2) {
@@ -35,10 +33,9 @@ public final class AndExpression implements BooleanExpression {
 
     @Override
     public String print(PrintContext printContext) {
-        return expressions.stream()
-                .map(e -> e.print(printContext))
-                .map("(%s)"::formatted)
-                .collect(joining(" and\n" + printContext.getIndent()));
+        return printContext.parenthesize(PRECEDENCE, expressions.stream()
+                .map(e -> e.print(printContext.withPrecedence(PRECEDENCE)))
+                .collect(joining(" and\n" + printContext.getIndent())));
     }
 }
 

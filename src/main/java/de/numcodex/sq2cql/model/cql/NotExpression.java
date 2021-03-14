@@ -6,6 +6,8 @@ import java.util.Objects;
 
 public final class NotExpression implements BooleanExpression {
 
+    public static final int PRECEDENCE = 11;
+
     private final BooleanExpression expression;
 
     private NotExpression(BooleanExpression expression) {
@@ -18,6 +20,6 @@ public final class NotExpression implements BooleanExpression {
 
     @Override
     public String print(PrintContext printContext) {
-        return "not (%s)".formatted(expression.print(printContext));
+        return printContext.parenthesize(PRECEDENCE, "not " + expression.print(printContext.withPrecedence(PRECEDENCE)));
     }
 }

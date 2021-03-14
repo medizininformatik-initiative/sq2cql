@@ -66,8 +66,8 @@ class RangeCriterionTest {
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists(from [Observation: Code '26515-7' from loinc] O
-                          where (O.value as Quantity) between (20 'g/dl') and (30 'g/dl'))""",
+                        exists from [Observation: Code '26515-7' from loinc] O
+                          where O.value as Quantity between 20 'g/dl' and 30 'g/dl'""",
                 container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }

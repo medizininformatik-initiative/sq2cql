@@ -59,7 +59,7 @@ class TranslatorTest {
         Library library = Translator.of().toCql(StructuredQuery.of(
                 List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-        assertEquals("(true) or\n(false)", library.getExpressionDefinitions().get(0).getExpression()
+        assertEquals("true or\nfalse", library.getExpressionDefinitions().get(0).getExpression()
                 .print(PrintContext.ZERO));
     }
 
@@ -68,7 +68,7 @@ class TranslatorTest {
         Library library = Translator.of().toCql(StructuredQuery.of(
                 List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-        assertEquals("(true) and\n(false)", library.getExpressionDefinitions().get(0).getExpression()
+        assertEquals("true and\nfalse", library.getExpressionDefinitions().get(0).getExpression()
                 .print(PrintContext.ZERO));
     }
 
@@ -77,7 +77,7 @@ class TranslatorTest {
         Library library = Translator.of().toCql(StructuredQuery.of(
                 List.of(List.of(Criterion.TRUE, Criterion.TRUE), List.of(Criterion.FALSE, Criterion.FALSE))));
 
-        assertEquals("((true) or\n(true)) and\n((false) or\n(false))", library.getExpressionDefinitions().get(0)
+        assertEquals("(true or\ntrue) and\n(false or\nfalse)", library.getExpressionDefinitions().get(0)
                 .getExpression().print(PrintContext.ZERO));
     }
 
@@ -97,7 +97,7 @@ class TranslatorTest {
                 List.of(List.of(Criterion.TRUE)),
                 List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-        assertEquals("define Exclusion:\n  (true) and\n  (false)", library.getExpressionDefinitions().get(1)
+        assertEquals("define Exclusion:\n  true and\n  false", library.getExpressionDefinitions().get(1)
                 .print(PrintContext.ZERO));
     }
 
@@ -107,7 +107,7 @@ class TranslatorTest {
                 List.of(List.of(Criterion.TRUE)),
                 List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-        assertEquals("(true) or\n(false)", library.getExpressionDefinitions().get(1).getExpression()
+        assertEquals("true or\nfalse", library.getExpressionDefinitions().get(1).getExpression()
                 .print(PrintContext.ZERO));
     }
 
@@ -117,7 +117,7 @@ class TranslatorTest {
                 List.of(List.of(Criterion.TRUE)),
                 List.of(List.of(Criterion.TRUE, Criterion.TRUE), List.of(Criterion.FALSE, Criterion.FALSE))));
 
-        assertEquals("((true) and\n(true)) or\n((false) and\n(false))", library.getExpressionDefinitions().get(1)
+        assertEquals("true and\ntrue or\nfalse and\nfalse", library.getExpressionDefinitions().get(1)
                 .getExpression().print(PrintContext.ZERO));
     }
 
@@ -140,7 +140,7 @@ class TranslatorTest {
                 codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'                
                                 
                 define InInitialPopulation:
-                  exists([Condition: Code 'C71' from icd10])
+                  exists [Condition: Code 'C71' from icd10]
                 """, library.print(PrintContext.ZERO));
     }
 
@@ -169,11 +169,11 @@ class TranslatorTest {
                 codesystem loinc: 'http://loinc.org'
                                 
                 define InInitialPopulation:
-                  ((exists([Condition: Code 'C71.0' from icd10])) or
-                  (exists([Condition: Code 'C71.1' from icd10]))) and 
-                  (exists(from [Observation: Code '26515-7' from loinc] O
-                    where (O.value as Quantity) < (50 'g/dl'))) and
-                  (exists([MedicationStatement: Code 'L01AX03' from atc]))
+                  (exists [Condition: Code 'C71.0' from icd10] or
+                  exists [Condition: Code 'C71.1' from icd10]) and 
+                  exists from [Observation: Code '26515-7' from loinc] O
+                    where O.value as Quantity < 50 'g/dl' and
+                  exists [MedicationStatement: Code 'L01AX03' from atc]
                 """, library.print(PrintContext.ZERO));
     }
 
@@ -204,15 +204,15 @@ class TranslatorTest {
                 codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'                
                                 
                 define Inclusion:
-                  (exists([Condition: Code 'I10' from icd10])) and 
-                  (exists([Specimen: Code 'Serum' from sample]))
+                  exists [Condition: Code 'I10' from icd10] and 
+                  exists [Specimen: Code 'Serum' from sample]
                                 
                 define Exclusion:
-                  exists([MedicationStatement: Code 'C10AA' from atc])                
+                  exists [MedicationStatement: Code 'C10AA' from atc]                
                                 
                 define InInitialPopulation:
-                  (Inclusion) and 
-                  (not (Exclusion))
+                  Inclusion and 
+                  not Exclusion
                 """, library.print(PrintContext.ZERO));
     }
 }

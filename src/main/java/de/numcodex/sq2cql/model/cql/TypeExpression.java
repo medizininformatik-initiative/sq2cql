@@ -6,6 +6,8 @@ import java.util.Objects;
 
 public final class TypeExpression implements Expression {
 
+    public static final int PRECEDENCE = 12;
+
     private final Expression expression;
     private final String typeSpecifier;
 
@@ -20,6 +22,7 @@ public final class TypeExpression implements Expression {
 
     @Override
     public String print(PrintContext printContext) {
-        return "%s as %s".formatted(expression.print(printContext), typeSpecifier);
+        return printContext.parenthesize(PRECEDENCE, "%s as %s".formatted(this.expression.print(printContext
+                .withPrecedence(PRECEDENCE)), typeSpecifier));
     }
 }

@@ -7,22 +7,25 @@ import java.util.Objects;
 
 public final class ComparatorExpression implements BooleanExpression {
 
-    private final Expression leftSide;
+    private final Expression a;
     private final Comparator comparator;
-    private final Expression rightSide;
+    private final Expression b;
 
-    private ComparatorExpression(Expression leftSide, Comparator comparator, Expression rightSide) {
-        this.leftSide = Objects.requireNonNull(leftSide);
+    private ComparatorExpression(Expression a, Comparator comparator, Expression b) {
+        this.a = Objects.requireNonNull(a);
         this.comparator = Objects.requireNonNull(comparator);
-        this.rightSide = Objects.requireNonNull(rightSide);
+        this.b = Objects.requireNonNull(b);
     }
 
-    public static ComparatorExpression of(Expression leftSide, Comparator comparator, Expression rightSide) {
-        return new ComparatorExpression(leftSide, comparator, rightSide);
+    public static ComparatorExpression of(Expression a, Comparator comparator, Expression b) {
+        return new ComparatorExpression(a, comparator, b);
     }
 
     @Override
     public String print(PrintContext printContext) {
-        return "(%s) %s (%s)".formatted(leftSide.print(printContext), comparator, rightSide.print(printContext));
+        var precedence = comparator.getPrecedence();
+        var childPrintContext = printContext.withPrecedence(precedence);
+        return printContext.parenthesize(precedence, "%s %s %s".formatted(a.print(childPrintContext), comparator,
+                b.print(childPrintContext)));
     }
 }

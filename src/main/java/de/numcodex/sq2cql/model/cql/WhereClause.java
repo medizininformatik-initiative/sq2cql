@@ -17,6 +17,6 @@ public final class WhereClause {
     }
 
     public String toCql(PrintContext printContext) {
-        return "where %s".formatted(expression.print(printContext));
+        return "where " + expression.print(printContext.resetPrecedence());
     }
 }

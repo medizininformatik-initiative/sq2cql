@@ -53,7 +53,7 @@ class ConceptCriterionTest {
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("exists([Observation: Code 'C71' from icd10])", container.getExpression().map(e -> e.print(PrintContext.ZERO))
+        assertEquals("exists [Observation: Code 'C71' from icd10]", container.getExpression().map(e -> e.print(PrintContext.ZERO))
                 .orElse(""));
         assertEquals(Set.of(ICD10_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
