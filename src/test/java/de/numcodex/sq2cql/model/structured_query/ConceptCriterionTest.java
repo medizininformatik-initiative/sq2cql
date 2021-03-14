@@ -3,6 +3,7 @@ package de.numcodex.sq2cql.model.structured_query;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.PrintContext;
+import de.numcodex.sq2cql.model.ConceptNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -27,7 +28,7 @@ class ConceptCriterionTest {
     public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
     public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(NEOPLASM,
-            Mapping.of(NEOPLASM, "Observation")), CODE_SYSTEM_ALIASES);
+            Mapping.of(NEOPLASM, "Observation")), ConceptNode.of(NEOPLASM), CODE_SYSTEM_ALIASES);
 
     @Test
     void fromJson() throws Exception {

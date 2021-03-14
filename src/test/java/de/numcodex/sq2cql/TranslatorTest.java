@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql;
 
+import de.numcodex.sq2cql.model.ConceptNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -22,8 +23,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class TranslatorTest {
 
-    public static final TermCode NEOPLASM = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71",
+    public static final TermCode ROOT = TermCode.of("", "", "");
+    public static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71",
             "Malignant neoplasm of brain");
+    public static final TermCode C71_0 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.0", "");
+    public static final TermCode C71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "");
     public static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
     public static final TermCode HYPERTENSION = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "I10",
             "Essential (Primary) Hypertension");
@@ -120,8 +124,10 @@ class TranslatorTest {
     @Test
     void toCQL_Usage_Documentation() {
         var neoplasm = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71", "Malignant neoplasm of brain");
+        var mappings = Map.of(neoplasm, Mapping.of(neoplasm, "Condition"));
+        var conceptTree = ConceptNode.of(neoplasm);
         var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
-        var mappingContext = MappingContext.of(Map.of(neoplasm, Mapping.of(neoplasm, "Condition")), codeSystemAliases);
+        var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
         Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
                 List.of(ConceptCriterion.of(neoplasm)))));
@@ -140,13 +146,16 @@ class TranslatorTest {
 
     @Test
     void toCQL_Test_Task1() {
-        var mappingContext = MappingContext.of(Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation"),
-                NEOPLASM, Mapping.of(NEOPLASM, "Condition"),
-                TMZ, Mapping.of(TMZ, "MedicationStatement")),
-                CODE_SYSTEM_ALIASES);
+        var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation"),
+                C71_0, Mapping.of(C71_0, "Condition"),
+                C71_1, Mapping.of(C71_1, "Condition"),
+                TMZ, Mapping.of(TMZ, "MedicationStatement"));
+        var conceptTree = ConceptNode.of(ROOT, List.of(ConceptNode.of(TMZ),
+                ConceptNode.of(C71, List.of(ConceptNode.of(C71_0), ConceptNode.of(C71_1)))));
+        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
         Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
-                List.of(ConceptCriterion.of(NEOPLASM)),
+                List.of(ConceptCriterion.of(C71)),
                 List.of(NumericCriterion.of(PLATELETS, LESS_THAN, BigDecimal.valueOf(50), "g/dl")),
                 List.of(ConceptCriterion.of(TMZ)))));
 
@@ -160,7 +169,8 @@ class TranslatorTest {
                 codesystem loinc: 'http://loinc.org'
                                 
                 define InInitialPopulation:
-                  (exists([Condition: Code 'C71' from icd10])) and 
+                  ((exists([Condition: Code 'C71.0' from icd10])) or
+                  (exists([Condition: Code 'C71.1' from icd10]))) and 
                   (exists(from [Observation: Code '26515-7' from loinc] O
                     where (O.value as Quantity) < (50 'g/dl'))) and
                   (exists([MedicationStatement: Code 'L01AX03' from atc]))
@@ -169,10 +179,14 @@ class TranslatorTest {
 
     @Test
     void toCQL_Test_Task2() {
-        var mappingContext = MappingContext.of(Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation"),
+        var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation"),
                 HYPERTENSION, Mapping.of(HYPERTENSION, "Condition"),
                 SERUM, Mapping.of(SERUM, "Specimen"),
-                LIPID, Mapping.of(LIPID, "MedicationStatement")),
+                LIPID, Mapping.of(LIPID, "MedicationStatement"));
+        var conceptTree = ConceptNode.of(ROOT, List.of(ConceptNode.of(HYPERTENSION),
+                ConceptNode.of(SERUM), ConceptNode.of(LIPID)));
+        var mappingContext = MappingContext.of(mappings,
+                conceptTree,
                 CODE_SYSTEM_ALIASES);
 
         Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(

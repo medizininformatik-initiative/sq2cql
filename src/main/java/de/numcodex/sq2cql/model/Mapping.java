@@ -1,5 +1,7 @@
 package de.numcodex.sq2cql.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.numcodex.sq2cql.model.common.TermCode;
 
 import java.util.Objects;
@@ -17,7 +19,9 @@ public final class Mapping {
         this.resourceType = Objects.requireNonNull(resourceType);
     }
 
-    public static Mapping of(TermCode concept, String resourceType) {
+    @JsonCreator
+    public static Mapping of(@JsonProperty("termCode")TermCode concept,
+                             @JsonProperty("fhirResourceType") String resourceType) {
         return new Mapping(concept, resourceType);
     }
 

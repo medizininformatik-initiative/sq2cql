@@ -49,7 +49,7 @@ public final class ValueSetCriterion extends AbstractCriterion {
     }
 
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
-        return retrieveExpr(mappingContext).flatMap(retrieveExpr -> {
+        return retrieveExpr(mappingContext, concept).flatMap(retrieveExpr -> {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);
             var codingExpr = InvocationExpression.of(InvocationExpression.of(alias, "value"), "coding");

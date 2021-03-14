@@ -2,6 +2,7 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
+import de.numcodex.sq2cql.model.ConceptNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -27,7 +28,7 @@ class RangeCriterionTest {
     public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc");
     public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(PLATELETS,
-            Mapping.of(PLATELETS, "Observation")), CODE_SYSTEM_ALIASES);
+            Mapping.of(PLATELETS, "Observation")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
 
     @Test
     void fromJson() throws Exception {

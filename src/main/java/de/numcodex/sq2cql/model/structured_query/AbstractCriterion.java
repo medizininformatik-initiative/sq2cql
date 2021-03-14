@@ -37,15 +37,16 @@ public abstract class AbstractCriterion implements Criterion {
     }
 
     /**
-     * Returns the retrieve expression according to the concept of this criterion.
+     * Returns the retrieve expression according to the given concept.
      * <p>
      * Uses the mapping context to determine the resource type of the retrieve expression and the code system definition
      * of the concept.
      *
      * @param mappingContext a map of concept (term code) to mapping
+     * @param concept the concept to use
      * @return a {@link Container} of the retrieve expression together with its used {@link CodeSystemDefinition}
      */
-    Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext) {
+    static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext, TermCode concept) {
         return codeSelector(mappingContext, concept).map(terminology -> {
             var mapping = mappingContext.getMapping(concept);
             return RetrieveExpression.of(mapping.getResourceType(), terminology);

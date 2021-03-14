@@ -2,6 +2,7 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
+import de.numcodex.sq2cql.model.ConceptNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -35,7 +36,7 @@ class ValueSetCriterionTest {
             "http://hl7.org/fhir/administrative-gender", "gender");
 
     public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(COVID, Mapping.of(COVID, "Observation"),
-            SEX, Mapping.of(SEX, "Observation")), CODE_SYSTEM_ALIASES);
+            SEX, Mapping.of(SEX, "Observation")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc",
             "http://loinc.org");

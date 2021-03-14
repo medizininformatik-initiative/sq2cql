@@ -5,6 +5,7 @@ import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * @author Alexander Kiel
@@ -12,19 +13,23 @@ import java.util.Objects;
 public final class MappingContext {
 
     private final Map<TermCode, Mapping> mappings;
+    private final ConceptNode conceptTree;
     private final Map<String, String> codeSystemAliases;
 
-    private MappingContext(Map<TermCode, Mapping> mappings, Map<String, String> codeSystemAliases) {
+    private MappingContext(Map<TermCode, Mapping> mappings, ConceptNode conceptTree,
+                           Map<String, String> codeSystemAliases) {
         this.mappings = Objects.requireNonNull(mappings);
+        this.conceptTree = Objects.requireNonNull(conceptTree);
         this.codeSystemAliases = Objects.requireNonNull(codeSystemAliases);
     }
 
     public static MappingContext of() {
-        return new MappingContext(Map.of(), Map.of());
+        return new MappingContext(Map.of(), ConceptNode.of(), Map.of());
     }
 
-    public static MappingContext of(Map<TermCode, Mapping> mappings, Map<String, String> codeSystemAliases) {
-        return new MappingContext(Map.copyOf(mappings), Map.copyOf(codeSystemAliases));
+    public static MappingContext of(Map<TermCode, Mapping> mappings, ConceptNode conceptTree,
+                                    Map<String, String> codeSystemAliases) {
+        return new MappingContext(Map.copyOf(mappings), conceptTree, Map.copyOf(codeSystemAliases));
     }
 
     public Mapping getMapping(TermCode concept) {
@@ -33,6 +38,10 @@ public final class MappingContext {
             throw new RuntimeException("mapping for concept with code `%s` not found".formatted(concept.getCode()));
         }
         return mapping;
+    }
+
+    public Stream<TermCode> expandConcept(TermCode concept) {
+        return conceptTree.expand(concept);
     }
 
     public CodeSystemDefinition codeSystemDefinition(String system) {
