@@ -1,6 +1,7 @@
 package de.numcodex.sq2cql.model.common;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
@@ -11,6 +12,7 @@ import java.util.Objects;
  * Instances are immutable and implement {@code equals} and {@code hashCode} based on {@link #getSystem() system} and
  * {@link #getCode() code}.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class TermCode {
 
     private final String system;

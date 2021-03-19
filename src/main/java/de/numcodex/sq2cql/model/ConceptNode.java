@@ -1,6 +1,7 @@
 package de.numcodex.sq2cql.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.numcodex.sq2cql.model.common.TermCode;
 
@@ -11,6 +12,7 @@ import java.util.stream.Stream;
 /**
  * @author Alexander Kiel
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ConceptNode {
 
     private final TermCode concept;
@@ -34,6 +36,14 @@ public class ConceptNode {
                                  @JsonProperty("children") List<ConceptNode> children) {
         return new ConceptNode(Objects.requireNonNull(concept), children == null || children.isEmpty() ? null :
                 List.copyOf(children));
+    }
+
+    public TermCode getConcept() {
+        return concept;
+    }
+
+    public List<ConceptNode> getChildren() {
+        return children;
     }
 
     public Stream<TermCode> expand(TermCode concept) {

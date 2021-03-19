@@ -50,7 +50,11 @@ public interface Criterion {
                     valueFilter.get("quantityUnit").get("code").asText());
         }
         if ("concept".equals(type)) {
-            return ValueSetCriterion.of(concept, StreamSupport.stream(valueFilter.get("selectedConcepts").spliterator(),
+            var selectedConcepts = valueFilter.get("selectedConcepts");
+            if (selectedConcepts == null) {
+                throw new IllegalArgumentException("Missing `selectedConcepts` key in concept criterion.");
+            }
+            return ValueSetCriterion.of(concept, StreamSupport.stream(selectedConcepts.spliterator(),
                     false).map(node -> TermCode.of(node.get("system").asText(), node.get("code").asText(),
                     node.get("display").asText())).collect(Collectors.toList()));
         }

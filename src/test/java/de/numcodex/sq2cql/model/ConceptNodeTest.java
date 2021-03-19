@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql.model;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.common.TermCode;
 import org.junit.jupiter.api.Test;
 
@@ -51,5 +52,40 @@ class ConceptNodeTest {
         var node = ConceptNode.of(ROOT, List.of(c1, ConceptNode.of(C2)));
 
         assertEquals(Set.of(C111, C112, C12), node.expand(C1).collect(Collectors.toSet()));
+    }
+
+    @Test
+    void fromJson() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var conceptNode = mapper.readValue("""
+                {"termCode": {
+                   "system": "system-143705", 
+                   "code": "code-143708",
+                   "display": "display-143716"
+                 },
+                 "children": []
+                }
+                """, ConceptNode.class);
+
+        assertEquals("system-143705", conceptNode.getConcept().getSystem());
+    }
+
+    @Test
+    void fromJson_AdditionalPropertyIsIgnored() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var conceptNode = mapper.readValue("""
+                {"foo-152133": "bar-152136",
+                 "termCode": {
+                   "system": "system-143705", 
+                   "code": "code-143708",
+                   "display": "display-143716"
+                 },
+                 "children": []
+                }
+                """, ConceptNode.class);
+
+        assertEquals("system-143705", conceptNode.getConcept().getSystem());
     }
 }

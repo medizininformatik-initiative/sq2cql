@@ -30,4 +30,23 @@ class MappingTest {
         assertEquals(TC_1, mapping.getConcept());
         assertEquals("Observation", mapping.getResourceType());
     }
+
+    @Test
+    void fromJson_AdditionalPropertyIsIgnored() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var mapping = mapper.readValue("""
+                {"foo-153729": "bar-153733",
+                 "fhirResourceType": "Observation",
+                 "termCode": {
+                   "system": "http://loinc.org",
+                   "code": "72166-2",
+                   "display": "tabacco smoking status"
+                 }  
+                }
+                """, Mapping.class);
+
+        assertEquals(TC_1, mapping.getConcept());
+        assertEquals("Observation", mapping.getResourceType());
+    }
 }

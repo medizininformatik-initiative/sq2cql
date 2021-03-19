@@ -32,6 +32,24 @@ class StructuredQueryTest {
     }
 
     @Test
+    void fromJson_AdditionalPropertyIsIgnored() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var structuredQuery = mapper.readValue("""
+                {"foo-151633": "bar-151639",
+                 "inclusionCriteria": [[{
+                  "termCode": {
+                    "system": "tc", 
+                    "code": "1",
+                    "display": ""
+                  }
+                }]]}
+                """, StructuredQuery.class);
+
+        assertEquals(TC_1, ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getTermCode());
+    }
+
+    @Test
     void fromJson_TwoInclusionCriteriaAnd() throws Exception {
         var mapper = new ObjectMapper();
 

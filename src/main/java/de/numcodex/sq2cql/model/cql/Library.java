@@ -22,7 +22,11 @@ public final class Library {
         this.codeSystemDefinitions = codeSystemDefinitions;
         this.expressionDefinitions = expressionDefinitions;
     }
-
+    
+    public static Library of() {
+        return new Library(Set.of(), List.of());
+    }
+    
     public static Library of(Collection<CodeSystemDefinition> codeSystemDefinitions,
                              Collection<ExpressionDefinition> expressionDefinitions) {
         return new Library(Set.copyOf(codeSystemDefinitions), List.copyOf(expressionDefinitions));
