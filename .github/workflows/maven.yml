@@ -27,13 +27,13 @@ jobs:
         path: ~/.m2/repository
         key: maven-repo
 
-    - name: Build with Maven
-      run: mvn -B package
-
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
         languages: java
+
+    - name: Build with Maven
+      run: mvn -B package
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
