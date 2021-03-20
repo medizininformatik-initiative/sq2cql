@@ -16,6 +16,7 @@ import de.numcodex.sq2cql.model.cql.TypeExpression;
 import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,7 +32,7 @@ public final class NumericCriterion extends AbstractCriterion {
     private final String unit;
 
     private NumericCriterion(TermCode concept, Comparator comparator, BigDecimal value, String unit) {
-        super(concept);
+        super(concept, List.of());
         this.value = Objects.requireNonNull(value);
         this.comparator = Objects.requireNonNull(comparator);
         this.unit = unit;
@@ -40,10 +41,10 @@ public final class NumericCriterion extends AbstractCriterion {
     /**
      * Returns a {@code NumericCriterion}.
      *
-     * @param concept the concept the criterion represents
+     * @param concept    the concept the criterion represents
      * @param comparator the comparator that should be used in the value comparison
-     * @param value the value that should be used in the value comparison
-     * @param unit the unit of the value (optional)
+     * @param value      the value that should be used in the value comparison
+     * @param unit       the unit of the value (optional)
      * @return the {@code NumericCriterion}
      */
     public static NumericCriterion of(TermCode concept, Comparator comparator, BigDecimal value, String unit) {

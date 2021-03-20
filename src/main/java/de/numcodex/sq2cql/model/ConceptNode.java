@@ -24,18 +24,13 @@ public class ConceptNode {
     }
 
     public static ConceptNode of() {
-        return new ConceptNode(null, null);
-    }
-
-    public static ConceptNode of(TermCode concept) {
-        return new ConceptNode(Objects.requireNonNull(concept), null);
+        return new ConceptNode(null, List.of());
     }
 
     @JsonCreator
     public static ConceptNode of(@JsonProperty("termCode") TermCode concept,
-                                 @JsonProperty("children") List<ConceptNode> children) {
-        return new ConceptNode(Objects.requireNonNull(concept), children == null || children.isEmpty() ? null :
-                List.copyOf(children));
+                                 @JsonProperty("children") ConceptNode... children) {
+        return new ConceptNode(Objects.requireNonNull(concept), children == null ? List.of() : List.of(children));
     }
 
     public TermCode getConcept() {
@@ -49,7 +44,7 @@ public class ConceptNode {
     public Stream<TermCode> expand(TermCode concept) {
         if (Objects.requireNonNull(concept).equals(this.concept)) {
             return leafConcepts();
-        } else if (children == null) {
+        } else if (children.isEmpty()) {
             return Stream.of();
         } else {
             return children.stream().flatMap(n -> n.expand(concept));
@@ -57,7 +52,7 @@ public class ConceptNode {
     }
 
     private Stream<TermCode> leafConcepts() {
-        if (children == null) {
+        if (children.isEmpty()) {
             return Stream.of(concept);
         } else {
             return children.stream().flatMap(ConceptNode::leafConcepts);

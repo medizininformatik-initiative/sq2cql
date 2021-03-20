@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.numcodex.sq2cql.model.common.TermCode;
+import de.numcodex.sq2cql.model.structured_query.Modifier;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -15,16 +17,20 @@ public final class Mapping {
 
     private final TermCode concept;
     private final String resourceType;
+    private final List<Modifier> fixedCriteria;
 
-    private Mapping(TermCode concept, String resourceType) {
-        this.concept = Objects.requireNonNull(concept);
-        this.resourceType = Objects.requireNonNull(resourceType);
+    private Mapping(TermCode concept, String resourceType, List<Modifier> fixedCriteria) {
+        this.concept = concept;
+        this.resourceType = resourceType;
+        this.fixedCriteria = fixedCriteria;
     }
 
     @JsonCreator
-    public static Mapping of(@JsonProperty("termCode")TermCode concept,
-                             @JsonProperty("fhirResourceType") String resourceType) {
-        return new Mapping(concept, resourceType);
+    public static Mapping of(@JsonProperty("termCode") TermCode concept,
+                             @JsonProperty("fhirResourceType") String resourceType,
+                             @JsonProperty("fixedCriteria") Modifier... fixedCriteria) {
+        return new Mapping(Objects.requireNonNull(concept), Objects.requireNonNull(resourceType),
+                fixedCriteria == null ? List.of() : List.of(fixedCriteria));
     }
 
     public TermCode getConcept() {
@@ -33,5 +39,9 @@ public final class Mapping {
 
     public String getResourceType() {
         return resourceType;
+    }
+
+    public List<Modifier> getFixedCriteria() {
+        return fixedCriteria;
     }
 }

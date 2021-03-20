@@ -78,10 +78,6 @@ public final class Translator {
      */
     public Library toCql(StructuredQuery structuredQuery) {
         Container<BooleanExpression> inclusionExpr = inclusionExpr(structuredQuery.getInclusionCriteria());
-        if (inclusionExpr.isEmpty()) {
-            throw new IllegalArgumentException("Empty Inclusion Criteria");
-        }
-
         Container<BooleanExpression> exclusionExpr = exclusionExpr(structuredQuery.getExclusionCriteria());
 
         return exclusionExpr.isEmpty()

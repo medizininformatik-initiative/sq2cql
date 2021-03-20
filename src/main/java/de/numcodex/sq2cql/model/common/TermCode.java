@@ -3,6 +3,7 @@ package de.numcodex.sq2cql.model.common;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Objects;
 
@@ -39,6 +40,10 @@ public final class TermCode {
         return new TermCode(system, code, display);
     }
 
+    public static TermCode fromJsonNode(JsonNode node) {
+        return TermCode.of(node.get("system").asText(), node.get("code").asText(), node.get("display").asText());
+    }
+
     public String getSystem() {
         return system;
     }
@@ -62,14 +67,5 @@ public final class TermCode {
     @Override
     public int hashCode() {
         return Objects.hash(system, code);
-    }
-
-    @Override
-    public String toString() {
-        return "TermCode{" +
-                "system='" + system + '\'' +
-                ", code='" + code + '\'' +
-                ", display='" + display + '\'' +
-                '}';
     }
 }

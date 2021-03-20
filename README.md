@@ -5,14 +5,14 @@
 ### Translator
 
 ```
-var neoplasm = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71", "Malignant neoplasm of brain");
-var mappings = Map.of(neoplasm, Mapping.of(neoplasm, "Condition"));
-var conceptTree = ConceptNode.of(neoplasm);
+var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
+var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
+var conceptTree = ConceptNode.of(c71_1);
 var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
 var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
 Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
-        List.of(ConceptCriterion.of(neoplasm)))));
+        List.of(ConceptCriterion.of(c71_1)))));
 
 assertEquals("""
         library Retrieve
@@ -22,15 +22,44 @@ assertEquals("""
         codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'                
                         
         define InInitialPopulation:
-          exists [Condition: Code 'C71' from icd10]
-        """, library.print(ZERO));
+          exists [Condition: Code 'C71.1' from icd10]
+        """, library.print(PrintContext.ZERO));
 ```
 
 ### JSON Deserialization of Structured Query
 
 ```
 var mapper = new ObjectMapper();
-var structuredQuery = mapper.readValue("...", StructuredQuery.class);
+mapper.readValue("""
+        {"inclusionCriteria": [[{
+          "termCode": {
+            "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm", 
+            "code": "C71.1",
+            "display": "Malignant neoplasm of brain"
+          }
+        }], [{
+          "termCode": {
+            "system": "http://loinc.org", 
+            "code": "76689-9",
+            "display": "Sex assigned at birth"
+          },
+          "valueFilter": {
+            "type": "concept",
+            "selectedConcepts": [
+              {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "male",
+                "display": "Male"
+              },
+              {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "female",
+                "display": "Female"
+              }
+            ]
+          }
+        }]]}
+        """, StructuredQuery.class);
 ```
 
 ## License

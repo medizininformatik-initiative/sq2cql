@@ -5,10 +5,10 @@ import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.AliasExpression;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
-import de.numcodex.sq2cql.model.cql.ContainsExpression;
 import de.numcodex.sq2cql.model.cql.ExistsExpression;
 import de.numcodex.sq2cql.model.cql.Expression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
+import de.numcodex.sq2cql.model.cql.MembershipExpression;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
 import de.numcodex.sq2cql.model.cql.SourceClause;
 import de.numcodex.sq2cql.model.cql.WhereClause;
@@ -26,22 +26,22 @@ public final class ValueSetCriterion extends AbstractCriterion {
     private final List<TermCode> selectedConcepts;
 
     private ValueSetCriterion(TermCode concept, List<TermCode> selectedConcepts) {
-        super(concept);
-        this.selectedConcepts = List.copyOf(selectedConcepts);
+        super(concept, List.of());
+        this.selectedConcepts = selectedConcepts;
     }
 
     /**
      * Returns a {@code ValueSetCriterion}.
      *
-     * @param concept the concept the criterion represents
+     * @param concept          the concept the criterion represents
      * @param selectedConcepts at least one selected value concept
      * @return the {@code ValueSetCriterion}
      */
-    public static ValueSetCriterion of(TermCode concept, List<TermCode> selectedConcepts) {
-        if (selectedConcepts.isEmpty()) {
+    public static ValueSetCriterion of(TermCode concept, TermCode... selectedConcepts) {
+        if (selectedConcepts == null || selectedConcepts.length == 0) {
             throw new IllegalArgumentException("empty selected concepts");
         }
-        return new ValueSetCriterion(concept, selectedConcepts);
+        return new ValueSetCriterion(concept, List.of(selectedConcepts));
     }
 
     public List<TermCode> getSelectedConcepts() {
@@ -61,7 +61,7 @@ public final class ValueSetCriterion extends AbstractCriterion {
     private Container<BooleanExpression> whereExpr(MappingContext mappingContext, Expression codingExpr) {
         return selectedConcepts.stream()
                 .map(concept -> codeSelector(mappingContext, concept).map(terminology ->
-                        (BooleanExpression) ContainsExpression.of(codingExpr, terminology)))
+                        (BooleanExpression) MembershipExpression.contains(codingExpr, terminology)))
                 .reduce(Container.empty(), Container.OR);
     }
 }

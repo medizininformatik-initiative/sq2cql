@@ -16,8 +16,7 @@ import java.util.function.Function;
  * <p>
  * Containers can be {@link #combiner combined}, collecting all code system definitions the individual contains use.
  * <p>
- * Instances are immutable and implement {@code equals} and {@code hashCode} based on
- * {@link #getExpression() expression} and {@link #getCodeSystemDefinitions() code system definitions}.
+ * Instances are immutable.
  *
  * @author Alexander Kiel
  */
@@ -126,27 +125,5 @@ public final class Container<T> {
         assert container.getExpression().isPresent();
         return new Container<>(Objects.requireNonNull(container.getExpression().get()),
                 Sets.union(codeSystemDefinitions, container.getCodeSystemDefinitions()));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Container<?> container = (Container<?>) o;
-        return Objects.equals(expression, container.expression) &&
-                codeSystemDefinitions.equals(container.codeSystemDefinitions);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(expression, codeSystemDefinitions);
-    }
-
-    @Override
-    public String toString() {
-        return "Container{" +
-                "expression=" + expression +
-                ", codeSystemDefinitions=" + codeSystemDefinitions +
-                '}';
     }
 }

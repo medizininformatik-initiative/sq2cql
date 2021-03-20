@@ -3,10 +3,13 @@ package de.numcodex.sq2cql.model.structured_query;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
+import de.numcodex.sq2cql.model.cql.AliasExpression;
+import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSelector;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.model.cql.RetrieveExpression;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -15,25 +18,23 @@ import java.util.Objects;
 public abstract class AbstractCriterion implements Criterion {
 
     final TermCode concept;
+    final List<Modifier> modifiers;
 
-    AbstractCriterion(TermCode concept) {
+    AbstractCriterion(TermCode concept, List<Modifier> modifiers) {
         this.concept = Objects.requireNonNull(concept);
+        this.modifiers = Objects.requireNonNull(modifiers);
     }
 
     /**
      * Returns the code selector expression according to the given concept.
      *
      * @param mappingContext the mapping context to determine the code system definition of the concept
-     * @param concept the concept to use
+     * @param concept        the concept to use
      * @return a {@link Container} of the code selector expression together with its used {@link CodeSystemDefinition}
      */
     static Container<CodeSelector> codeSelector(MappingContext mappingContext, TermCode concept) {
         var codeSystemDefinition = mappingContext.codeSystemDefinition(concept.getSystem());
         return Container.of(CodeSelector.of(concept.getCode(), codeSystemDefinition.getName()), codeSystemDefinition);
-    }
-
-    public TermCode getTermCode() {
-        return concept;
     }
 
     /**
@@ -43,7 +44,7 @@ public abstract class AbstractCriterion implements Criterion {
      * of the concept.
      *
      * @param mappingContext a map of concept (term code) to mapping
-     * @param concept the concept to use
+     * @param concept        the concept to use
      * @return a {@link Container} of the retrieve expression together with its used {@link CodeSystemDefinition}
      */
     static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext, TermCode concept) {
@@ -51,5 +52,16 @@ public abstract class AbstractCriterion implements Criterion {
             var mapping = mappingContext.getMapping(concept);
             return RetrieveExpression.of(mapping.getResourceType(), terminology);
         });
+    }
+
+    static Container<BooleanExpression> modifiersExpr(List<Modifier> modifiers, MappingContext mappingContext,
+                                                      AliasExpression alias) {
+        return modifiers.stream()
+                .map(m -> m.expression(mappingContext, alias))
+                .reduce(Container.empty(), Container.AND);
+    }
+
+    public TermCode getTermCode() {
+        return concept;
     }
 }

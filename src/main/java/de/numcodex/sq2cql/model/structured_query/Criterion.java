@@ -10,7 +10,6 @@ import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
@@ -54,9 +53,8 @@ public interface Criterion {
             if (selectedConcepts == null) {
                 throw new IllegalArgumentException("Missing `selectedConcepts` key in concept criterion.");
             }
-            return ValueSetCriterion.of(concept, StreamSupport.stream(selectedConcepts.spliterator(),
-                    false).map(node -> TermCode.of(node.get("system").asText(), node.get("code").asText(),
-                    node.get("display").asText())).collect(Collectors.toList()));
+            return ValueSetCriterion.of(concept, StreamSupport.stream(selectedConcepts.spliterator(), false)
+                    .map(TermCode::fromJsonNode).toArray(TermCode[]::new));
         }
         throw new IllegalArgumentException("unknown valueFilter type: " + type);
     }

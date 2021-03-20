@@ -29,6 +29,9 @@ public final class StructuredQuery {
     @JsonCreator
     public static StructuredQuery of(@JsonProperty("inclusionCriteria") List<List<Criterion>> inclusionCriteria,
                                      @JsonProperty("exclusionCriteria") List<List<Criterion>> exclusionCriteria) {
+        if (inclusionCriteria.isEmpty() || inclusionCriteria.stream().allMatch(List::isEmpty)) {
+            throw new IllegalArgumentException("empty inclusion criteria");
+        }
         return new StructuredQuery(inclusionCriteria.stream().map(List::copyOf).collect(Collectors.toUnmodifiableList()),
                 exclusionCriteria == null ? List.of(List.of()) : exclusionCriteria.stream().map(List::copyOf)
                         .collect(Collectors.toUnmodifiableList()));

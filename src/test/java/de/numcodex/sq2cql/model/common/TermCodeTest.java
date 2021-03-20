@@ -1,11 +1,9 @@
 package de.numcodex.sq2cql.model.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.structured_query.ConceptCriterion;
-import de.numcodex.sq2cql.model.structured_query.Criterion;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Alexander Kiel

@@ -15,6 +15,7 @@ import de.numcodex.sq2cql.model.cql.TypeExpression;
 import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,7 +31,7 @@ public final class RangeCriterion extends AbstractCriterion {
     private final String unit;
 
     private RangeCriterion(TermCode concept, BigDecimal lowerBound, BigDecimal upperBound, String unit) {
-        super(concept);
+        super(concept, List.of());
         this.lowerBound = Objects.requireNonNull(lowerBound);
         this.upperBound = Objects.requireNonNull(upperBound);
         this.unit = unit;

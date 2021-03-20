@@ -2,22 +2,21 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
+import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.ConceptNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
-import de.numcodex.sq2cql.PrintContext;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static de.numcodex.sq2cql.model.common.Comparator.GREATER_THAN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Alexander Kiel
@@ -79,8 +78,13 @@ class ValueSetCriterionTest {
     }
 
     @Test
+    void toCql_NoConcept() {
+        assertThrows(IllegalArgumentException.class, () -> ValueSetCriterion.of(COVID));
+    }
+
+    @Test
     void toCql_OneConcept() {
-        Criterion criterion = ValueSetCriterion.of(COVID, List.of(POSITIVE));
+        Criterion criterion = ValueSetCriterion.of(COVID, POSITIVE);
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -93,14 +97,14 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_TwoConcepts() {
-        Criterion criterion = ValueSetCriterion.of(SEX, List.of(MALE, FEMALE));
+        Criterion criterion = ValueSetCriterion.of(SEX, MALE, FEMALE);
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
                         exists from [Observation: Code '76689-9' from loinc] O
                           where O.value.coding contains Code 'male' from gender or
-                          O.value.coding contains Code 'female' from gender""",
+                            O.value.coding contains Code 'female' from gender""",
                 container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, GENDER_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
