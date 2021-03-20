@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: CI
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
       with:
         languages: java
 
-    - name: Build with Maven
+    - name: Build
       run: mvn -B package
 
     - name: Perform CodeQL Analysis
