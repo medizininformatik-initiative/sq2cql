@@ -26,7 +26,7 @@ public final class Mapping {
     }
 
     @JsonCreator
-    public static Mapping of(@JsonProperty("termCode") TermCode concept,
+    public static Mapping of(@JsonProperty("key") TermCode concept,
                              @JsonProperty("fhirResourceType") String resourceType,
                              @JsonProperty("fixedCriteria") Modifier... fixedCriteria) {
         return new Mapping(Objects.requireNonNull(concept), Objects.requireNonNull(resourceType),

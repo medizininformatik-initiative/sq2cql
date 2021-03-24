@@ -22,7 +22,7 @@ class MappingTest {
         var mapping = mapper.readValue("""
                 {
                   "fhirResourceType": "Observation",
-                  "termCode": {
+                  "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
                     "display": "tobacco smoking status"
@@ -42,7 +42,7 @@ class MappingTest {
                 {
                   "foo-153729": "bar-153733",
                   "fhirResourceType": "Observation",
-                  "termCode": {
+                  "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
                     "display": "tobacco smoking status"
@@ -61,7 +61,7 @@ class MappingTest {
         var mapping = mapper.readValue("""
                 {
                   "fhirResourceType": "Observation",
-                  "termCode": {
+                  "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
                     "display": "tobacco smoking status"
@@ -92,7 +92,7 @@ class MappingTest {
         var mapping = mapper.readValue("""
                 {
                   "fhirResourceType": "Observation",
-                  "termCode": {
+                  "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
                     "display": "tobacco smoking status"
