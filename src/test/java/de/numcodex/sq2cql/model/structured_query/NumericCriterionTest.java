@@ -48,7 +48,7 @@ class NumericCriterionTest {
                   "valueFilter": {
                     "type": "quantity-comparator",
                     "comparator": "gt",
-                    "quantityUnit": {
+                    "unit": {
                       "code": "g/dl"
                     },
                     "value": 50

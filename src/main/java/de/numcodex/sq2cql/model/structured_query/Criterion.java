@@ -40,13 +40,13 @@ public interface Criterion {
         if ("quantity-comparator".equals(type)) {
             return NumericCriterion.of(concept, Comparator.fromJson(valueFilter.get("comparator").asText()),
                     valueFilter.get("value").decimalValue(),
-                    valueFilter.get("quantityUnit").get("code").asText());
+                    valueFilter.get("unit").get("code").asText());
         }
         if ("quantity-range".equals(type)) {
             return RangeCriterion.of(concept,
                     valueFilter.get("minValue").decimalValue(),
                     valueFilter.get("maxValue").decimalValue(),
-                    valueFilter.get("quantityUnit").get("code").asText());
+                    valueFilter.get("unit").get("code").asText());
         }
         if ("concept".equals(type)) {
             var selectedConcepts = valueFilter.get("selectedConcepts");

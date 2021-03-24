@@ -42,7 +42,7 @@ class RangeCriterionTest {
                   },
                   "valueFilter": {
                     "type": "quantity-range",
-                    "quantityUnit": {
+                    "unit": {
                       "code": "g/dl"
                     },
                     "minValue": 20,
