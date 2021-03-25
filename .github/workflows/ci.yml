@@ -37,3 +37,24 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
+
+  release:
+
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Release
+      uses: qcastel/github-actions-maven-release@v1.12.16
+      with:
+        release-branch-name: "main"
+        access-token: ${{ secrets.GITHUB_TOKEN }}
+        maven-args: "-DskipTests -DskipITs"
+        maven-repo-server-id: github
+        maven-repo-server-username: ${{ github.actor }}
+        maven-repo-server-password: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        JAVA_HOME: /usr/lib/jvm/java-15-openjdk/
