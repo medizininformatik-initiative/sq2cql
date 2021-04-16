@@ -5,6 +5,7 @@ import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -32,12 +33,8 @@ public final class MappingContext {
         return new MappingContext(Map.copyOf(mappings), conceptTree, Map.copyOf(codeSystemAliases));
     }
 
-    public Mapping getMapping(TermCode concept) {
-        var mapping = mappings.get(Objects.requireNonNull(concept));
-        if (mapping == null) {
-            throw new RuntimeException("mapping for concept with code `%s` not found".formatted(concept.getCode()));
-        }
-        return mapping;
+    public Optional<Mapping> getMapping(TermCode concept) {
+        return Optional.ofNullable(mappings.get(Objects.requireNonNull(concept)));
     }
 
     public Stream<TermCode> expandConcept(TermCode concept) {

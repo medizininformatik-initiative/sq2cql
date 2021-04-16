@@ -42,17 +42,29 @@ public final class ConceptCriterion extends AbstractCriterion {
      * Expands {@link #getTermCode() concept} returning a disjunction of exists expressions on multiple expansions.
      *
      * @param mappingContext contains the mappings needed to create the CQL expression
-     * @return a {@link Container} of the CQL expression together with its used {@link CodeSystemDefinition
-     * CodeSystemDefinitions}
+     * @return a {@link Container} of the {@link BooleanExpression} together with its used {@link CodeSystemDefinition
+     * CodeSystemDefinitions}; never {@link Container#isEmpty() empty}
+     * @throws TranslationException if this criterion can't be translated into a {@link BooleanExpression}
      */
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
+        var expr = fullExpr(mappingContext);
+        if (expr.isEmpty()) {
+            throw new TranslationException("Failed to expand concept with system `%s`, code `%s` and display `%s`.".formatted(
+                    concept.getSystem(), concept.getCode(), concept.getDisplay()
+            ));
+        }
+        return expr;
+    }
+
+    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
         return mappingContext.expandConcept(concept)
                 .map(c -> expr(mappingContext, c))
                 .reduce(Container.empty(), Container.OR);
     }
 
     private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode concept) {
-        var modifiers = Lists.concat(mappingContext.getMapping(concept).getFixedCriteria(), this.modifiers);
+        var modifiers = Lists.concat(mappingContext.getMapping(concept)
+                .orElseThrow(() -> new MappingNotFoundException(concept)).getFixedCriteria(), this.modifiers);
         if (modifiers.isEmpty()) {
             return retrieveExpr(mappingContext, concept).map(ExistsExpression::of);
         } else {

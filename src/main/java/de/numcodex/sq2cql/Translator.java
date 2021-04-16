@@ -10,6 +10,7 @@ import de.numcodex.sq2cql.model.cql.Library;
 import de.numcodex.sq2cql.model.cql.NotExpression;
 import de.numcodex.sq2cql.model.structured_query.Criterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
+import de.numcodex.sq2cql.model.structured_query.TranslationException;
 
 import java.util.List;
 
@@ -71,14 +72,19 @@ public final class Translator {
     }
 
     /**
-     * Translates {@code structuredQuery} into a CQL {@link Library}.
+     * Translates the given {@code structuredQuery} into a CQL {@link Library}.
      *
      * @param structuredQuery the Structured Query to translate
      * @return the translated CQL {@link Library}
+     * @throws TranslationException if the given {@code structuredQuery} can't be translated into a CQL {@link Library}
      */
     public Library toCql(StructuredQuery structuredQuery) {
         Container<BooleanExpression> inclusionExpr = inclusionExpr(structuredQuery.getInclusionCriteria());
         Container<BooleanExpression> exclusionExpr = exclusionExpr(structuredQuery.getExclusionCriteria());
+
+        if (inclusionExpr.isEmpty()) {
+            throw new IllegalStateException("Inclusion criteria lead to empty inclusion expression.");
+        }
 
         return exclusionExpr.isEmpty()
                 ? inclusionOnlyLibrary(inclusionExpr)

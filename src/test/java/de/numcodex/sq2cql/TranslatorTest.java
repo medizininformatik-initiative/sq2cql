@@ -10,6 +10,7 @@ import de.numcodex.sq2cql.model.structured_query.ConceptCriterion;
 import de.numcodex.sq2cql.model.structured_query.Criterion;
 import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
+import de.numcodex.sq2cql.model.structured_query.TranslationException;
 import de.numcodex.sq2cql.model.structured_query.ValueSetCriterion;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +20,7 @@ import java.util.Map;
 
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Alexander Kiel
@@ -142,6 +144,26 @@ class TranslatorTest {
     }
 
     @Test
+    void toCQL_NonExpandableConcept() {
+        var message = assertThrows(TranslationException.class, () -> Translator.of().toCql(StructuredQuery.of(
+                List.of(List.of(ConceptCriterion.of(C71)))))).getMessage();
+
+        assertEquals("Failed to expand concept with system `http://fhir.de/CodeSystem/dimdi/icd-10-gm`, code `C71` and display `Malignant neoplasm of brain`.", message);
+    }
+
+    @Test
+    void toCQL_NonMappableConcept() {
+        var conceptTree = ConceptNode.of(C71, ConceptNode.of(C71_0),
+                ConceptNode.of(C71_1));
+        var mappingContext = MappingContext.of(Map.of(), conceptTree, CODE_SYSTEM_ALIASES);
+
+        var message = assertThrows(TranslationException.class, () -> Translator.of(mappingContext).toCql(StructuredQuery.of(
+                List.of(List.of(ConceptCriterion.of(C71)))))).getMessage();
+
+        assertEquals("Mapping for concept with system `http://fhir.de/CodeSystem/dimdi/icd-10-gm`, code `C71.0` and display `` not found.", message);
+    }
+
+    @Test
     void toCQL_Usage_Documentation() {
         var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
         var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
@@ -157,7 +179,7 @@ class TranslatorTest {
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
                                                    
-                codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'                
+                codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
                                 
                 define InInitialPopulation:
                   exists [Condition: Code 'C71.1' from icd10]
@@ -242,7 +264,7 @@ class TranslatorTest {
     }
 
     @Test
-    void geccoTask2() {
+    void toCQL_GeccoTask2() {
         var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation"),
                 COPD, Mapping.of(COPD, "Condition", CodingModifier.of("verificationStatus", CONFIRMED)),
                 G47_31, Mapping.of(G47_31, "Condition", CodingModifier.of("verificationStatus", CONFIRMED)),

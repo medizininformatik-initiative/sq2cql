@@ -46,10 +46,11 @@ public abstract class AbstractCriterion implements Criterion {
      * @param mappingContext a map of concept (term code) to mapping
      * @param concept        the concept to use
      * @return a {@link Container} of the retrieve expression together with its used {@link CodeSystemDefinition}
+     * @throws TranslationException if the {@link RetrieveExpression} can't be build
      */
     static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext, TermCode concept) {
         return codeSelector(mappingContext, concept).map(terminology -> {
-            var mapping = mappingContext.getMapping(concept);
+            var mapping = mappingContext.getMapping(concept).orElseThrow(() -> new MappingNotFoundException(concept));
             return RetrieveExpression.of(mapping.getResourceType(), terminology);
         });
     }
