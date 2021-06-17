@@ -13,8 +13,10 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+import static de.numcodex.sq2cql.model.common.Comparator.EQUAL;
 import static de.numcodex.sq2cql.model.common.Comparator.GREATER_THAN;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,14 +27,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class NumericCriterionTest {
 
     public static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
+    public static final TermCode SOFA_SCORE = TermCode.of("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "06", "SOFA-Score");
 
     public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
-            "http://loinc.org", "loinc");
+            "http://loinc.org", "loinc",
+            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "ecrf");
 
     public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(PLATELETS,
-            Mapping.of(PLATELETS, "Observation")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
+            Mapping.of(PLATELETS, "Observation"), SOFA_SCORE,
+            Mapping.of(SOFA_SCORE, "Observation")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
+    public static final CodeSystemDefinition ECRF_CODE_SYSTEM_DEF = CodeSystemDefinition.of("ecrf", "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes");
 
     @Test
     void fromJson() throws Exception {
@@ -41,7 +47,7 @@ class NumericCriterionTest {
         var criterion = (NumericCriterion) mapper.readValue("""
                 {
                   "termCode": {
-                    "system": "http://loinc.org", 
+                    "system": "http://loinc.org",
                     "code": "26515-7",
                     "display": "Platelets"
                   },
@@ -59,7 +65,32 @@ class NumericCriterionTest {
         assertEquals(PLATELETS, criterion.getTermCode());
         assertEquals(GREATER_THAN, criterion.getComparator());
         assertEquals(BigDecimal.valueOf(50), criterion.getValue());
-        assertEquals("g/dl", criterion.getUnit());
+        assertEquals(Optional.of("g/dl"), criterion.getUnit());
+    }
+
+    @Test
+    void fromJson_withoutUnit() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var criterion = (NumericCriterion) mapper.readValue("""
+                {
+                  "termCode": {
+                    "system": "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes",
+                    "code": "06",
+                    "display": "SOFA-Score"
+                  },
+                  "valueFilter": {
+                    "type": "quantity-comparator",
+                    "comparator": "eq",
+                    "value": 6
+                  }
+                }
+                """, Criterion.class);
+
+        assertEquals(SOFA_SCORE, criterion.getTermCode());
+        assertEquals(EQUAL, criterion.getComparator());
+        assertEquals(BigDecimal.valueOf(6), criterion.getValue());
+        assertEquals(Optional.empty(), criterion.getUnit());
     }
 
     @Test
@@ -73,5 +104,18 @@ class NumericCriterionTest {
                           where O.value as Quantity < 50 'g/dl'""",
                 container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_withoutUnit() {
+        Criterion criterion = NumericCriterion.of(SOFA_SCORE, EQUAL, BigDecimal.valueOf(6));
+
+        Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
+
+        assertEquals("""
+                        exists from [Observation: Code '06' from ecrf] O
+                          where O.value as Quantity = 6""",
+                container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
+        assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
 }

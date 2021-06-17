@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +37,7 @@ class RangeCriterionTest {
         var criterion = (RangeCriterion) mapper.readValue("""
                 {
                   "termCode": {
-                    "system": "http://loinc.org", 
+                    "system": "http://loinc.org",
                     "code": "26515-7",
                     "display": "Platelets"
                   },
@@ -54,7 +55,31 @@ class RangeCriterionTest {
         assertEquals(PLATELETS, criterion.getTermCode());
         assertEquals(BigDecimal.valueOf(20), criterion.getLowerBound());
         assertEquals(BigDecimal.valueOf(30), criterion.getUpperBound());
-        assertEquals("g/dl", criterion.getUnit());
+        assertEquals(Optional.of("g/dl"), criterion.getUnit());
+    }
+
+    @Test
+    void fromJson_withoutUnit() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var criterion = (RangeCriterion) mapper.readValue("""
+                {
+                  "termCode": {
+                    "system": "system-140946",
+                    "code": "code-140950",
+                    "display": ""
+                  },
+                  "valueFilter": {
+                    "type": "quantity-range",
+                    "minValue": 0,
+                    "maxValue": 1
+                  }
+                }
+                """, Criterion.class);
+
+        assertEquals(BigDecimal.valueOf(0), criterion.getLowerBound());
+        assertEquals(BigDecimal.valueOf(1), criterion.getUpperBound());
+        assertEquals(Optional.empty(), criterion.getUnit());
     }
 
     @Test
