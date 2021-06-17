@@ -2,6 +2,7 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -10,6 +11,7 @@ import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 
+import java.math.BigDecimal;
 import java.util.stream.StreamSupport;
 
 /**
@@ -38,15 +40,24 @@ public interface Criterion {
 
         var type = valueFilter.get("type").asText();
         if ("quantity-comparator".equals(type)) {
-            return NumericCriterion.of(concept, Comparator.fromJson(valueFilter.get("comparator").asText()),
-                    valueFilter.get("value").decimalValue(),
-                    valueFilter.get("unit").get("code").asText());
+            var comparator = Comparator.fromJson(valueFilter.get("comparator").asText());
+            var value = valueFilter.get("value").decimalValue();
+            var unit = valueFilter.get("unit");
+            if (unit == null) {
+                return NumericCriterion.of(concept, comparator, value);
+            } else {
+                return NumericCriterion.of(concept, comparator, value, unit.get("code").asText());
+            }
         }
         if ("quantity-range".equals(type)) {
-            return RangeCriterion.of(concept,
-                    valueFilter.get("minValue").decimalValue(),
-                    valueFilter.get("maxValue").decimalValue(),
-                    valueFilter.get("unit").get("code").asText());
+            var lowerBound = valueFilter.get("minValue").decimalValue();
+            var upperBound = valueFilter.get("maxValue").decimalValue();
+            var unit = valueFilter.get("unit");
+            if (unit == null) {
+                return RangeCriterion.of(concept, lowerBound, upperBound);
+            } else {
+                return RangeCriterion.of(concept, lowerBound, upperBound, unit.get("code").asText());
+            }
         }
         if ("concept".equals(type)) {
             var selectedConcepts = valueFilter.get("selectedConcepts");

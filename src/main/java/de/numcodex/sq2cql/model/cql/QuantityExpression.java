@@ -20,7 +20,7 @@ public final class QuantityExpression implements Expression {
     }
 
     public static QuantityExpression of(BigDecimal value, String unit) {
-        return new QuantityExpression(value, unit);
+        return new QuantityExpression(value, Objects.requireNonNull(unit));
     }
 
     @Override

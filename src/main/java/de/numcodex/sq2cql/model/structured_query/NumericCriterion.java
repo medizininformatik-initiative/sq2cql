@@ -8,6 +8,7 @@ import de.numcodex.sq2cql.model.cql.AliasExpression;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.ComparatorExpression;
 import de.numcodex.sq2cql.model.cql.ExistsExpression;
+import de.numcodex.sq2cql.model.cql.Expression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.QuantityExpression;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
@@ -18,6 +19,7 @@ import de.numcodex.sq2cql.model.cql.WhereClause;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A {@code NumericCriterion} will select all patients that have at least one resource represented by that concept and
@@ -44,11 +46,23 @@ public final class NumericCriterion extends AbstractCriterion {
      * @param concept    the concept the criterion represents
      * @param comparator the comparator that should be used in the value comparison
      * @param value      the value that should be used in the value comparison
-     * @param unit       the unit of the value (optional)
+     * @return the {@code NumericCriterion}
+     */
+    public static NumericCriterion of(TermCode concept, Comparator comparator, BigDecimal value) {
+        return new NumericCriterion(concept, comparator, value, null);
+    }
+
+    /**
+     * Returns a {@code NumericCriterion}.
+     *
+     * @param concept    the concept the criterion represents
+     * @param comparator the comparator that should be used in the value comparison
+     * @param value      the value that should be used in the value comparison
+     * @param unit       the unit of the value
      * @return the {@code NumericCriterion}
      */
     public static NumericCriterion of(TermCode concept, Comparator comparator, BigDecimal value, String unit) {
-        return new NumericCriterion(concept, comparator, value, unit);
+        return new NumericCriterion(concept, comparator, value, Objects.requireNonNull(unit));
     }
 
     public Comparator getComparator() {
@@ -59,8 +73,8 @@ public final class NumericCriterion extends AbstractCriterion {
         return value;
     }
 
-    public String getUnit() {
-        return unit;
+    public Optional<String> getUnit() {
+        return Optional.ofNullable(unit);
     }
 
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
@@ -68,9 +82,13 @@ public final class NumericCriterion extends AbstractCriterion {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);
             var castExpr = TypeExpression.of(InvocationExpression.of(alias, "value"), "Quantity");
-            var whereExpression = ComparatorExpression.of(castExpr, comparator, QuantityExpression.of(value, unit));
+            var whereExpression = ComparatorExpression.of(castExpr, comparator, quantityExpression(value, unit));
             var queryExpr = QueryExpression.of(sourceClause, WhereClause.of(whereExpression));
             return ExistsExpression.of(queryExpr);
         });
+    }
+
+    private Expression quantityExpression(BigDecimal value, String unit) {
+        return unit == null ? QuantityExpression.of(value) : QuantityExpression.of(value, unit);
     }
 }
