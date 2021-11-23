@@ -1,5 +1,7 @@
 package de.numcodex.sq2cql;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.ConceptNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -12,6 +14,9 @@ import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import de.numcodex.sq2cql.model.structured_query.TranslationException;
 import de.numcodex.sq2cql.model.structured_query.ValueSetCriterion;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -19,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
+import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -34,7 +41,7 @@ class TranslatorTest {
     public static final TermCode C71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "");
     public static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
     public static final TermCode FRAILTY_SCORE = TermCode.of("http://snomed.info/sct", "713636003",
-            "Canadian Study of Health and Aging Clinical Frailty Scale score ");
+            "Canadian Study of Health and Aging Clinical Frailty Scale score");
     public static final TermCode VERY_FIT = TermCode.of(
             "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "1", "Very Fit");
     public static final TermCode WELL = TermCode.of(
@@ -67,6 +74,7 @@ class TranslatorTest {
             "http://hl7.org/fhir/administrative-gender", "gender",
             "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status",
             "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "frailty-score");
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void toCQL_Inclusion_OneDisjunctionWithOneCriterion() {
@@ -187,6 +195,30 @@ class TranslatorTest {
     }
 
     @Test
+    void toCQL_TimeContraint() {
+        var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
+        var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
+        var conceptTree = ConceptNode.of(c71_1);
+        var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
+        var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
+
+        Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
+                List.of(ConceptCriterion.of(c71_1)))));
+
+        assertEquals("""
+                library Retrieve
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                   
+                codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+                                
+                define InInitialPopulation:
+                  exists from [Condition: Code 'C71.1' from icd10] C
+                  where FHIRHelpers.ToDateTime(C.onset) < @2006
+                """, library.print(PrintContext.ZERO));
+    }
+
+    @Test
     void toCQL_Test_Task1() {
         var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation"),
                 C71_0, Mapping.of(C71_0, "Condition"),
@@ -264,7 +296,7 @@ class TranslatorTest {
     }
 
     @Test
-    void toCQL_GeccoTask2() {
+    void toCQL_GeccoTask2() throws IOException {
         var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation"),
                 COPD, Mapping.of(COPD, "Condition", CodingModifier.of("verificationStatus", CONFIRMED)),
                 G47_31, Mapping.of(G47_31, "Condition", CodingModifier.of("verificationStatus", CONFIRMED)),
@@ -274,10 +306,9 @@ class TranslatorTest {
                 conceptTree,
                 CODE_SYSTEM_ALIASES);
 
-        Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
-                List.of(ValueSetCriterion.of(FRAILTY_SCORE, VERY_FIT, WELL))), List.of(
-                List.of(ConceptCriterion.of(COPD), ConceptCriterion.of(G47_31)),
-                List.of(ValueSetCriterion.of(TOBACCO_SMOKING_STATUS, CURRENT_EVERY_DAY_SMOKER)))));
+        StructuredQuery structuredQuery = mapper.readValue(slurp("GeccoTask2.json"), StructuredQuery.class);
+
+        Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
         assertEquals("""
                 library Retrieve
@@ -307,5 +338,11 @@ class TranslatorTest {
                   Inclusion and
                   not Exclusion
                 """, library.print(PrintContext.ZERO));
+    }
+
+    private static String slurp(String name) throws IOException {
+        try (InputStream in = TranslatorTest.class.getResourceAsStream(name)) {
+             return new String(Objects.requireNonNull(in).readAllBytes(), UTF_8);
+        }
     }
 }

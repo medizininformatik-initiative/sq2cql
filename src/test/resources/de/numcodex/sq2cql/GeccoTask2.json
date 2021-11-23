@@ -1,0 +1,65 @@
+{
+  "inclusionCriteria": [
+    [
+      {
+        "termCode": {
+          "system": "http://snomed.info/sct",
+          "code": "713636003",
+          "display": "Canadian Study of Health and Aging Clinical Frailty Scale score "
+        },
+        "valueFilter": {
+          "type": "concept",
+          "selectedConcepts": [
+            {
+              "system": "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
+              "code": "1",
+              "display": "Very Fit"
+            },
+            {
+              "system": "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
+              "code": "2",
+              "display": "Well"
+            }
+          ]
+        }
+      }
+    ]
+  ],
+  "exclusionCriteria": [
+    [
+      {
+        "termCode": {
+          "system": "http://snomed.info/sct",
+          "code": "13645005",
+          "display": "Chronic obstructive lung disease (disorder)"
+        }
+      },
+      {
+        "termCode": {
+          "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
+          "code": "G47.31",
+          "display": "Obstruktives Schlafapnoe-Syndrom"
+        }
+      }
+    ],
+    [
+      {
+        "termCode": {
+          "system": "http://loinc.org",
+          "code": "72166-2",
+          "display": "Tobacco smoking status"
+        },
+        "valueFilter": {
+          "type": "concept",
+          "selectedConcepts": [
+            {
+              "system": "http://loinc.org",
+              "code": "LA18976-3",
+              "display": "Current every day smoker"
+            }
+          ]
+        }
+      }
+    ]
+  ]
+}

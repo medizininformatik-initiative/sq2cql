@@ -32,10 +32,11 @@ public interface Criterion {
     Criterion FALSE = mappingContext -> Container.of(BooleanExpression.FALSE);
 
     @JsonCreator
-    static Criterion create(@JsonProperty("termCode") TermCode concept,
-                            @JsonProperty("valueFilter") ObjectNode valueFilter) {
+    static Criterion create(@JsonProperty("termCode") TermCode termCode,
+                            @JsonProperty("valueFilter") ObjectNode valueFilter,
+                            @JsonProperty("timeRestriction") ObjectNode timeRestriction) {
         if (valueFilter == null) {
-            return ConceptCriterion.of(concept);
+            return ConceptCriterion.of(termCode);
         }
 
         var type = valueFilter.get("type").asText();
@@ -44,9 +45,9 @@ public interface Criterion {
             var value = valueFilter.get("value").decimalValue();
             var unit = valueFilter.get("unit");
             if (unit == null) {
-                return NumericCriterion.of(concept, comparator, value);
+                return NumericCriterion.of(termCode, comparator, value);
             } else {
-                return NumericCriterion.of(concept, comparator, value, unit.get("code").asText());
+                return NumericCriterion.of(termCode, comparator, value, unit.get("code").asText());
             }
         }
         if ("quantity-range".equals(type)) {
@@ -54,9 +55,9 @@ public interface Criterion {
             var upperBound = valueFilter.get("maxValue").decimalValue();
             var unit = valueFilter.get("unit");
             if (unit == null) {
-                return RangeCriterion.of(concept, lowerBound, upperBound);
+                return RangeCriterion.of(termCode, lowerBound, upperBound);
             } else {
-                return RangeCriterion.of(concept, lowerBound, upperBound, unit.get("code").asText());
+                return RangeCriterion.of(termCode, lowerBound, upperBound, unit.get("code").asText());
             }
         }
         if ("concept".equals(type)) {
@@ -64,7 +65,7 @@ public interface Criterion {
             if (selectedConcepts == null) {
                 throw new IllegalArgumentException("Missing `selectedConcepts` key in concept criterion.");
             }
-            return ValueSetCriterion.of(concept, StreamSupport.stream(selectedConcepts.spliterator(), false)
+            return ValueSetCriterion.of(termCode, StreamSupport.stream(selectedConcepts.spliterator(), false)
                     .map(TermCode::fromJsonNode).toArray(TermCode[]::new));
         }
         throw new IllegalArgumentException("unknown valueFilter type: " + type);

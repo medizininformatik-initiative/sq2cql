@@ -17,11 +17,11 @@ import java.util.Objects;
  */
 public abstract class AbstractCriterion implements Criterion {
 
-    final TermCode concept;
+    final TermCode termCode;
     final List<Modifier> modifiers;
 
-    AbstractCriterion(TermCode concept, List<Modifier> modifiers) {
-        this.concept = Objects.requireNonNull(concept);
+    AbstractCriterion(TermCode termCode, List<Modifier> modifiers) {
+        this.termCode = Objects.requireNonNull(termCode);
         this.modifiers = Objects.requireNonNull(modifiers);
     }
 
@@ -63,6 +63,6 @@ public abstract class AbstractCriterion implements Criterion {
     }
 
     public TermCode getTermCode() {
-        return concept;
+        return termCode;
     }
 }
