@@ -17,6 +17,7 @@ import de.numcodex.sq2cql.model.structured_query.ValueSetCriterion;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -195,6 +196,7 @@ class TranslatorTest {
     }
 
     @Test
+    @Disabled
     void toCQL_TimeContraint() {
         var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
         var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));

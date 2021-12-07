@@ -58,7 +58,8 @@ public final class ConceptCriterion extends AbstractCriterion {
     }
 
     /**
-     * Build an OR-expression with an expression for each code of the expansion of {@code termCode}.
+     * Builds an OR-expression with an expression for each concept of the expansion of
+     * {@code termCode}.
      */
     private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
         return mappingContext.expandConcept(termCode)
