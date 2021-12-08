@@ -2,6 +2,7 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.Lists;
+import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.AliasExpression;
@@ -50,25 +51,30 @@ public final class ConceptCriterion extends AbstractCriterion {
         var expr = fullExpr(mappingContext);
         if (expr.isEmpty()) {
             throw new TranslationException("Failed to expand concept with system `%s`, code `%s` and display `%s`.".formatted(
-                    concept.getSystem(), concept.getCode(), concept.getDisplay()
+                    termCode.getSystem(), termCode.getCode(), termCode.getDisplay()
             ));
         }
         return expr;
     }
 
+    /**
+     * Builds an OR-expression with an expression for each concept of the expansion of
+     * {@code termCode}.
+     */
     private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
-        return mappingContext.expandConcept(concept)
-                .map(c -> expr(mappingContext, c))
+        return mappingContext.expandConcept(termCode)
+                .map(termCode -> expr(mappingContext, termCode))
                 .reduce(Container.empty(), Container.OR);
     }
 
-    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode concept) {
-        var modifiers = Lists.concat(mappingContext.getMapping(concept)
-                .orElseThrow(() -> new MappingNotFoundException(concept)).getFixedCriteria(), this.modifiers);
+    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
+        var mapping = mappingContext.getMapping(termCode)
+            .orElseThrow(() -> new MappingNotFoundException(termCode));
+        var modifiers = Lists.concat(mapping.getFixedCriteria(), this.modifiers);
         if (modifiers.isEmpty()) {
-            return retrieveExpr(mappingContext, concept).map(ExistsExpression::of);
+            return retrieveExpr(mappingContext, termCode).map(ExistsExpression::of);
         } else {
-            return retrieveExpr(mappingContext, concept).flatMap(retrieveExpr -> {
+            return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
                 var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
                 return modifiersExpr(modifiers, mappingContext, alias)
                         .map(modifiersExpr -> ExistsExpression.of(QueryExpression.of(SourceClause.of(retrieveExpr,

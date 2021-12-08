@@ -16,10 +16,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up JDK 15
+    - name: Set up JDK 17
       uses: actions/setup-java@v1
       with:
-        java-version: 15
+        java-version: 17
 
     - name: Cache Local Maven Repo
       uses: actions/cache@v2.1.2
@@ -57,4 +57,4 @@ jobs:
         maven-repo-server-username: ${{ github.actor }}
         maven-repo-server-password: ${{ secrets.GITHUB_TOKEN }}
       env:
-        JAVA_HOME: /usr/lib/jvm/java-15-openjdk/
+        JAVA_HOME: /usr/lib/jvm/java-17-openjdk/

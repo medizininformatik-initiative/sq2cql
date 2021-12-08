@@ -61,7 +61,7 @@ public final class RangeCriterion extends AbstractCriterion {
 
     @Override
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
-        return retrieveExpr(mappingContext, concept).map(retrieveExpr -> {
+        return retrieveExpr(mappingContext, termCode).map(retrieveExpr -> {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);
             var castExpr = TypeExpression.of(InvocationExpression.of(alias, "value"), "Quantity");

@@ -62,6 +62,14 @@ mapper.readValue("""
         """, StructuredQuery.class);
 ```
 
+## TODO
+
+* klammerung
+* expand the termCode in ValueSetCriterion, look into ConceptCriterion#fullExpr
+* Modifier ausbauen
+* TimeContraints
+* var castExpr = TypeExpression.of(InvocationExpression.of(alias, "value"), "Quantity"); value -> fhirPath
+
 ## License
 
 Copyright [yyyy] [name of copyright owner]
