@@ -1,0 +1,40 @@
+[
+    {
+        "attributeSearchParameters": [],
+        "fhirResourceType": "Condition",
+        "fixedCriteria": [
+            {
+                "fhirPath": "verificationStatus",
+                "searchParameter": "verification-status",
+                "type": "coding",
+                "value": [
+                    {
+                        "code": "confirmed",
+                        "display": "Confirmed",
+                        "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+                    }
+                ]
+            }
+        ],
+        "key": {
+            "code": "13645005",
+            "display": "Chronic obstructive lung disease (disorder)",
+            "system": "http://snomed.info/sct",
+            "version": "2021"
+        },
+        "termCodeSearchParameter": "code"
+    },
+    {
+        "attributeSearchParameters": [],
+        "fhirResourceType": "Observation",
+        "fixedCriteria": [],
+        "key": {
+            "code": "72166-2",
+            "display": "Tobacco smoking status",
+            "system": "http://loinc.org"
+        },
+        "termCodeSearchParameter": "code",
+        "valueFhirPath": "valueConcept",
+        "valueSearchParameter": "value-concept"
+    }
+]
