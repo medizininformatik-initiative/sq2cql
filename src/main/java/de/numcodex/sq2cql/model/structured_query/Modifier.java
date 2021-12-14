@@ -10,6 +10,7 @@ import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.Expression;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -40,4 +41,5 @@ public interface Modifier {
     }
 
     Container<BooleanExpression> expression(MappingContext mappingContext, Expression alias);
+
 }

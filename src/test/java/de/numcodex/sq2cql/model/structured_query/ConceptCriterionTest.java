@@ -12,6 +12,7 @@ import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,7 +80,7 @@ class ConceptCriterionTest {
     @Test
     void toCql() {
         Criterion criterion = ConceptCriterion.of(C71);
-        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")), ConceptNode.of(C71),
+        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition", "")), ConceptNode.of(C71),
                 CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
@@ -92,7 +93,7 @@ class ConceptCriterionTest {
     @Test
     void toCql_WithModifier() {
         Criterion criterion = ConceptCriterion.of(C71, CodingModifier.of("verificationStatus", CONFIRMED));
-        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")), ConceptNode.of(C71),
+        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition", "")), ConceptNode.of(C71),
                 CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
@@ -108,7 +109,7 @@ class ConceptCriterionTest {
     void toCql_FixedCriteria_Code() {
         Criterion criterion = ConceptCriterion.of(THERAPEUTIC_PROCEDURE);
         var mappingContext = MappingContext.of(Map.of(THERAPEUTIC_PROCEDURE, Mapping.of(THERAPEUTIC_PROCEDURE,
-                "Procedure", CodeModifier.of("status", "completed", "in-progress"))),
+                "Procedure", "",CodeModifier.of("status", "completed", "in-progress"))),
                 ConceptNode.of(THERAPEUTIC_PROCEDURE), CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
@@ -123,7 +124,7 @@ class ConceptCriterionTest {
     @Test
     void toCql_FixedCriteria_Coding() {
         Criterion criterion = ConceptCriterion.of(C71);
-        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition",
+        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition", "",
                 CodingModifier.of("verificationStatus", CONFIRMED))), ConceptNode.of(C71), CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
@@ -138,12 +139,12 @@ class ConceptCriterionTest {
     @Test
     void toCql_Expanded_WithModifier() {
         Criterion criterion = ConceptCriterion.of(C71, CodingModifier.of("verificationStatus", CONFIRMED));
-        var mappingContext = MappingContext.of(Map.of(C71_1, Mapping.of(C71_1, "Condition"), C71_2, Mapping.of(C71_2,
-                "Condition")), ConceptNode.of(C71, ConceptNode.of(C71_1), ConceptNode.of(C71_2)), CODE_SYSTEM_ALIASES);
+        var mappingContext = MappingContext.of(Map.of(C71_1, Mapping.of(C71_1, "Condition", ""), C71_2, Mapping.of(C71_2,
+                "Condition", "")), ConceptNode.of(C71, ConceptNode.of(C71_1), ConceptNode.of(C71_2)), CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
 
-        assertEquals("""
+        assertEquals( """
                         exists from [Condition: Code 'C71.1' from icd10] C
                           where C.verificationStatus.coding contains Code 'confirmed' from ver_status or
                         exists from [Condition: Code 'C71.2' from icd10] C

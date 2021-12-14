@@ -28,7 +28,7 @@ class RangeCriterionTest {
     public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc");
     public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(PLATELETS,
-            Mapping.of(PLATELETS, "Observation")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
+            Mapping.of(PLATELETS, "Observation", "value")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
 
     @Test
     void fromJson() throws Exception {

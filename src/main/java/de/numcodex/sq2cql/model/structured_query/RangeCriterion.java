@@ -64,7 +64,9 @@ public final class RangeCriterion extends AbstractCriterion {
         return retrieveExpr(mappingContext, termCode).map(retrieveExpr -> {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);
-            var castExpr = TypeExpression.of(InvocationExpression.of(alias, "value"), "Quantity");
+            var mapping = mappingContext.getMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
+            var valueFhirPath = mapping.getValueFhirPath().orElseThrow(() -> new ValueFhirPathNotFoundException(termCode));
+            var castExpr = TypeExpression.of(InvocationExpression.of(alias, valueFhirPath), "Quantity");
             var whereExpression = BetweenExpression.of(castExpr, quantityExpression(lowerBound, unit),
                     quantityExpression(upperBound, unit));
             var queryExpr = QueryExpression.of(sourceClause, WhereClause.of(whereExpression));

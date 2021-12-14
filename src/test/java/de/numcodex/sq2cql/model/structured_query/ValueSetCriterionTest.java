@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,8 +35,8 @@ class ValueSetCriterionTest {
             "http://snomed.info/sct", "snomed",
             "http://hl7.org/fhir/administrative-gender", "gender");
 
-    public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(COVID, Mapping.of(COVID, "Observation"),
-            SEX, Mapping.of(SEX, "Observation")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
+    public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(COVID, Mapping.of(COVID, "Observation", "value"),
+            SEX, Mapping.of(SEX, "Observation", "value")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc",
             "http://loinc.org");

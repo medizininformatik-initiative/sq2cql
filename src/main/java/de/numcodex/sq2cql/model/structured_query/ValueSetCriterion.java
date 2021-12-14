@@ -53,7 +53,10 @@ public final class ValueSetCriterion extends AbstractCriterion {
         return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);
-            var codingExpr = InvocationExpression.of(InvocationExpression.of(alias, "value"), "coding");
+            var mapping = mappingContext.getMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
+            var valueFhirPath = mapping.getValueFhirPath().orElseThrow(() -> new ValueFhirPathNotFoundException(termCode));
+            var codingExpr = InvocationExpression.of(InvocationExpression.of(alias, valueFhirPath), "coding");
+            //var codingExpr = InvocationExpression.of(InvocationExpression.of(alias, mappingContext.getMapping(termCode).get().getFixedCriteria().getFhirPath()), "coding");
             return whereExpr(mappingContext, codingExpr).map(whereExpr ->
                     ExistsExpression.of(QueryExpression.of(sourceClause, WhereClause.of(whereExpr))));
         });
