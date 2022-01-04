@@ -61,9 +61,9 @@ public final class Mapping {
 
         Mapping map = (Mapping) o;
 
-        if (concept.equals(map.concept)) { return false; }
+        if (!concept.equals(map.concept)) { return false; }
 
-        if (resourceType.equals(map.resourceType)){ return false; }
+        if (!resourceType.equals(map.resourceType)){ return false; }
 
         var sourceCriterion= fixedCriteria.iterator();
         var mapCriterion = map.fixedCriteria.iterator();
