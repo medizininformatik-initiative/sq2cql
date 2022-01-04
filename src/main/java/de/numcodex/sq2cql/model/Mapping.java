@@ -53,4 +53,26 @@ public final class Mapping {
 
     public Optional<String> getValueFhirPath() { return valueFhirPath; }
 
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        Mapping map = (Mapping) o;
+
+        if (concept.equals(map.concept)) { return false; }
+
+        if (resourceType.equals(map.resourceType)){ return false; }
+
+        var sourceCriterion= fixedCriteria.iterator();
+        var mapCriterion = map.fixedCriteria.iterator();
+        while(sourceCriterion.hasNext() && mapCriterion.hasNext())
+        {
+            if(!sourceCriterion.next().equals(mapCriterion.next())){ return false; }
+        }
+
+        return !valueFhirPath.equals(map.valueFhirPath);
+    }
+
 }

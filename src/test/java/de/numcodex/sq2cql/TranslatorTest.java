@@ -15,21 +15,20 @@ import de.numcodex.sq2cql.model.structured_query.Criterion;
 import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import de.numcodex.sq2cql.model.structured_query.TranslationException;
-import de.numcodex.sq2cql.model.structured_query.ValueSetCriterion;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
+import java.util.Objects;
+import java.util.HashMap;
 
-import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
-import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Alexander Kiel
@@ -352,6 +351,31 @@ class TranslatorTest {
                   not Exclusion
                 """, library.print(PrintContext.ZERO));
     }
+
+    @Test
+    void toCQL_mapJSONMapping() throws IOException {
+        Map<TermCode, Mapping> loadedMap = loadMapping("mapping_test.json");
+
+        var mappings = Map.of(
+                COPD, Mapping.of(COPD, "Condition", null,CodingModifier.of("verificationStatus", CONFIRMED)),
+                TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "valueConcept"));
+
+        assertEquals(loadedMap.keySet(),mappings.keySet());
+
+        var loadedMap_ValueArray = new ArrayList<>( loadedMap.values() );
+        var mappings_ValueArray = new ArrayList<>( mappings.values() );
+        for(int i = 0; i<mappings.size(); i++){
+            var loadedMap_ValueEntry = loadedMap_ValueArray.get(i);
+            var mappings_ValueEntry = mappings_ValueArray.get(i);
+
+            assertTrue(loadedMap_ValueEntry.getConcept().equals(mappings_ValueEntry.getConcept()));
+            assertTrue(loadedMap_ValueEntry.getFixedCriteria().equals(mappings_ValueEntry.getFixedCriteria()));
+            assertTrue(loadedMap_ValueEntry.getResourceType().equals(mappings_ValueEntry.getResourceType()));
+            assertTrue(loadedMap_ValueEntry.getValueFhirPath().equals(mappings_ValueEntry.getValueFhirPath()));
+        }
+    }
+
+
 
     @Test
     void toCQL_readMapping() throws IOException {
