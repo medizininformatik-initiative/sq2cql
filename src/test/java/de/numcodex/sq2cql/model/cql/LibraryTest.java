@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static de.numcodex.sq2cql.model.cql.BooleanExpression.TRUE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Alexander Kiel
@@ -21,8 +21,8 @@ class LibraryTest {
                 library Retrieve
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                
-                
+                                
+                                
                 """, cql);
     }
 
@@ -35,7 +35,7 @@ class LibraryTest {
                 library Retrieve
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                
+                                
                 define InInitialPopulation:
                   true
                 """, cql);

@@ -18,14 +18,18 @@ public final class Mapping {
 
     private final TermCode concept;
     private final String resourceType;
+    private final String valueFhirPath;
     private final List<Modifier> fixedCriteria;
-    private final Optional<String> valueFhirPath;
 
     private Mapping(TermCode concept, String resourceType, String valueFhirPath, List<Modifier> fixedCriteria) {
-        this.concept = concept;
-        this.resourceType = resourceType;
-        this.fixedCriteria = fixedCriteria;
-        this.valueFhirPath = Optional.ofNullable(valueFhirPath);
+        this.concept = Objects.requireNonNull(concept);
+        this.resourceType = Objects.requireNonNull(resourceType);
+        this.valueFhirPath = valueFhirPath;
+        this.fixedCriteria = Objects.requireNonNull(fixedCriteria);
+    }
+
+    public static Mapping of(TermCode concept, String resourceType) {
+        return new Mapping(Objects.requireNonNull(concept), Objects.requireNonNull(resourceType), null, List.of());
     }
 
     @JsonCreator
@@ -49,30 +53,11 @@ public final class Mapping {
         return fixedCriteria;
     }
 
-    public TermCode getTermCode() { return concept; }
-
-    public Optional<String> getValueFhirPath() { return valueFhirPath; }
-
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-
-        Mapping map = (Mapping) o;
-
-        if (!concept.equals(map.concept)) { return false; }
-
-        if (!resourceType.equals(map.resourceType)){ return false; }
-
-        var sourceCriterion= fixedCriteria.iterator();
-        var mapCriterion = map.fixedCriteria.iterator();
-        while(sourceCriterion.hasNext() && mapCriterion.hasNext())
-        {
-            if(!sourceCriterion.next().equals(mapCriterion.next())){ return false; }
-        }
-
-        return !valueFhirPath.equals(map.valueFhirPath);
+    public TermCode getTermCode() {
+        return concept;
     }
 
+    public Optional<String> getValueFhirPath() {
+        return Optional.ofNullable(valueFhirPath);
+    }
 }

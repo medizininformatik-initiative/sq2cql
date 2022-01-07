@@ -1,13 +1,11 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
-import de.numcodex.sq2cql.model.Mapping;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Alexander Kiel
@@ -20,11 +18,11 @@ class ModifierTest {
 
         try {
             mapper.readValue("""
-                {
-                  "type": "foo",
-                  "fhirPath": "bar"
-                }
-                """, Modifier.class);
+                    {
+                      "type": "foo",
+                      "fhirPath": "bar"
+                    }
+                    """, Modifier.class);
             fail();
         } catch (JsonProcessingException e) {
             assertEquals("missing modifier values", e.getCause().getMessage());
@@ -32,12 +30,12 @@ class ModifierTest {
 
         try {
             mapper.readValue("""
-                {
-                  "type": "foo",
-                  "fhirPath": "bar",
-                  "value": []
-                }
-                """, Modifier.class);
+                    {
+                      "type": "foo",
+                      "fhirPath": "bar",
+                      "value": []
+                    }
+                    """, Modifier.class);
             fail();
         } catch (JsonProcessingException e) {
             assertEquals("empty modifier values", e.getCause().getMessage());
@@ -50,12 +48,12 @@ class ModifierTest {
 
         try {
             mapper.readValue("""
-                {
-                  "type": "foo",
-                  "fhirPath": "bar",
-                  "value": ["a"]
-                }
-                """, Modifier.class);
+                    {
+                      "type": "foo",
+                      "fhirPath": "bar",
+                      "value": ["a"]
+                    }
+                    """, Modifier.class);
             fail();
         } catch (JsonProcessingException e) {
             assertEquals("unknown type: foo", e.getCause().getMessage());
