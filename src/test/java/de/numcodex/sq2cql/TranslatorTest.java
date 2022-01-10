@@ -1,7 +1,5 @@
 package de.numcodex.sq2cql;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.ConceptNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -14,9 +12,6 @@ import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import de.numcodex.sq2cql.model.structured_query.TranslationException;
 import de.numcodex.sq2cql.model.structured_query.ValueSetCriterion;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -25,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
-import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -65,7 +58,6 @@ class TranslatorTest {
             "lipid lowering drugs");
     public static final TermCode CONFIRMED = TermCode.of("http://terminology.hl7.org/CodeSystem/condition-ver-status",
             "confirmed", "Confirmed");
-
     public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10",
             "http://loinc.org", "loinc",
@@ -75,7 +67,6 @@ class TranslatorTest {
             "http://hl7.org/fhir/administrative-gender", "gender",
             "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status",
             "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "frailty-score");
-    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void toCQL_Inclusion_OneDisjunctionWithOneCriterion() {
@@ -222,18 +213,19 @@ class TranslatorTest {
 
     @Test
     void toCQL_Test_Task1() {
-        var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation"),
+        var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
                 C71_0, Mapping.of(C71_0, "Condition"),
                 C71_1, Mapping.of(C71_1, "Condition"),
                 TMZ, Mapping.of(TMZ, "MedicationStatement"));
         var conceptTree = ConceptNode.of(ROOT, ConceptNode.of(TMZ), ConceptNode.of(C71, ConceptNode.of(C71_0),
                 ConceptNode.of(C71_1)));
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
-
-        Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
+        var structuredQuery = StructuredQuery.of(List.of(
                 List.of(ConceptCriterion.of(C71, CodingModifier.of("verificationStatus", CONFIRMED))),
                 List.of(NumericCriterion.of(PLATELETS, LESS_THAN, BigDecimal.valueOf(50), "g/dl")),
-                List.of(ConceptCriterion.of(TMZ)))));
+                List.of(ConceptCriterion.of(TMZ))));
+
+        Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
         assertEquals("""
                 library Retrieve
@@ -258,7 +250,7 @@ class TranslatorTest {
 
     @Test
     void toCQL_Test_Task2() {
-        var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation"),
+        var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
                 HYPERTENSION, Mapping.of(HYPERTENSION, "Condition"),
                 SERUM, Mapping.of(SERUM, "Specimen"),
                 LIPID, Mapping.of(LIPID, "MedicationStatement"));
@@ -267,11 +259,12 @@ class TranslatorTest {
         var mappingContext = MappingContext.of(mappings,
                 conceptTree,
                 CODE_SYSTEM_ALIASES);
-
-        Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
+        var structuredQuery = StructuredQuery.of(List.of(
                 List.of(ConceptCriterion.of(HYPERTENSION, CodingModifier.of("verificationStatus", CONFIRMED))),
                 List.of(ConceptCriterion.of(SERUM))), List.of(
-                List.of(ConceptCriterion.of(LIPID)))));
+                List.of(ConceptCriterion.of(LIPID))));
+
+        Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
         assertEquals("""
                 library Retrieve
@@ -298,17 +291,17 @@ class TranslatorTest {
     }
 
     @Test
-    void toCQL_GeccoTask2() throws IOException {
-        var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation"),
-                COPD, Mapping.of(COPD, "Condition", CodingModifier.of("verificationStatus", CONFIRMED)),
-                G47_31, Mapping.of(G47_31, "Condition", CodingModifier.of("verificationStatus", CONFIRMED)),
-                TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation"));
+    void toCQL_GeccoTask2() {
+        var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", "value"),
+                COPD, Mapping.of(COPD, "Condition", null, CodingModifier.of("verificationStatus", CONFIRMED)),
+                G47_31, Mapping.of(G47_31, "Condition", null, CodingModifier.of("verificationStatus", CONFIRMED)),
+                TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
         var conceptTree = ConceptNode.of(ROOT, ConceptNode.of(COPD), ConceptNode.of(G47_31));
-        var mappingContext = MappingContext.of(mappings,
-                conceptTree,
-                CODE_SYSTEM_ALIASES);
-
-        StructuredQuery structuredQuery = mapper.readValue(slurp("GeccoTask2.json"), StructuredQuery.class);
+        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+        var structuredQuery = StructuredQuery.of(List.of(
+                List.of(ValueSetCriterion.of(FRAILTY_SCORE, VERY_FIT, WELL))), List.of(
+                List.of(ConceptCriterion.of(COPD), ConceptCriterion.of(G47_31)),
+                List.of(ValueSetCriterion.of(TOBACCO_SMOKING_STATUS, CURRENT_EVERY_DAY_SMOKER))));
 
         Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -340,11 +333,5 @@ class TranslatorTest {
                   Inclusion and
                   not Exclusion
                 """, library.print(PrintContext.ZERO));
-    }
-
-    private static String slurp(String name) throws IOException {
-        try (InputStream in = TranslatorTest.class.getResourceAsStream(name)) {
-             return new String(Objects.requireNonNull(in).readAllBytes(), UTF_8);
-        }
     }
 }

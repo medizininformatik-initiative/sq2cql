@@ -5,6 +5,10 @@ import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.CodeModifier;
 import de.numcodex.sq2cql.model.structured_query.CodingModifier;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MappingTest {
 
     public static final TermCode TC_1 = TermCode.of("http://loinc.org", "72166-2", "tabacco smoking status");
+    public static final TermCode CONFIRMED = TermCode.of("http://terminology.hl7.org/CodeSystem/condition-ver-status",
+            "confirmed", "Confirmed");
 
     @Test
     void fromJson() throws Exception {
@@ -26,7 +32,7 @@ class MappingTest {
                     "system": "http://loinc.org",
                     "code": "72166-2",
                     "display": "tobacco smoking status"
-                  }  
+                  }
                 }
                 """, Mapping.class);
 
@@ -46,12 +52,34 @@ class MappingTest {
                     "system": "http://loinc.org",
                     "code": "72166-2",
                     "display": "tobacco smoking status"
-                  }  
+                  }
                 }
                 """, Mapping.class);
 
         assertEquals(TC_1, mapping.getConcept());
         assertEquals("Observation", mapping.getResourceType());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"value", "other"})
+    void fromJson_WithValueFhirPath(String valueFhirPath) throws Exception {
+        var mapper = new ObjectMapper();
+
+        var mapping = mapper.readValue(String.format("""
+                {
+                  "fhirResourceType": "Observation",
+                  "key": {
+                    "system": "http://loinc.org",
+                    "code": "72166-2",
+                    "display": "tobacco smoking status"
+                  },
+                  "valueFhirPath": "%s"
+                }
+                """, valueFhirPath), Mapping.class);
+
+        assertEquals(TC_1, mapping.getConcept());
+        assertEquals("Observation", mapping.getResourceType());
+        assertEquals(Optional.of(valueFhirPath), mapping.getValueFhirPath());
     }
 
     @Test
@@ -76,7 +104,7 @@ class MappingTest {
                         "in-progress"
                       ]
                     }
-                  ]  
+                  ]
                 }
                 """, Mapping.class);
 
@@ -110,14 +138,12 @@ class MappingTest {
                         }
                       ]
                     }
-                  ]  
+                  ]
                 }
                 """, Mapping.class);
 
         assertEquals(TC_1, mapping.getConcept());
         assertEquals("Observation", mapping.getResourceType());
-        assertEquals(CodingModifier.of("verificationStatus",
-                TermCode.of("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed", "Confirmed")),
-                mapping.getFixedCriteria().get(0));
+        assertEquals(CodingModifier.of("verificationStatus", CONFIRMED), mapping.getFixedCriteria().get(0));
     }
 }

@@ -2,7 +2,6 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.Lists;
-import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.AliasExpression;
@@ -69,7 +68,7 @@ public final class ConceptCriterion extends AbstractCriterion {
 
     private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
         var mapping = mappingContext.getMapping(termCode)
-            .orElseThrow(() -> new MappingNotFoundException(termCode));
+                .orElseThrow(() -> new MappingNotFoundException(termCode));
         var modifiers = Lists.concat(mapping.getFixedCriteria(), this.modifiers);
         if (modifiers.isEmpty()) {
             return retrieveExpr(mappingContext, termCode).map(ExistsExpression::of);

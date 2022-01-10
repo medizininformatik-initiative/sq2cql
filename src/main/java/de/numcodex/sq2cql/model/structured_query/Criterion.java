@@ -2,7 +2,6 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -11,7 +10,6 @@ import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 
-import java.math.BigDecimal;
 import java.util.stream.StreamSupport;
 
 /**

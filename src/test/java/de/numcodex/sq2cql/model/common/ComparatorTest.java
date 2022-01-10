@@ -1,14 +1,14 @@
 package de.numcodex.sq2cql.model.common;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 import static de.numcodex.sq2cql.model.common.Comparator.EQUAL;
 import static de.numcodex.sq2cql.model.common.Comparator.GREATER_EQUAL;
 import static de.numcodex.sq2cql.model.common.Comparator.GREATER_THAN;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_EQUAL;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author Alexander Kiel

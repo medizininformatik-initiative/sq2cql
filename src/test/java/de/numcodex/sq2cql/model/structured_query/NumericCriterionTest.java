@@ -28,17 +28,22 @@ class NumericCriterionTest {
 
     public static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
     public static final TermCode SOFA_SCORE = TermCode.of("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "06", "SOFA-Score");
+    public static final TermCode OTHER_VALUE_PATH = TermCode.of("foo", "other-value-path", "");
 
     public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
-            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "ecrf");
+            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "ecrf",
+            "foo", "foo");
 
-    public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(PLATELETS,
-            Mapping.of(PLATELETS, "Observation"), SOFA_SCORE,
-            Mapping.of(SOFA_SCORE, "Observation")), ConceptNode.of(), CODE_SYSTEM_ALIASES);
+    public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
+            PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
+            SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value"),
+            OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
+    ), ConceptNode.of(), CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
     public static final CodeSystemDefinition ECRF_CODE_SYSTEM_DEF = CodeSystemDefinition.of("ecrf", "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes");
+    public static final CodeSystemDefinition FOO_CODE_SYSTEM_DEF = CodeSystemDefinition.of("foo", "foo");
 
     @Test
     void fromJson() throws Exception {
@@ -117,5 +122,18 @@ class NumericCriterionTest {
                           where O.value as Quantity = 6""",
                 container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
         assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_otherFhirValuePath() {
+        Criterion criterion = NumericCriterion.of(OTHER_VALUE_PATH, EQUAL, BigDecimal.valueOf(1));
+
+        Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
+
+        assertEquals("""
+                        exists from [Observation: Code 'other-value-path' from foo] O
+                          where O.other as Quantity = 1""",
+                container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
+        assertEquals(Set.of(FOO_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
 }

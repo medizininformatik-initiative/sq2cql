@@ -3,7 +3,7 @@ package de.numcodex.sq2cql;
 import org.junit.jupiter.api.Test;
 
 import static de.numcodex.sq2cql.model.cql.BooleanExpression.TRUE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Alexander Kiel

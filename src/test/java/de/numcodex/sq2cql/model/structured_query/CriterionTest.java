@@ -18,14 +18,14 @@ class CriterionTest {
 
         try {
             mapper.readValue("""
-                {
-                  "type": "foo",
-                  "fhirPath": "bar",
-                  "valueFilter": {
-                    "type": "foo"
-                  }
-                }
-                """, Criterion.class);
+                    {
+                      "type": "foo",
+                      "fhirPath": "bar",
+                      "valueFilter": {
+                        "type": "foo"
+                      }
+                    }
+                    """, Criterion.class);
             fail();
         } catch (JsonProcessingException e) {
             assertEquals("unknown valueFilter type: foo", e.getCause().getMessage());
