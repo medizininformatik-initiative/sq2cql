@@ -7,15 +7,15 @@ import de.numcodex.sq2cql.model.common.TermCode;
  */
 public class MappingNotFoundException extends TranslationException {
 
-    private final TermCode concept;
+    private final TermCode termCode;
 
-    public MappingNotFoundException(TermCode concept) {
+    public MappingNotFoundException(TermCode termCode) {
         super("Mapping for concept with system `%s`, code `%s` and display `%s` not found."
-                .formatted(concept.getSystem(), concept.getCode(), concept.getDisplay()));
-        this.concept = concept;
+                .formatted(termCode.getSystem(), termCode.getCode(), termCode.getDisplay()));
+        this.termCode = termCode;
     }
 
-    public TermCode getConcept() {
-        return concept;
+    public TermCode getTermCode() {
+        return termCode;
     }
 }

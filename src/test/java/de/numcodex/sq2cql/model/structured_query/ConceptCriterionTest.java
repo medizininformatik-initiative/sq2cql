@@ -3,7 +3,7 @@ package de.numcodex.sq2cql.model.structured_query;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.PrintContext;
-import de.numcodex.sq2cql.model.ConceptNode;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -48,38 +48,42 @@ class ConceptCriterionTest {
 
         var criterion = (ConceptCriterion) mapper.readValue("""
                 {
-                  "termCode": {
+                  "termCodes": [{
                     "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
                     "code": "C71",
                     "display": "Malignant neoplasm of brain"
-                  }
+                  }]
                 }
                 """, Criterion.class);
 
-        assertEquals(C71, criterion.getTermCode());
+        assertEquals(Concept.of(C71), criterion.getConcept());
     }
 
     @Test
-    void fromJson_WithModifier() throws Exception {
+    void fromJson_WithMultipleTermCodes() throws Exception {
         var mapper = new ObjectMapper();
 
         var criterion = (ConceptCriterion) mapper.readValue("""
                 {
-                  "termCode": {
+                  "termCodes": [{
                     "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
-                    "code": "C71",
-                    "display": "Malignant neoplasm of brain"
-                  }
+                    "code": "C71.1",
+                    "display": "Frontal lobe"
+                  }, {
+                    "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
+                    "code": "C71.2",
+                    "display": "Temporal lobe"
+                  }]
                 }
                 """, Criterion.class);
 
-        assertEquals(C71, criterion.getTermCode());
+        assertEquals(Concept.of(C71_1, C71_2), criterion.getConcept());
     }
 
     @Test
     void toCql() {
-        Criterion criterion = ConceptCriterion.of(C71);
-        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")), ConceptNode.of(C71),
+        Criterion criterion = ConceptCriterion.of(Concept.of(C71));
+        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")), TermCodeNode.of(C71),
                 CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
@@ -91,8 +95,8 @@ class ConceptCriterionTest {
 
     @Test
     void toCql_WithModifier() {
-        Criterion criterion = ConceptCriterion.of(C71, CodingModifier.of("verificationStatus", CONFIRMED));
-        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")), ConceptNode.of(C71),
+        Criterion criterion = ConceptCriterion.of(Concept.of(C71), CodingModifier.of("verificationStatus", CONFIRMED));
+        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")), TermCodeNode.of(C71),
                 CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
@@ -106,10 +110,10 @@ class ConceptCriterionTest {
 
     @Test
     void toCql_FixedCriteria_Code() {
-        Criterion criterion = ConceptCriterion.of(THERAPEUTIC_PROCEDURE);
+        Criterion criterion = ConceptCriterion.of(Concept.of(THERAPEUTIC_PROCEDURE));
         var mappingContext = MappingContext.of(Map.of(THERAPEUTIC_PROCEDURE, Mapping.of(THERAPEUTIC_PROCEDURE,
                         "Procedure", null, CodeModifier.of("status", "completed", "in-progress"))),
-                ConceptNode.of(THERAPEUTIC_PROCEDURE), CODE_SYSTEM_ALIASES);
+                TermCodeNode.of(THERAPEUTIC_PROCEDURE), CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
 
@@ -122,9 +126,9 @@ class ConceptCriterionTest {
 
     @Test
     void toCql_FixedCriteria_Coding() {
-        Criterion criterion = ConceptCriterion.of(C71);
+        Criterion criterion = ConceptCriterion.of(Concept.of(C71));
         var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition", null,
-                CodingModifier.of("verificationStatus", CONFIRMED))), ConceptNode.of(C71), CODE_SYSTEM_ALIASES);
+                CodingModifier.of("verificationStatus", CONFIRMED))), TermCodeNode.of(C71), CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
 
@@ -137,9 +141,9 @@ class ConceptCriterionTest {
 
     @Test
     void toCql_Expanded_WithModifier() {
-        Criterion criterion = ConceptCriterion.of(C71, CodingModifier.of("verificationStatus", CONFIRMED));
+        Criterion criterion = ConceptCriterion.of(Concept.of(C71), CodingModifier.of("verificationStatus", CONFIRMED));
         var mappingContext = MappingContext.of(Map.of(C71_1, Mapping.of(C71_1, "Condition"), C71_2, Mapping.of(C71_2,
-                "Condition")), ConceptNode.of(C71, ConceptNode.of(C71_1), ConceptNode.of(C71_2)), CODE_SYSTEM_ALIASES);
+                "Condition")), TermCodeNode.of(C71, TermCodeNode.of(C71_1), TermCodeNode.of(C71_2)), CODE_SYSTEM_ALIASES);
 
         Container<BooleanExpression> container = criterion.toCql(mappingContext);
 

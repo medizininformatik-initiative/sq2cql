@@ -16,13 +16,13 @@ import java.util.Optional;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class Mapping {
 
-    private final TermCode concept;
+    private final TermCode key;
     private final String resourceType;
     private final String valueFhirPath;
     private final List<Modifier> fixedCriteria;
 
-    private Mapping(TermCode concept, String resourceType, String valueFhirPath, List<Modifier> fixedCriteria) {
-        this.concept = Objects.requireNonNull(concept);
+    private Mapping(TermCode key, String resourceType, String valueFhirPath, List<Modifier> fixedCriteria) {
+        this.key = Objects.requireNonNull(key);
         this.resourceType = Objects.requireNonNull(resourceType);
         this.valueFhirPath = valueFhirPath;
         this.fixedCriteria = Objects.requireNonNull(fixedCriteria);
@@ -33,31 +33,27 @@ public final class Mapping {
     }
 
     @JsonCreator
-    public static Mapping of(@JsonProperty("key") TermCode concept,
+    public static Mapping of(@JsonProperty("key") TermCode key,
                              @JsonProperty("fhirResourceType") String resourceType,
                              @JsonProperty("valueFhirPath") String valueFhirPath,
                              @JsonProperty("fixedCriteria") Modifier... fixedCriteria) {
-        return new Mapping(Objects.requireNonNull(concept), Objects.requireNonNull(resourceType), valueFhirPath,
+        return new Mapping(Objects.requireNonNull(key), Objects.requireNonNull(resourceType), valueFhirPath,
                 fixedCriteria == null ? List.of() : List.of(fixedCriteria));
     }
 
-    public TermCode getConcept() {
-        return concept;
+    public TermCode getKey() {
+        return key;
     }
 
     public String getResourceType() {
         return resourceType;
     }
 
-    public List<Modifier> getFixedCriteria() {
-        return fixedCriteria;
-    }
-
-    public TermCode getTermCode() {
-        return concept;
-    }
-
     public Optional<String> getValueFhirPath() {
         return Optional.ofNullable(valueFhirPath);
+    }
+
+    public List<Modifier> getFixedCriteria() {
+        return fixedCriteria;
     }
 }

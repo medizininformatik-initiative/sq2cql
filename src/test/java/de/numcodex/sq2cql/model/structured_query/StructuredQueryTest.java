@@ -31,15 +31,16 @@ class StructuredQueryTest {
 
         var structuredQuery = mapper.readValue("""
                 {"inclusionCriteria": [[{
-                  "termCode": {
-                    "system": "tc", 
+                  "termCodes": [{
+                    "system": "tc",
                     "code": "1",
                     "display": ""
-                  }
+                  }]
                 }]]}
                 """, StructuredQuery.class);
 
-        assertEquals(TC_1, ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getTermCode());
+        assertEquals(Concept.of(TC_1),
+                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
     }
 
     @Test
@@ -49,15 +50,16 @@ class StructuredQueryTest {
         var structuredQuery = mapper.readValue("""
                 {"foo-151633": "bar-151639",
                  "inclusionCriteria": [[{
-                  "termCode": {
-                    "system": "tc", 
+                  "termCodes": [{
+                    "system": "tc",
                     "code": "1",
                     "display": ""
-                  }
+                  }]
                 }]]}
                 """, StructuredQuery.class);
 
-        assertEquals(TC_1, ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getTermCode());
+        assertEquals(Concept.of(TC_1),
+                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
     }
 
     @Test
@@ -66,22 +68,24 @@ class StructuredQueryTest {
 
         var structuredQuery = mapper.readValue("""
                 {"inclusionCriteria": [[{
-                  "termCode": {
-                    "system": "tc", 
+                  "termCodes": [{
+                    "system": "tc",
                     "code": "1",
                     "display": ""
-                  }
+                  }]
                 }], [{
-                  "termCode": {
-                    "system": "tc", 
+                  "termCodes": [{
+                    "system": "tc",
                     "code": "2",
                     "display": ""
-                  }
+                  }]
                 }]]}
                 """, StructuredQuery.class);
 
-        assertEquals(TC_1, ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getTermCode());
-        assertEquals(TC_2, ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(1).get(0)).getTermCode());
+        assertEquals(Concept.of(TC_1),
+                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
+        assertEquals(Concept.of(TC_2),
+                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(1).get(0)).getConcept());
     }
 
     @Test
@@ -90,22 +94,24 @@ class StructuredQueryTest {
 
         var structuredQuery = mapper.readValue("""
                 {"inclusionCriteria": [[{
-                  "termCode": {
-                    "system": "tc", 
+                  "termCodes": [{
+                    "system": "tc",
                     "code": "1",
                     "display": ""
-                  }
+                  }]
                 }, {
-                  "termCode": {
-                    "system": "tc", 
+                  "termCodes": [{
+                    "system": "tc",
                     "code": "2",
                     "display": ""
-                  }
+                  }]
                 }]]}
                 """, StructuredQuery.class);
 
-        assertEquals(TC_1, ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getTermCode());
-        assertEquals(TC_2, ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(1)).getTermCode());
+        assertEquals(Concept.of(TC_1),
+                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
+        assertEquals(Concept.of(TC_2),
+                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(1)).getConcept());
     }
 
     @Test
@@ -114,21 +120,23 @@ class StructuredQueryTest {
 
         var structuredQuery = mapper.readValue("""
                 {"inclusionCriteria": [[{
-                  "termCode": {
-                    "system": "tc", 
+                  "termCodes": [{
+                    "system": "tc",
                     "code": "1",
                     "display": ""
-                  }
+                  }]
                 }]], "exclusionCriteria": [[{
-                  "termCode": {
-                    "system": "tc", 
+                  "termCodes": [{
+                    "system": "tc",
                     "code": "2",
                     "display": ""
-                  }
+                  }]
                 }]]}
                 """, StructuredQuery.class);
 
-        assertEquals(TC_1, ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getTermCode());
-        assertEquals(TC_2, ((ConceptCriterion) structuredQuery.getExclusionCriteria().get(0).get(0)).getTermCode());
+        assertEquals(Concept.of(TC_1),
+                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
+        assertEquals(Concept.of(TC_2),
+                ((ConceptCriterion) structuredQuery.getExclusionCriteria().get(0).get(0)).getConcept());
     }
 }

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Alexander Kiel
  */
-class ConceptNodeTest {
+class TermCodeNodeTest {
 
     public static final TermCode ROOT = TermCode.of("foo", "root", "root");
     public static final TermCode C1 = TermCode.of("foo", "c1", "c1");
@@ -25,40 +25,40 @@ class ConceptNodeTest {
 
     @Test
     void noChildren() {
-        var node = ConceptNode.of();
+        var node = TermCodeNode.of();
 
         assertTrue(node.getChildren().isEmpty());
     }
 
     @Test
     void expandSelfLeaf() {
-        var node = ConceptNode.of(ROOT);
+        var node = TermCodeNode.of(ROOT);
 
         assertEquals(Set.of(ROOT), node.expand(ROOT).collect(Collectors.toSet()));
     }
 
     @Test
     void expandSelf() {
-        var node = ConceptNode.of(ROOT, ConceptNode.of(C1), ConceptNode.of(C2));
+        var node = TermCodeNode.of(ROOT, TermCodeNode.of(C1), TermCodeNode.of(C2));
 
-        assertEquals(Set.of(C1, C2), node.expand(ROOT).collect(Collectors.toSet()));
+        assertEquals(Set.of(ROOT, C1, C2), node.expand(ROOT).collect(Collectors.toSet()));
     }
 
     @Test
-    void expandChild() {
-        var c1 = ConceptNode.of(C1, ConceptNode.of(C11), ConceptNode.of(C12));
-        var node = ConceptNode.of(ROOT, c1, ConceptNode.of(C2));
+    void expandChildAndSelf() {
+        var c1 = TermCodeNode.of(C1, TermCodeNode.of(C11), TermCodeNode.of(C12));
+        var node = TermCodeNode.of(ROOT, c1, TermCodeNode.of(C2));
 
-        assertEquals(Set.of(C11, C12), node.expand(C1).collect(Collectors.toSet()));
+        assertEquals(Set.of(C1, C11, C12), node.expand(C1).collect(Collectors.toSet()));
     }
 
     @Test
     void expandChildDeep() {
-        var c11 = ConceptNode.of(C11, ConceptNode.of(C111), ConceptNode.of(C112));
-        var c1 = ConceptNode.of(C1, c11, ConceptNode.of(C12));
-        var node = ConceptNode.of(ROOT, c1, ConceptNode.of(C2));
+        var c11 = TermCodeNode.of(C11, TermCodeNode.of(C111), TermCodeNode.of(C112));
+        var c1 = TermCodeNode.of(C1, c11, TermCodeNode.of(C12));
+        var node = TermCodeNode.of(ROOT, c1, TermCodeNode.of(C2));
 
-        assertEquals(Set.of(C111, C112, C12), node.expand(C1).collect(Collectors.toSet()));
+        assertEquals(Set.of(C1, C11, C12, C111, C112), node.expand(C1).collect(Collectors.toSet()));
     }
 
     @Test
@@ -67,15 +67,15 @@ class ConceptNodeTest {
 
         var conceptNode = mapper.readValue("""
                 {"termCode": {
-                   "system": "system-143705", 
+                   "system": "system-143705",
                    "code": "code-143708",
                    "display": "display-143716"
                  },
                  "children": []
                 }
-                """, ConceptNode.class);
+                """, TermCodeNode.class);
 
-        assertEquals("system-143705", conceptNode.getConcept().getSystem());
+        assertEquals("system-143705", conceptNode.getTermCode().getSystem());
     }
 
     @Test
@@ -85,15 +85,15 @@ class ConceptNodeTest {
         var conceptNode = mapper.readValue("""
                 {"foo-152133": "bar-152136",
                  "termCode": {
-                   "system": "system-143705", 
+                   "system": "system-143705",
                    "code": "code-143708",
                    "display": "display-143716"
                  },
                  "children": []
                 }
-                """, ConceptNode.class);
+                """, TermCodeNode.class);
 
-        assertEquals("system-143705", conceptNode.getConcept().getSystem());
+        assertEquals("system-143705", conceptNode.getTermCode().getSystem());
     }
 
     @Test
@@ -102,27 +102,27 @@ class ConceptNodeTest {
 
         var conceptNode = mapper.readValue("""
                 {"termCode": {
-                   "system": "system-143705", 
+                   "system": "system-143705",
                    "code": "code-143708",
                    "display": "display-143716"
                  },
                  "children": [
                   {"termCode": {
-                     "system": "child-1-system-155856", 
+                     "system": "child-1-system-155856",
                      "code": "child-1-code-155858",
                      "display": "child-1-display-155900"
                   }},
                   {"termCode": {
-                     "system": "child-2-system-155958", 
+                     "system": "child-2-system-155958",
                      "code": "child-2-code-160000",
                      "display": "child-2-display-160002"
                   }}
                  ]
                 }
-                """, ConceptNode.class);
+                """, TermCodeNode.class);
 
-        assertEquals("system-143705", conceptNode.getConcept().getSystem());
-        assertEquals("child-1-system-155856", conceptNode.getChildren().get(0).getConcept().getSystem());
-        assertEquals("child-2-system-155958", conceptNode.getChildren().get(1).getConcept().getSystem());
+        assertEquals("system-143705", conceptNode.getTermCode().getSystem());
+        assertEquals("child-1-system-155856", conceptNode.getChildren().get(0).getTermCode().getSystem());
+        assertEquals("child-2-system-155958", conceptNode.getChildren().get(1).getTermCode().getSystem());
     }
 }

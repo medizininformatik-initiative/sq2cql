@@ -33,7 +33,7 @@ public final class NumericCriterion extends AbstractCriterion {
     private final BigDecimal value;
     private final String unit;
 
-    private NumericCriterion(TermCode concept, Comparator comparator, BigDecimal value, String unit) {
+    private NumericCriterion(Concept concept, Comparator comparator, BigDecimal value, String unit) {
         super(concept, List.of());
         this.value = Objects.requireNonNull(value);
         this.comparator = Objects.requireNonNull(comparator);
@@ -48,7 +48,7 @@ public final class NumericCriterion extends AbstractCriterion {
      * @param value      the value that should be used in the value comparison
      * @return the {@code NumericCriterion}
      */
-    public static NumericCriterion of(TermCode concept, Comparator comparator, BigDecimal value) {
+    public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value) {
         return new NumericCriterion(concept, comparator, value, null);
     }
 
@@ -61,7 +61,7 @@ public final class NumericCriterion extends AbstractCriterion {
      * @param unit       the unit of the value
      * @return the {@code NumericCriterion}
      */
-    public static NumericCriterion of(TermCode concept, Comparator comparator, BigDecimal value, String unit) {
+    public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value, String unit) {
         return new NumericCriterion(concept, comparator, value, Objects.requireNonNull(unit));
     }
 
@@ -78,6 +78,23 @@ public final class NumericCriterion extends AbstractCriterion {
     }
 
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
+        var expr = fullExpr(mappingContext);
+        if (expr.isEmpty()) {
+            throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
+        }
+        return expr;
+    }
+
+    /**
+     * Builds an OR-expression with an expression for each concept of the expansion of {@code termCode}.
+     */
+    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
+        return mappingContext.expandConcept(concept)
+                .map(termCode -> expr(mappingContext, termCode))
+                .reduce(Container.empty(), Container.OR);
+    }
+
+    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
         return retrieveExpr(mappingContext, termCode).map(retrieveExpr -> {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);

@@ -21,7 +21,7 @@ import java.util.List;
  */
 public final class ConceptCriterion extends AbstractCriterion {
 
-    private ConceptCriterion(TermCode concept, List<Modifier> modifiers) {
+    private ConceptCriterion(Concept concept, List<Modifier> modifiers) {
         super(concept, modifiers);
     }
 
@@ -29,17 +29,17 @@ public final class ConceptCriterion extends AbstractCriterion {
      * Returns a {@code ConceptCriterion}.
      *
      * @param concept   the concept the criterion represents
-     * @param modifiers mofifiers to use in addition to {@code concept}
+     * @param modifiers modifiers to use in addition to {@code concept}
      * @return the {@code ConceptCriterion}.
      */
-    public static ConceptCriterion of(TermCode concept, Modifier... modifiers) {
+    public static ConceptCriterion of(Concept concept, Modifier... modifiers) {
         return new ConceptCriterion(concept, List.of(modifiers));
     }
 
     /**
      * Translates this criterion into a CQL expression.
      * <p>
-     * Expands {@link #getTermCode() concept} returning a disjunction of exists expressions on multiple expansions.
+     * Expands {@link #getConcept() concept} returning a disjunction of exists expressions on multiple expansions.
      *
      * @param mappingContext contains the mappings needed to create the CQL expression
      * @return a {@link Container} of the {@link BooleanExpression} together with its used {@link CodeSystemDefinition
@@ -49,19 +49,16 @@ public final class ConceptCriterion extends AbstractCriterion {
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
         var expr = fullExpr(mappingContext);
         if (expr.isEmpty()) {
-            throw new TranslationException("Failed to expand concept with system `%s`, code `%s` and display `%s`.".formatted(
-                    termCode.getSystem(), termCode.getCode(), termCode.getDisplay()
-            ));
+            throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
         }
         return expr;
     }
 
     /**
-     * Builds an OR-expression with an expression for each concept of the expansion of
-     * {@code termCode}.
+     * Builds an OR-expression with an expression for each concept of the expansion of {@code termCode}.
      */
     private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
-        return mappingContext.expandConcept(termCode)
+        return mappingContext.expandConcept(concept)
                 .map(termCode -> expr(mappingContext, termCode))
                 .reduce(Container.empty(), Container.OR);
     }

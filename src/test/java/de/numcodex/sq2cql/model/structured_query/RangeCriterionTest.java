@@ -3,7 +3,7 @@ package de.numcodex.sq2cql.model.structured_query;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.PrintContext;
-import de.numcodex.sq2cql.model.ConceptNode;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -33,7 +33,7 @@ class RangeCriterionTest {
     public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
             PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
             OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
-    ), ConceptNode.of(), CODE_SYSTEM_ALIASES);
+    ), TermCodeNode.of(), CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
     public static final CodeSystemDefinition FOO_CODE_SYSTEM_DEF = CodeSystemDefinition.of("foo", "foo");
@@ -44,11 +44,11 @@ class RangeCriterionTest {
 
         var criterion = (RangeCriterion) mapper.readValue("""
                 {
-                  "termCode": {
+                  "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "26515-7",
                     "display": "Platelets"
-                  },
+                  }],
                   "valueFilter": {
                     "type": "quantity-range",
                     "unit": {
@@ -60,7 +60,7 @@ class RangeCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(PLATELETS, criterion.getTermCode());
+        assertEquals(Concept.of(PLATELETS), criterion.getConcept());
         assertEquals(BigDecimal.valueOf(20), criterion.getLowerBound());
         assertEquals(BigDecimal.valueOf(30), criterion.getUpperBound());
         assertEquals(Optional.of("g/dl"), criterion.getUnit());
@@ -72,11 +72,11 @@ class RangeCriterionTest {
 
         var criterion = (RangeCriterion) mapper.readValue("""
                 {
-                  "termCode": {
+                  "termCodes": [{
                     "system": "system-140946",
                     "code": "code-140950",
                     "display": ""
-                  },
+                  }],
                   "valueFilter": {
                     "type": "quantity-range",
                     "minValue": 0,
@@ -92,7 +92,7 @@ class RangeCriterionTest {
 
     @Test
     void toCql() {
-        Criterion criterion = RangeCriterion.of(PLATELETS, BigDecimal.valueOf(20), BigDecimal.valueOf(30), "g/dl");
+        var criterion = RangeCriterion.of(Concept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30), "g/dl");
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -105,7 +105,7 @@ class RangeCriterionTest {
 
     @Test
     void toCql_otherFhirValuePath() {
-        Criterion criterion = RangeCriterion.of(OTHER_VALUE_PATH, BigDecimal.valueOf(1), BigDecimal.valueOf(2));
+        var criterion = RangeCriterion.of(Concept.of(OTHER_VALUE_PATH), BigDecimal.valueOf(1), BigDecimal.valueOf(2));
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 

@@ -25,7 +25,7 @@ public final class ValueSetCriterion extends AbstractCriterion {
 
     private final List<TermCode> selectedConcepts;
 
-    private ValueSetCriterion(TermCode concept, List<TermCode> selectedConcepts) {
+    private ValueSetCriterion(Concept concept, List<TermCode> selectedConcepts) {
         super(concept, List.of());
         this.selectedConcepts = selectedConcepts;
     }
@@ -37,7 +37,7 @@ public final class ValueSetCriterion extends AbstractCriterion {
      * @param selectedConcepts at least one selected value concept
      * @return the {@code ValueSetCriterion}
      */
-    public static ValueSetCriterion of(TermCode concept, TermCode... selectedConcepts) {
+    public static ValueSetCriterion of(Concept concept, TermCode... selectedConcepts) {
         if (selectedConcepts == null || selectedConcepts.length == 0) {
             throw new IllegalArgumentException("empty selected concepts");
         }
@@ -49,7 +49,23 @@ public final class ValueSetCriterion extends AbstractCriterion {
     }
 
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
-        //TODO: expand the termCode, look into ConceptCriterion#fullExpr
+        var expr = fullExpr(mappingContext);
+        if (expr.isEmpty()) {
+            throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
+        }
+        return expr;
+    }
+
+    /**
+     * Builds an OR-expression with an expression for each concept of the expansion of {@code termCode}.
+     */
+    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
+        return mappingContext.expandConcept(concept)
+                .map(termCode -> expr(mappingContext, termCode))
+                .reduce(Container.empty(), Container.OR);
+    }
+
+    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
         return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);

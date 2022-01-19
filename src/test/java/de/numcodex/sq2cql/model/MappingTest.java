@@ -36,7 +36,7 @@ class MappingTest {
                 }
                 """, Mapping.class);
 
-        assertEquals(TC_1, mapping.getConcept());
+        assertEquals(TC_1, mapping.getKey());
         assertEquals("Observation", mapping.getResourceType());
     }
 
@@ -56,7 +56,7 @@ class MappingTest {
                 }
                 """, Mapping.class);
 
-        assertEquals(TC_1, mapping.getConcept());
+        assertEquals(TC_1, mapping.getKey());
         assertEquals("Observation", mapping.getResourceType());
     }
 
@@ -77,7 +77,7 @@ class MappingTest {
                 }
                 """, valueFhirPath), Mapping.class);
 
-        assertEquals(TC_1, mapping.getConcept());
+        assertEquals(TC_1, mapping.getKey());
         assertEquals("Observation", mapping.getResourceType());
         assertEquals(Optional.of(valueFhirPath), mapping.getValueFhirPath());
     }
@@ -108,7 +108,7 @@ class MappingTest {
                 }
                 """, Mapping.class);
 
-        assertEquals(TC_1, mapping.getConcept());
+        assertEquals(TC_1, mapping.getKey());
         assertEquals("Observation", mapping.getResourceType());
         assertEquals(CodeModifier.of("status", "completed", "in-progress"), mapping.getFixedCriteria().get(0));
     }
@@ -142,7 +142,7 @@ class MappingTest {
                 }
                 """, Mapping.class);
 
-        assertEquals(TC_1, mapping.getConcept());
+        assertEquals(TC_1, mapping.getKey());
         assertEquals("Observation", mapping.getResourceType());
         assertEquals(CodingModifier.of("verificationStatus", CONFIRMED), mapping.getFixedCriteria().get(0));
     }
