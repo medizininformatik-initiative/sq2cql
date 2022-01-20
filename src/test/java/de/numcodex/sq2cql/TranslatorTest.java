@@ -1,11 +1,12 @@
 package de.numcodex.sq2cql;
 
-import de.numcodex.sq2cql.model.ConceptNode;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.Library;
 import de.numcodex.sq2cql.model.structured_query.CodingModifier;
+import de.numcodex.sq2cql.model.structured_query.Concept;
 import de.numcodex.sq2cql.model.structured_query.ConceptCriterion;
 import de.numcodex.sq2cql.model.structured_query.Criterion;
 import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
@@ -146,33 +147,33 @@ class TranslatorTest {
     @Test
     void toCQL_NonExpandableConcept() {
         var message = assertThrows(TranslationException.class, () -> Translator.of().toCql(StructuredQuery.of(
-                List.of(List.of(ConceptCriterion.of(C71)))))).getMessage();
+                List.of(List.of(ConceptCriterion.of(Concept.of(C71))))))).getMessage();
 
-        assertEquals("Failed to expand concept with system `http://fhir.de/CodeSystem/dimdi/icd-10-gm`, code `C71` and display `Malignant neoplasm of brain`.", message);
+        assertEquals("Failed to expand the concept (system: http://fhir.de/CodeSystem/dimdi/icd-10-gm, code: C71, display: Malignant neoplasm of brain).", message);
     }
 
     @Test
     void toCQL_NonMappableConcept() {
-        var conceptTree = ConceptNode.of(C71, ConceptNode.of(C71_0),
-                ConceptNode.of(C71_1));
+        var conceptTree = TermCodeNode.of(C71, TermCodeNode.of(C71_0),
+                TermCodeNode.of(C71_1));
         var mappingContext = MappingContext.of(Map.of(), conceptTree, CODE_SYSTEM_ALIASES);
 
         var message = assertThrows(TranslationException.class, () -> Translator.of(mappingContext).toCql(StructuredQuery.of(
-                List.of(List.of(ConceptCriterion.of(C71)))))).getMessage();
+                List.of(List.of(ConceptCriterion.of(Concept.of(C71))))))).getMessage();
 
-        assertEquals("Mapping for concept with system `http://fhir.de/CodeSystem/dimdi/icd-10-gm`, code `C71.0` and display `` not found.", message);
+        assertEquals("Failed to expand the concept (system: http://fhir.de/CodeSystem/dimdi/icd-10-gm, code: C71, display: Malignant neoplasm of brain).", message);
     }
 
     @Test
     void toCQL_Usage_Documentation() {
         var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
         var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
-        var conceptTree = ConceptNode.of(c71_1);
+        var conceptTree = TermCodeNode.of(c71_1);
         var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
         var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
         Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
-                List.of(ConceptCriterion.of(c71_1)))));
+                List.of(ConceptCriterion.of(Concept.of(c71_1))))));
 
         assertEquals("""
                 library Retrieve
@@ -191,12 +192,12 @@ class TranslatorTest {
     void toCQL_TimeContraint() {
         var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
         var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
-        var conceptTree = ConceptNode.of(c71_1);
+        var conceptTree = TermCodeNode.of(c71_1);
         var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
         var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
         Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
-                List.of(ConceptCriterion.of(c71_1)))));
+                List.of(ConceptCriterion.of(Concept.of(c71_1))))));
 
         assertEquals("""
                 library Retrieve
@@ -217,13 +218,13 @@ class TranslatorTest {
                 C71_0, Mapping.of(C71_0, "Condition"),
                 C71_1, Mapping.of(C71_1, "Condition"),
                 TMZ, Mapping.of(TMZ, "MedicationStatement"));
-        var conceptTree = ConceptNode.of(ROOT, ConceptNode.of(TMZ), ConceptNode.of(C71, ConceptNode.of(C71_0),
-                ConceptNode.of(C71_1)));
+        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(TMZ), TermCodeNode.of(C71, TermCodeNode.of(C71_0),
+                TermCodeNode.of(C71_1)));
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
         var structuredQuery = StructuredQuery.of(List.of(
-                List.of(ConceptCriterion.of(C71, CodingModifier.of("verificationStatus", CONFIRMED))),
-                List.of(NumericCriterion.of(PLATELETS, LESS_THAN, BigDecimal.valueOf(50), "g/dl")),
-                List.of(ConceptCriterion.of(TMZ))));
+                List.of(ConceptCriterion.of(Concept.of(C71), CodingModifier.of("verificationStatus", CONFIRMED))),
+                List.of(NumericCriterion.of(Concept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50), "g/dl")),
+                List.of(ConceptCriterion.of(Concept.of(TMZ)))));
 
         Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -254,15 +255,15 @@ class TranslatorTest {
                 HYPERTENSION, Mapping.of(HYPERTENSION, "Condition"),
                 SERUM, Mapping.of(SERUM, "Specimen"),
                 LIPID, Mapping.of(LIPID, "MedicationStatement"));
-        var conceptTree = ConceptNode.of(ROOT, ConceptNode.of(HYPERTENSION), ConceptNode.of(SERUM),
-                ConceptNode.of(LIPID));
+        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(HYPERTENSION), TermCodeNode.of(SERUM),
+                TermCodeNode.of(LIPID));
         var mappingContext = MappingContext.of(mappings,
                 conceptTree,
                 CODE_SYSTEM_ALIASES);
         var structuredQuery = StructuredQuery.of(List.of(
-                List.of(ConceptCriterion.of(HYPERTENSION, CodingModifier.of("verificationStatus", CONFIRMED))),
-                List.of(ConceptCriterion.of(SERUM))), List.of(
-                List.of(ConceptCriterion.of(LIPID))));
+                List.of(ConceptCriterion.of(Concept.of(HYPERTENSION), CodingModifier.of("verificationStatus", CONFIRMED))),
+                List.of(ConceptCriterion.of(Concept.of(SERUM)))), List.of(
+                List.of(ConceptCriterion.of(Concept.of(LIPID)))));
 
         Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -296,12 +297,12 @@ class TranslatorTest {
                 COPD, Mapping.of(COPD, "Condition", null, CodingModifier.of("verificationStatus", CONFIRMED)),
                 G47_31, Mapping.of(G47_31, "Condition", null, CodingModifier.of("verificationStatus", CONFIRMED)),
                 TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
-        var conceptTree = ConceptNode.of(ROOT, ConceptNode.of(COPD), ConceptNode.of(G47_31));
+        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COPD), TermCodeNode.of(G47_31));
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
         var structuredQuery = StructuredQuery.of(List.of(
-                List.of(ValueSetCriterion.of(FRAILTY_SCORE, VERY_FIT, WELL))), List.of(
-                List.of(ConceptCriterion.of(COPD), ConceptCriterion.of(G47_31)),
-                List.of(ValueSetCriterion.of(TOBACCO_SMOKING_STATUS, CURRENT_EVERY_DAY_SMOKER))));
+                List.of(ValueSetCriterion.of(Concept.of(FRAILTY_SCORE), VERY_FIT, WELL))), List.of(
+                List.of(ConceptCriterion.of(Concept.of(COPD)), ConceptCriterion.of(Concept.of(G47_31))),
+                List.of(ValueSetCriterion.of(Concept.of(TOBACCO_SMOKING_STATUS), CURRENT_EVERY_DAY_SMOKER))));
 
         Library library = Translator.of(mappingContext).toCql(structuredQuery);
 

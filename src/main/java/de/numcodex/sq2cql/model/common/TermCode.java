@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * A terminology code coding a concept.
@@ -67,5 +68,14 @@ public final class TermCode {
     @Override
     public int hashCode() {
         return Objects.hash(system, code);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", TermCode.class.getSimpleName() + "[", "]")
+                .add("system='" + system + "'")
+                .add("code='" + code + "'")
+                .add("display='" + display + "'")
+                .toString();
     }
 }

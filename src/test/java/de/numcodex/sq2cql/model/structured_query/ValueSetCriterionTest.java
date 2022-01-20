@@ -3,7 +3,7 @@ package de.numcodex.sq2cql.model.structured_query;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.PrintContext;
-import de.numcodex.sq2cql.model.ConceptNode;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -40,7 +40,7 @@ class ValueSetCriterionTest {
             COVID, Mapping.of(COVID, "Observation", "value"),
             SEX, Mapping.of(SEX, "Observation", "value"),
             FINDING, Mapping.of(FINDING, "Condition", "severity")
-    ), ConceptNode.of(), CODE_SYSTEM_ALIASES);
+    ), TermCodeNode.of(), CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc",
             "http://loinc.org");
@@ -55,11 +55,11 @@ class ValueSetCriterionTest {
 
         var criterion = (ValueSetCriterion) mapper.readValue("""
                 {
-                  "termCode": {
+                  "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "76689-9",
                     "display": "Sex assigned at birth"
-                  },
+                  }],
                   "valueFilter": {
                     "type": "concept",
                     "selectedConcepts": [
@@ -78,18 +78,18 @@ class ValueSetCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(SEX, criterion.getTermCode());
+        assertEquals(Concept.of(SEX), criterion.getConcept());
         assertEquals(List.of(MALE, FEMALE), criterion.getSelectedConcepts());
     }
 
     @Test
     void toCql_NoConcept() {
-        assertThrows(IllegalArgumentException.class, () -> ValueSetCriterion.of(COVID));
+        assertThrows(IllegalArgumentException.class, () -> ValueSetCriterion.of(Concept.of(COVID)));
     }
 
     @Test
     void toCql_OneConcept() {
-        Criterion criterion = ValueSetCriterion.of(COVID, POSITIVE);
+        var criterion = ValueSetCriterion.of(Concept.of(COVID), POSITIVE);
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -102,7 +102,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_TwoConcepts() {
-        Criterion criterion = ValueSetCriterion.of(SEX, MALE, FEMALE);
+        var criterion = ValueSetCriterion.of(Concept.of(SEX), MALE, FEMALE);
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -116,7 +116,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_ConditionSeverity() {
-        Criterion criterion = ValueSetCriterion.of(FINDING, SEVERE);
+        var criterion = ValueSetCriterion.of(Concept.of(FINDING), SEVERE);
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 

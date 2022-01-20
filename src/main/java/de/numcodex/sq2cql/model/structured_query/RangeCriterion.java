@@ -32,18 +32,18 @@ public final class RangeCriterion extends AbstractCriterion {
     private final BigDecimal upperBound;
     private final String unit;
 
-    private RangeCriterion(TermCode concept, BigDecimal lowerBound, BigDecimal upperBound, String unit) {
+    private RangeCriterion(Concept concept, BigDecimal lowerBound, BigDecimal upperBound, String unit) {
         super(concept, List.of());
         this.lowerBound = Objects.requireNonNull(lowerBound);
         this.upperBound = Objects.requireNonNull(upperBound);
         this.unit = unit;
     }
 
-    public static RangeCriterion of(TermCode concept, BigDecimal lowerBound, BigDecimal upperBound) {
+    public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound) {
         return new RangeCriterion(concept, lowerBound, upperBound, null);
     }
 
-    public static RangeCriterion of(TermCode concept, BigDecimal lowerBound, BigDecimal upperBound, String unit) {
+    public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound, String unit) {
         return new RangeCriterion(concept, lowerBound, upperBound, Objects.requireNonNull(unit));
     }
 
@@ -61,6 +61,23 @@ public final class RangeCriterion extends AbstractCriterion {
 
     @Override
     public Container<BooleanExpression> toCql(MappingContext mappingContext) {
+        var expr = fullExpr(mappingContext);
+        if (expr.isEmpty()) {
+            throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
+        }
+        return expr;
+    }
+
+    /**
+     * Builds an OR-expression with an expression for each concept of the expansion of {@code termCode}.
+     */
+    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
+        return mappingContext.expandConcept(concept)
+                .map(termCode -> expr(mappingContext, termCode))
+                .reduce(Container.empty(), Container.OR);
+    }
+
+    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
         return retrieveExpr(mappingContext, termCode).map(retrieveExpr -> {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);

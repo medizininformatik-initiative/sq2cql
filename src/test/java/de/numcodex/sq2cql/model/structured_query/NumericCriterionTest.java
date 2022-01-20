@@ -3,7 +3,7 @@ package de.numcodex.sq2cql.model.structured_query;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.PrintContext;
-import de.numcodex.sq2cql.model.ConceptNode;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -39,7 +39,7 @@ class NumericCriterionTest {
             PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
             SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value"),
             OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
-    ), ConceptNode.of(), CODE_SYSTEM_ALIASES);
+    ), TermCodeNode.of(), CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
     public static final CodeSystemDefinition ECRF_CODE_SYSTEM_DEF = CodeSystemDefinition.of("ecrf", "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes");
@@ -51,11 +51,11 @@ class NumericCriterionTest {
 
         var criterion = (NumericCriterion) mapper.readValue("""
                 {
-                  "termCode": {
+                  "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "26515-7",
                     "display": "Platelets"
-                  },
+                  }],
                   "valueFilter": {
                     "type": "quantity-comparator",
                     "comparator": "gt",
@@ -67,7 +67,7 @@ class NumericCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(PLATELETS, criterion.getTermCode());
+        assertEquals(Concept.of(PLATELETS), criterion.getConcept());
         assertEquals(GREATER_THAN, criterion.getComparator());
         assertEquals(BigDecimal.valueOf(50), criterion.getValue());
         assertEquals(Optional.of("g/dl"), criterion.getUnit());
@@ -79,11 +79,11 @@ class NumericCriterionTest {
 
         var criterion = (NumericCriterion) mapper.readValue("""
                 {
-                  "termCode": {
+                  "termCodes": [{
                     "system": "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes",
                     "code": "06",
                     "display": "SOFA-Score"
-                  },
+                  }],
                   "valueFilter": {
                     "type": "quantity-comparator",
                     "comparator": "eq",
@@ -92,7 +92,7 @@ class NumericCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(SOFA_SCORE, criterion.getTermCode());
+        assertEquals(Concept.of(SOFA_SCORE), criterion.getConcept());
         assertEquals(EQUAL, criterion.getComparator());
         assertEquals(BigDecimal.valueOf(6), criterion.getValue());
         assertEquals(Optional.empty(), criterion.getUnit());
@@ -100,7 +100,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql() {
-        Criterion criterion = NumericCriterion.of(PLATELETS, LESS_THAN, BigDecimal.valueOf(50), "g/dl");
+        Criterion criterion = NumericCriterion.of(Concept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50), "g/dl");
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -113,7 +113,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql_withoutUnit() {
-        Criterion criterion = NumericCriterion.of(SOFA_SCORE, EQUAL, BigDecimal.valueOf(6));
+        Criterion criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -126,7 +126,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql_otherFhirValuePath() {
-        Criterion criterion = NumericCriterion.of(OTHER_VALUE_PATH, EQUAL, BigDecimal.valueOf(1));
+        Criterion criterion = NumericCriterion.of(Concept.of(OTHER_VALUE_PATH), EQUAL, BigDecimal.valueOf(1));
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
 

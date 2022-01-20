@@ -1,32 +1,26 @@
 package de.numcodex.sq2cql;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
-import de.numcodex.sq2cql.model.ConceptNode;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.structured_query.CodingModifier;
-import de.numcodex.sq2cql.model.structured_query.ConceptCriterion;
+import de.numcodex.sq2cql.model.structured_query.Concept;
 import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
-import org.hl7.fhir.instance.model.api.IBaseParameters;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Measure;
 import org.hl7.fhir.r4.model.MeasureReport;
 import org.hl7.fhir.r4.model.Parameters;
-import org.hl7.fhir.r4.model.codesystems.V3ObservationValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.junit.jupiter.Container;
@@ -79,10 +73,10 @@ public class EvaluationIT {
         var valueFhirPath = format("component.where(code.coding.exists(system = '%s' and code = '%s')).value.first()",
                 DIASTOLIC_BLOOD_PRESSURE.getSystem(), DIASTOLIC_BLOOD_PRESSURE.getCode());
         var mappings = Map.of(BLOOD_PRESSURE, Mapping.of(BLOOD_PRESSURE, "Observation", valueFhirPath));
-        var conceptTree = ConceptNode.of(ROOT, ConceptNode.of(BLOOD_PRESSURE));
+        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(BLOOD_PRESSURE));
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
         var translator = Translator.of(mappingContext);
-        var criterion = NumericCriterion.of(BLOOD_PRESSURE, LESS_THAN, BigDecimal.valueOf(80), "mm[Hg]");
+        var criterion = NumericCriterion.of(Concept.of(BLOOD_PRESSURE), LESS_THAN, BigDecimal.valueOf(80), "mm[Hg]");
         var structuredQuery = StructuredQuery.of(List.of(List.of(criterion)));
         var cql = translator.toCql(structuredQuery).print(PrintContext.ZERO);
         var libraryUri = "urn:uuid" + UUID.randomUUID();

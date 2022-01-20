@@ -17,40 +17,40 @@ import java.util.Objects;
  */
 public abstract class AbstractCriterion implements Criterion {
 
-    final TermCode termCode;
+    final Concept concept;
     final List<Modifier> modifiers;
 
-    AbstractCriterion(TermCode termCode, List<Modifier> modifiers) {
-        this.termCode = Objects.requireNonNull(termCode);
+    AbstractCriterion(Concept concept, List<Modifier> modifiers) {
+        this.concept = Objects.requireNonNull(concept);
         this.modifiers = Objects.requireNonNull(modifiers);
     }
 
     /**
-     * Returns the code selector expression according to the given concept.
+     * Returns the code selector expression according to the given term code.
      *
      * @param mappingContext the mapping context to determine the code system definition of the concept
-     * @param concept        the concept to use
+     * @param termCode       the term code to use
      * @return a {@link Container} of the code selector expression together with its used {@link CodeSystemDefinition}
      */
-    static Container<CodeSelector> codeSelector(MappingContext mappingContext, TermCode concept) {
-        var codeSystemDefinition = mappingContext.codeSystemDefinition(concept.getSystem());
-        return Container.of(CodeSelector.of(concept.getCode(), codeSystemDefinition.getName()), codeSystemDefinition);
+    static Container<CodeSelector> codeSelector(MappingContext mappingContext, TermCode termCode) {
+        var codeSystemDefinition = mappingContext.codeSystemDefinition(termCode.getSystem());
+        return Container.of(CodeSelector.of(termCode.getCode(), codeSystemDefinition.getName()), codeSystemDefinition);
     }
 
     /**
-     * Returns the retrieve expression according to the given concept.
+     * Returns the retrieve expression according to the given term code.
      * <p>
      * Uses the mapping context to determine the resource type of the retrieve expression and the code system definition
      * of the concept.
      *
-     * @param mappingContext a map of concept (term code) to mapping
-     * @param concept        the concept to use
+     * @param mappingContext the mapping context
+     * @param termCode       the term code to use
      * @return a {@link Container} of the retrieve expression together with its used {@link CodeSystemDefinition}
      * @throws TranslationException if the {@link RetrieveExpression} can't be build
      */
-    static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext, TermCode concept) {
-        return codeSelector(mappingContext, concept).map(terminology -> {
-            var mapping = mappingContext.getMapping(concept).orElseThrow(() -> new MappingNotFoundException(concept));
+    static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext, TermCode termCode) {
+        return codeSelector(mappingContext, termCode).map(terminology -> {
+            var mapping = mappingContext.getMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
             return RetrieveExpression.of(mapping.getResourceType(), terminology);
         });
     }
@@ -62,7 +62,7 @@ public abstract class AbstractCriterion implements Criterion {
                 .reduce(Container.empty(), Container.AND);
     }
 
-    public TermCode getTermCode() {
-        return termCode;
+    public Concept getConcept() {
+        return concept;
     }
 }
