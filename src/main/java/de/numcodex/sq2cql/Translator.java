@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @author Alexander Kiel
  */
-public final class Translator {
+public class Translator {
 
     public static final ExpressionDefinition IN_INITIAL_POPULATION = ExpressionDefinition
             .of("InInitialPopulation", AndExpression.of(IdentifierExpression.of("Inclusion"), NotExpression
