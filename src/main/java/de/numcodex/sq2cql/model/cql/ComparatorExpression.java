@@ -3,18 +3,14 @@ package de.numcodex.sq2cql.model.cql;
 import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.common.Comparator;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class ComparatorExpression implements BooleanExpression {
+public record ComparatorExpression(Expression a, Comparator comparator, Expression b) implements BooleanExpression {
 
-    private final Expression a;
-    private final Comparator comparator;
-    private final Expression b;
-
-    private ComparatorExpression(Expression a, Comparator comparator, Expression b) {
-        this.a = Objects.requireNonNull(a);
-        this.comparator = Objects.requireNonNull(comparator);
-        this.b = Objects.requireNonNull(b);
+    public ComparatorExpression {
+        requireNonNull(a);
+        requireNonNull(comparator);
+        requireNonNull(b);
     }
 
     public static ComparatorExpression of(Expression a, Comparator comparator, Expression b) {

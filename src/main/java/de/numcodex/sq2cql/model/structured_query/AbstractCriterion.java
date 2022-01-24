@@ -10,7 +10,8 @@ import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.model.cql.RetrieveExpression;
 
 import java.util.List;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Abstract criterion holding the concept, every non-static criterion has.
@@ -21,8 +22,8 @@ public abstract class AbstractCriterion implements Criterion {
     final List<Modifier> modifiers;
 
     AbstractCriterion(Concept concept, List<Modifier> modifiers) {
-        this.concept = Objects.requireNonNull(concept);
-        this.modifiers = Objects.requireNonNull(modifiers);
+        this.concept = requireNonNull(concept);
+        this.modifiers = requireNonNull(modifiers);
     }
 
     /**
@@ -33,8 +34,8 @@ public abstract class AbstractCriterion implements Criterion {
      * @return a {@link Container} of the code selector expression together with its used {@link CodeSystemDefinition}
      */
     static Container<CodeSelector> codeSelector(MappingContext mappingContext, TermCode termCode) {
-        var codeSystemDefinition = mappingContext.codeSystemDefinition(termCode.getSystem());
-        return Container.of(CodeSelector.of(termCode.getCode(), codeSystemDefinition.getName()), codeSystemDefinition);
+        var codeSystemDefinition = mappingContext.codeSystemDefinition(termCode.system());
+        return Container.of(CodeSelector.of(termCode.code(), codeSystemDefinition.name()), codeSystemDefinition);
     }
 
     /**
@@ -51,7 +52,7 @@ public abstract class AbstractCriterion implements Criterion {
     static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext, TermCode termCode) {
         return codeSelector(mappingContext, termCode).map(terminology -> {
             var mapping = mappingContext.getMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
-            return RetrieveExpression.of(mapping.getResourceType(), terminology);
+            return RetrieveExpression.of(mapping.resourceType(), terminology);
         });
     }
 

@@ -74,7 +74,7 @@ class TranslatorTest {
         Library library = Translator.of().toCql(StructuredQuery.of(
                 List.of(List.of(Criterion.TRUE))));
 
-        assertEquals("true", library.getExpressionDefinitions().get(0).getExpression().print(PrintContext.ZERO));
+        assertEquals("true", library.expressionDefinitions().get(0).getExpression().print(PrintContext.ZERO));
     }
 
     @Test
@@ -82,7 +82,7 @@ class TranslatorTest {
         Library library = Translator.of().toCql(StructuredQuery.of(
                 List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-        assertEquals("true or\nfalse", library.getExpressionDefinitions().get(0).getExpression()
+        assertEquals("true or\nfalse", library.expressionDefinitions().get(0).getExpression()
                 .print(PrintContext.ZERO));
     }
 
@@ -91,7 +91,7 @@ class TranslatorTest {
         Library library = Translator.of().toCql(StructuredQuery.of(
                 List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-        assertEquals("true and\nfalse", library.getExpressionDefinitions().get(0).getExpression()
+        assertEquals("true and\nfalse", library.expressionDefinitions().get(0).getExpression()
                 .print(PrintContext.ZERO));
     }
 
@@ -100,7 +100,7 @@ class TranslatorTest {
         Library library = Translator.of().toCql(StructuredQuery.of(
                 List.of(List.of(Criterion.TRUE, Criterion.TRUE), List.of(Criterion.FALSE, Criterion.FALSE))));
 
-        assertEquals("(true or\ntrue) and\n(false or\nfalse)", library.getExpressionDefinitions().get(0)
+        assertEquals("(true or\ntrue) and\n(false or\nfalse)", library.expressionDefinitions().get(0)
                 .getExpression().print(PrintContext.ZERO));
     }
 
@@ -110,8 +110,8 @@ class TranslatorTest {
                 List.of(List.of(Criterion.TRUE)),
                 List.of(List.of(Criterion.FALSE))));
 
-        assertEquals("define Inclusion:\n  true", library.getExpressionDefinitions().get(0).print(PrintContext.ZERO));
-        assertEquals("define Exclusion:\n  false", library.getExpressionDefinitions().get(1).print(PrintContext.ZERO));
+        assertEquals("define Inclusion:\n  true", library.expressionDefinitions().get(0).print(PrintContext.ZERO));
+        assertEquals("define Exclusion:\n  false", library.expressionDefinitions().get(1).print(PrintContext.ZERO));
     }
 
     @Test
@@ -120,7 +120,7 @@ class TranslatorTest {
                 List.of(List.of(Criterion.TRUE)),
                 List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-        assertEquals("define Exclusion:\n  true and\n  false", library.getExpressionDefinitions().get(1)
+        assertEquals("define Exclusion:\n  true and\n  false", library.expressionDefinitions().get(1)
                 .print(PrintContext.ZERO));
     }
 
@@ -130,7 +130,7 @@ class TranslatorTest {
                 List.of(List.of(Criterion.TRUE)),
                 List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-        assertEquals("true or\nfalse", library.getExpressionDefinitions().get(1).getExpression()
+        assertEquals("true or\nfalse", library.expressionDefinitions().get(1).getExpression()
                 .print(PrintContext.ZERO));
     }
 
@@ -140,7 +140,7 @@ class TranslatorTest {
                 List.of(List.of(Criterion.TRUE)),
                 List.of(List.of(Criterion.TRUE, Criterion.TRUE), List.of(Criterion.FALSE, Criterion.FALSE))));
 
-        assertEquals("true and\ntrue or\nfalse and\nfalse", library.getExpressionDefinitions().get(1)
+        assertEquals("true and\ntrue or\nfalse and\nfalse", library.expressionDefinitions().get(1)
                 .getExpression().print(PrintContext.ZERO));
     }
 
@@ -154,8 +154,7 @@ class TranslatorTest {
 
     @Test
     void toCQL_NonMappableConcept() {
-        var conceptTree = TermCodeNode.of(C71, TermCodeNode.of(C71_0),
-                TermCodeNode.of(C71_1));
+        var conceptTree = TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1));
         var mappingContext = MappingContext.of(Map.of(), conceptTree, CODE_SYSTEM_ALIASES);
 
         var message = assertThrows(TranslationException.class, () -> Translator.of(mappingContext).toCql(StructuredQuery.of(

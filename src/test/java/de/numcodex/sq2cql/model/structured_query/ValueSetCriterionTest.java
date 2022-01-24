@@ -40,7 +40,7 @@ class ValueSetCriterionTest {
             COVID, Mapping.of(COVID, "Observation", "value"),
             SEX, Mapping.of(SEX, "Observation", "value"),
             FINDING, Mapping.of(FINDING, "Condition", "severity")
-    ), TermCodeNode.of(), CODE_SYSTEM_ALIASES);
+    ), null, CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc",
             "http://loinc.org");

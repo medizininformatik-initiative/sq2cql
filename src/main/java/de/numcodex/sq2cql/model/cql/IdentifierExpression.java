@@ -2,14 +2,12 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class IdentifierExpression implements BooleanExpression {
+public record IdentifierExpression(String identifier) implements BooleanExpression {
 
-    private final String identifier;
-
-    private IdentifierExpression(String identifier) {
-        this.identifier = Objects.requireNonNull(identifier);
+    public IdentifierExpression {
+        requireNonNull(identifier);
     }
 
     public static IdentifierExpression of(String identifier) {
@@ -21,4 +19,3 @@ public final class IdentifierExpression implements BooleanExpression {
         return identifier;
     }
 }
-

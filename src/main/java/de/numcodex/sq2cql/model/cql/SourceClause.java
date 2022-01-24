@@ -2,16 +2,13 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class SourceClause {
+public record SourceClause(RetrieveExpression retrieve, AliasExpression alias) {
 
-    private final RetrieveExpression retrieve;
-    private final AliasExpression alias;
-
-    private SourceClause(RetrieveExpression retrieve, AliasExpression alias) {
-        this.retrieve = Objects.requireNonNull(retrieve);
-        this.alias = Objects.requireNonNull(alias);
+    public SourceClause {
+        requireNonNull(retrieve);
+        requireNonNull(alias);
     }
 
     public static SourceClause of(RetrieveExpression retrieveExpression, AliasExpression alias) {

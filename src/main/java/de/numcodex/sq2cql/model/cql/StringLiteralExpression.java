@@ -2,14 +2,12 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class StringLiteralExpression implements Expression {
+public record StringLiteralExpression(String value) implements Expression {
 
-    private final String value;
-
-    private StringLiteralExpression(String value) {
-        this.value = Objects.requireNonNull(value);
+    public StringLiteralExpression {
+        requireNonNull(value);
     }
 
     public static StringLiteralExpression of(String value) {

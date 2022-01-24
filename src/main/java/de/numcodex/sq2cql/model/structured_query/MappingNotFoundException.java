@@ -11,7 +11,7 @@ public class MappingNotFoundException extends TranslationException {
 
     public MappingNotFoundException(TermCode termCode) {
         super("Mapping for concept with system `%s`, code `%s` and display `%s` not found."
-                .formatted(termCode.getSystem(), termCode.getCode(), termCode.getDisplay()));
+                .formatted(termCode.system(), termCode.code(), termCode.display()));
         this.termCode = termCode;
     }
 

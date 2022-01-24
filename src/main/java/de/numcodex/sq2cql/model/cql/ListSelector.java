@@ -4,18 +4,17 @@ import de.numcodex.sq2cql.PrintContext;
 
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
-public final class ListSelector implements TermExpression {
+public record ListSelector(List<Expression> items) implements TermExpression {
 
-    private final List<Expression> items;
-
-    private ListSelector(List<Expression> items) {
-        this.items = items;
+    public ListSelector {
+        items = List.copyOf(items);
     }
 
     public static ListSelector of(List<Expression> items) {
-        return new ListSelector(List.copyOf(items));
+        return new ListSelector(items);
     }
 
     @Override

@@ -2,18 +2,15 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class TypeExpression implements Expression {
+public record TypeExpression(Expression expression, String typeSpecifier) implements Expression {
 
     public static final int PRECEDENCE = 12;
 
-    private final Expression expression;
-    private final String typeSpecifier;
-
-    private TypeExpression(Expression expression, String typeSpecifier) {
-        this.expression = Objects.requireNonNull(expression);
-        this.typeSpecifier = Objects.requireNonNull(typeSpecifier);
+    public TypeExpression {
+        requireNonNull(expression);
+        requireNonNull(typeSpecifier);
     }
 
     public static TypeExpression of(Expression expression, String typeSpecifier) {

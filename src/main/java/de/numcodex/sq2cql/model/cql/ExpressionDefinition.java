@@ -2,16 +2,13 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class ExpressionDefinition implements Statement {
+public record ExpressionDefinition(String identifier, Expression expression) implements Statement {
 
-    private final String identifier;
-    private final Expression expression;
-
-    private ExpressionDefinition(String identifier, Expression expression) {
-        this.identifier = Objects.requireNonNull(identifier);
-        this.expression = Objects.requireNonNull(expression);
+    public ExpressionDefinition {
+        requireNonNull(identifier);
+        requireNonNull(expression);
     }
 
     public static ExpressionDefinition of(String identifier, Expression expression) {

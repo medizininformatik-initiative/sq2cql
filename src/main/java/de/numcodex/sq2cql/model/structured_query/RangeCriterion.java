@@ -17,8 +17,9 @@ import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A {@code RangeCriterion} will select all patients that have at least one resource represented by that concept and
@@ -34,8 +35,8 @@ public final class RangeCriterion extends AbstractCriterion {
 
     private RangeCriterion(Concept concept, BigDecimal lowerBound, BigDecimal upperBound, String unit) {
         super(concept, List.of());
-        this.lowerBound = Objects.requireNonNull(lowerBound);
-        this.upperBound = Objects.requireNonNull(upperBound);
+        this.lowerBound = requireNonNull(lowerBound);
+        this.upperBound = requireNonNull(upperBound);
         this.unit = unit;
     }
 
@@ -44,7 +45,7 @@ public final class RangeCriterion extends AbstractCriterion {
     }
 
     public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound, String unit) {
-        return new RangeCriterion(concept, lowerBound, upperBound, Objects.requireNonNull(unit));
+        return new RangeCriterion(concept, lowerBound, upperBound, requireNonNull(unit));
     }
 
     public BigDecimal getLowerBound() {
@@ -82,8 +83,7 @@ public final class RangeCriterion extends AbstractCriterion {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);
             var mapping = mappingContext.getMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
-            var valueFhirPath = mapping.getValueFhirPath().orElseThrow(() -> new ValueFhirPathNotFoundException(termCode));
-            var castExpr = TypeExpression.of(InvocationExpression.of(alias, valueFhirPath), "Quantity");
+            var castExpr = TypeExpression.of(InvocationExpression.of(alias, mapping.valueFhirPath()), "Quantity");
             var whereExpression = BetweenExpression.of(castExpr, quantityExpression(lowerBound, unit),
                     quantityExpression(upperBound, unit));
             var queryExpr = QueryExpression.of(sourceClause, WhereClause.of(whereExpression));

@@ -18,8 +18,9 @@ import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A {@code NumericCriterion} will select all patients that have at least one resource represented by that concept and
@@ -35,8 +36,8 @@ public final class NumericCriterion extends AbstractCriterion {
 
     private NumericCriterion(Concept concept, Comparator comparator, BigDecimal value, String unit) {
         super(concept, List.of());
-        this.value = Objects.requireNonNull(value);
-        this.comparator = Objects.requireNonNull(comparator);
+        this.value = requireNonNull(value);
+        this.comparator = requireNonNull(comparator);
         this.unit = unit;
     }
 
@@ -62,7 +63,7 @@ public final class NumericCriterion extends AbstractCriterion {
      * @return the {@code NumericCriterion}
      */
     public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value, String unit) {
-        return new NumericCriterion(concept, comparator, value, Objects.requireNonNull(unit));
+        return new NumericCriterion(concept, comparator, value, requireNonNull(unit));
     }
 
     public Comparator getComparator() {
@@ -99,8 +100,7 @@ public final class NumericCriterion extends AbstractCriterion {
             var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
             var sourceClause = SourceClause.of(retrieveExpr, alias);
             var mapping = mappingContext.getMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
-            var valueFhirPath = mapping.getValueFhirPath().orElseThrow(() -> new ValueFhirPathNotFoundException(termCode));
-            var castExpr = TypeExpression.of(InvocationExpression.of(alias, valueFhirPath), "Quantity");
+            var castExpr = TypeExpression.of(InvocationExpression.of(alias, mapping.valueFhirPath()), "Quantity");
             var whereExpression = ComparatorExpression.of(castExpr, comparator, quantityExpression(value, unit));
             var queryExpr = QueryExpression.of(sourceClause, WhereClause.of(whereExpression));
             return ExistsExpression.of(queryExpr);

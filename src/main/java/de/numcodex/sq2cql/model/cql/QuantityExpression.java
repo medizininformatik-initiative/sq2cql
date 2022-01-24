@@ -3,16 +3,13 @@ package de.numcodex.sq2cql.model.cql;
 import de.numcodex.sq2cql.PrintContext;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
-public final class QuantityExpression implements Expression {
+import static java.util.Objects.requireNonNull;
 
-    private final BigDecimal value;
-    private final String unit;
+public record QuantityExpression(BigDecimal value, String unit) implements Expression {
 
-    private QuantityExpression(BigDecimal value, String unit) {
-        this.value = Objects.requireNonNull(value);
-        this.unit = unit;
+    public QuantityExpression {
+        requireNonNull(value);
     }
 
     public static QuantityExpression of(BigDecimal value) {
@@ -20,7 +17,7 @@ public final class QuantityExpression implements Expression {
     }
 
     public static QuantityExpression of(BigDecimal value, String unit) {
-        return new QuantityExpression(value, Objects.requireNonNull(unit));
+        return new QuantityExpression(value, requireNonNull(unit));
     }
 
     @Override

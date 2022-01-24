@@ -2,16 +2,13 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class QueryExpression implements Expression {
+public record QueryExpression(SourceClause sourceClause, WhereClause whereClause) implements Expression {
 
-    private final SourceClause sourceClause;
-    private final WhereClause whereClause;
-
-    private QueryExpression(SourceClause sourceClause, WhereClause whereClause) {
-        this.sourceClause = Objects.requireNonNull(sourceClause);
-        this.whereClause = Objects.requireNonNull(whereClause);
+    public QueryExpression {
+        requireNonNull(sourceClause);
+        requireNonNull(whereClause);
     }
 
     public static QueryExpression of(SourceClause sourceClause, WhereClause whereClause) {

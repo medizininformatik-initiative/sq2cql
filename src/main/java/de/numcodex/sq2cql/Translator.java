@@ -79,8 +79,8 @@ public class Translator {
      * @throws TranslationException if the given {@code structuredQuery} can't be translated into a CQL {@link Library}
      */
     public Library toCql(StructuredQuery structuredQuery) {
-        Container<BooleanExpression> inclusionExpr = inclusionExpr(structuredQuery.getInclusionCriteria());
-        Container<BooleanExpression> exclusionExpr = exclusionExpr(structuredQuery.getExclusionCriteria());
+        Container<BooleanExpression> inclusionExpr = inclusionExpr(structuredQuery.inclusionCriteria());
+        Container<BooleanExpression> exclusionExpr = exclusionExpr(structuredQuery.exclusionCriteria());
 
         if (inclusionExpr.isEmpty()) {
             throw new IllegalStateException("Inclusion criteria lead to empty inclusion expression.");

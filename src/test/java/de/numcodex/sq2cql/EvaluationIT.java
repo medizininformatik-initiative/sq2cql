@@ -71,7 +71,7 @@ public class EvaluationIT {
         fhirClient.transaction().withBundle(parseResource(Bundle.class, slurp("blood-pressure-bundle.json"))).execute();
 
         var valueFhirPath = format("component.where(code.coding.exists(system = '%s' and code = '%s')).value.first()",
-                DIASTOLIC_BLOOD_PRESSURE.getSystem(), DIASTOLIC_BLOOD_PRESSURE.getCode());
+                DIASTOLIC_BLOOD_PRESSURE.system(), DIASTOLIC_BLOOD_PRESSURE.code());
         var mappings = Map.of(BLOOD_PRESSURE, Mapping.of(BLOOD_PRESSURE, "Observation", valueFhirPath));
         var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(BLOOD_PRESSURE));
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);

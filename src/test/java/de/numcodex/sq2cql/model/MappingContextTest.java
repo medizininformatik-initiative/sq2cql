@@ -21,7 +21,7 @@ class MappingContextTest {
     @Test
     void expandConcept_EmptyTree() {
         var mappings = Map.of(C1, Mapping.of(C1, "Observation"));
-        var context = MappingContext.of(mappings, TermCodeNode.of(), Map.of());
+        var context = MappingContext.of(mappings, null, Map.of());
 
         assertEquals(List.of(C1), context.expandConcept(Concept.of(C1)).toList());
     }

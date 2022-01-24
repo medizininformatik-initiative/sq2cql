@@ -2,16 +2,14 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class NotExpression implements BooleanExpression {
+public record NotExpression(BooleanExpression expression) implements BooleanExpression {
 
     public static final int PRECEDENCE = 11;
 
-    private final BooleanExpression expression;
-
-    private NotExpression(BooleanExpression expression) {
-        this.expression = Objects.requireNonNull(expression);
+    public NotExpression {
+        requireNonNull(expression);
     }
 
     public static NotExpression of(BooleanExpression expression) {

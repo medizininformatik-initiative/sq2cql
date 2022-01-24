@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
  */
 public record Concept(List<TermCode> termCodes) implements Formattable {
 
+    public Concept {
+        termCodes = List.copyOf(termCodes);
+    }
+
     public static Concept of(TermCode... termCode) {
         return new Concept(List.of(termCode));
     }
@@ -23,7 +27,7 @@ public record Concept(List<TermCode> termCodes) implements Formattable {
     @Override
     public void formatTo(Formatter formatter, int flags, int width, int precision) {
         formatter.format(termCodes.stream().map(termCode -> "(system: %s, code: %s, display: %s)".formatted(
-                termCode.getSystem(), termCode.getCode(), termCode.getDisplay()
+                termCode.system(), termCode.code(), termCode.display()
         )).collect(Collectors.joining(", ")));
     }
 }

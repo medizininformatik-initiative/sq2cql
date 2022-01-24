@@ -4,14 +4,13 @@ import de.numcodex.sq2cql.PrintContext;
 
 import java.util.Objects;
 
-public final class CodeSelector implements TermExpression {
+import static java.util.Objects.requireNonNull;
 
-    private final String code;
-    private final String codeSystemIdentifier;
+public record CodeSelector (String code, String codeSystemIdentifier) implements TermExpression {
 
-    private CodeSelector(String code, String codeSystemIdentifier) {
-        this.code = Objects.requireNonNull(code);
-        this.codeSystemIdentifier = Objects.requireNonNull(codeSystemIdentifier);
+    public CodeSelector {
+        requireNonNull(code);
+        requireNonNull(codeSystemIdentifier);
     }
 
     public static CodeSelector of(String code, String codeSystemIdentifier) {
