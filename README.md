@@ -32,17 +32,17 @@ assertEquals("""
 var mapper = new ObjectMapper();
 mapper.readValue("""
         {"inclusionCriteria": [[{
-          "termCode": {
+          "termCodes": [{
             "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm", 
             "code": "C71.1",
             "display": "Malignant neoplasm of brain"
-          }
+          }]
         }], [{
-          "termCode": {
+          "termCodes": [{
             "system": "http://loinc.org", 
             "code": "76689-9",
             "display": "Sex assigned at birth"
-          },
+          }],
           "valueFilter": {
             "type": "concept",
             "selectedConcepts": [

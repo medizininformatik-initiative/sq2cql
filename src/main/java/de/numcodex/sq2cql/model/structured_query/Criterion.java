@@ -13,6 +13,8 @@ import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * A single, atomic criterion in Structured Query.
  *
@@ -34,7 +36,7 @@ public interface Criterion {
     static Criterion create(@JsonProperty("termCodes") List<TermCode> termCodes,
                             @JsonProperty("valueFilter") ObjectNode valueFilter,
                             @JsonProperty("timeRestriction") ObjectNode timeRestriction) {
-        var concept = Concept.of(termCodes);
+        var concept = Concept.of(requireNonNull(termCodes, "missing JSON property: termCodes"));
 
         if (valueFilter == null) {
             return ConceptCriterion.of(concept);

@@ -13,14 +13,25 @@ import static org.junit.jupiter.api.Assertions.fail;
 class CriterionTest {
 
     @Test
-    void fromJson_MissingValues() {
+    void fromJson_WithoutTermCodes() {
+        var mapper = new ObjectMapper();
+
+        try {
+            mapper.readValue("{}", Criterion.class);
+            fail();
+        } catch (JsonProcessingException e) {
+            assertEquals("missing JSON property: termCodes", e.getCause().getMessage());
+        }
+    }
+
+    @Test
+    void fromJson_UnknownValueFilterType() {
         var mapper = new ObjectMapper();
 
         try {
             mapper.readValue("""
                     {
-                      "type": "foo",
-                      "fhirPath": "bar",
+                      "termCodes": [],
                       "valueFilter": {
                         "type": "foo"
                       }
