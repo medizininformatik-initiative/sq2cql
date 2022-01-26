@@ -3,9 +3,9 @@ package de.numcodex.sq2cql.model.structured_query;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.PrintContext;
-import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
@@ -78,6 +78,24 @@ class ConceptCriterionTest {
                 """, Criterion.class);
 
         assertEquals(Concept.of(C71_1, C71_2), criterion.getConcept());
+    }
+
+    @Test
+    void fromJson_AdditionalPropertyIsIgnored() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var criterion = (ConceptCriterion) mapper.readValue("""
+                {
+                  "foo-151633": "bar-151639",
+                  "termCodes": [{
+                    "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
+                    "code": "C71",
+                    "display": "Malignant neoplasm of brain"
+                  }]
+                }
+                """, Criterion.class);
+
+        assertEquals(Concept.of(C71), criterion.getConcept());
     }
 
     @Test

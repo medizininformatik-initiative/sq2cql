@@ -1,6 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.numcodex.sq2cql.Container;
@@ -20,6 +21,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Alexander Kiel
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public interface Criterion {
 
     /**
