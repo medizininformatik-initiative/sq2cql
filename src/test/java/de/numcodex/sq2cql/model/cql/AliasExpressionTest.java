@@ -3,11 +3,12 @@ package de.numcodex.sq2cql.model.cql;
 import de.numcodex.sq2cql.PrintContext;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AliasExpressionTest {
 
-    private static final String IDENTIFIER = "identifier-190631";
+    static final String IDENTIFIER = "identifier-190631";
 
     @Test
     void constructor() {

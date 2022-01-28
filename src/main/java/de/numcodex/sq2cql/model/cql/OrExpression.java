@@ -31,7 +31,7 @@ public record OrExpression(List<BooleanExpression> expressions) implements Boole
     @Override
     public String print(PrintContext printContext) {
         return printContext.parenthesize(PRECEDENCE, expressions.stream()
-                .map(e -> e.print(printContext.withPrecedence(PRECEDENCE)))
+                .map(printContext.withPrecedence(PRECEDENCE)::print)
                 .collect(joining(" or\n" + printContext.getIndent())));
     }
 }

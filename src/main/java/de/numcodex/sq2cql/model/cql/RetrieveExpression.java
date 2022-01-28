@@ -15,12 +15,12 @@ public record RetrieveExpression(String resourceType, Expression terminology) im
         return new RetrieveExpression(resourceType, terminology);
     }
 
-    public String getResourceType() {
-        return resourceType;
-    }
-
     @Override
     public String print(PrintContext printContext) {
         return "[%s: %s]".formatted(resourceType, terminology.print(printContext));
+    }
+
+    public AliasExpression alias() {
+        return AliasExpression.of(resourceType.substring(0, 1));
     }
 }

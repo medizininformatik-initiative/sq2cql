@@ -15,13 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class TermCodeNodeTest {
 
-    public static final TermCode ROOT = TermCode.of("foo", "root", "root");
-    public static final TermCode C1 = TermCode.of("foo", "c1", "c1");
-    public static final TermCode C2 = TermCode.of("foo", "c2", "c2");
-    public static final TermCode C11 = TermCode.of("foo", "c11", "c11");
-    public static final TermCode C12 = TermCode.of("foo", "c12", "c12");
-    public static final TermCode C111 = TermCode.of("foo", "c111", "c111");
-    public static final TermCode C112 = TermCode.of("foo", "c112", "c112");
+    static final TermCode ROOT = TermCode.of("foo", "root", "root");
+    static final TermCode C1 = TermCode.of("foo", "c1", "c1");
+    static final TermCode C2 = TermCode.of("foo", "c2", "c2");
+    static final TermCode C11 = TermCode.of("foo", "c11", "c11");
+    static final TermCode C12 = TermCode.of("foo", "c12", "c12");
+    static final TermCode C111 = TermCode.of("foo", "c111", "c111");
+    static final TermCode C112 = TermCode.of("foo", "c112", "c112");
 
     @Test
     void noChildren() {

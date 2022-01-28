@@ -1,20 +1,17 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
+import de.numcodex.sq2cql.Lists;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.AliasExpression;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.ComparatorExpression;
-import de.numcodex.sq2cql.model.cql.ExistsExpression;
 import de.numcodex.sq2cql.model.cql.Expression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.QuantityExpression;
-import de.numcodex.sq2cql.model.cql.QueryExpression;
 import de.numcodex.sq2cql.model.cql.SourceClause;
 import de.numcodex.sq2cql.model.cql.TypeExpression;
-import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,23 +31,27 @@ public final class NumericCriterion extends AbstractCriterion {
     private final BigDecimal value;
     private final String unit;
 
-    private NumericCriterion(Concept concept, Comparator comparator, BigDecimal value, String unit) {
-        super(concept, List.of());
-        this.value = requireNonNull(value);
-        this.comparator = requireNonNull(comparator);
+    private NumericCriterion(Concept concept, List<AttributeFilter> attributeFilters, Comparator comparator,
+                             BigDecimal value, String unit) {
+        super(concept, attributeFilters);
+        this.value = value;
+        this.comparator = comparator;
         this.unit = unit;
     }
 
     /**
      * Returns a {@code NumericCriterion}.
      *
-     * @param concept    the concept the criterion represents
-     * @param comparator the comparator that should be used in the value comparison
-     * @param value      the value that should be used in the value comparison
+     * @param concept          the concept the criterion represents
+     * @param comparator       the comparator that should be used in the value comparison
+     * @param value            the value that should be used in the value comparison
+     * @param attributeFilters additional filters on particular attributes
      * @return the {@code NumericCriterion}
      */
-    public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value) {
-        return new NumericCriterion(concept, comparator, value, null);
+    public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value,
+                                      AttributeFilter... attributeFilters) {
+        return new NumericCriterion(concept, List.of(attributeFilters), requireNonNull(comparator),
+                requireNonNull(value), null);
     }
 
     /**
@@ -63,7 +64,8 @@ public final class NumericCriterion extends AbstractCriterion {
      * @return the {@code NumericCriterion}
      */
     public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value, String unit) {
-        return new NumericCriterion(concept, comparator, value, requireNonNull(unit));
+        return new NumericCriterion(concept, List.of(), requireNonNull(comparator), requireNonNull(value),
+                requireNonNull(unit));
     }
 
     public Comparator getComparator() {
@@ -96,14 +98,20 @@ public final class NumericCriterion extends AbstractCriterion {
     }
 
     private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
-        return retrieveExpr(mappingContext, termCode).map(retrieveExpr -> {
-            var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
+        return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
+            var alias = retrieveExpr.alias();
             var sourceClause = SourceClause.of(retrieveExpr, alias);
             var mapping = mappingContext.findMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
             var castExpr = TypeExpression.of(InvocationExpression.of(alias, mapping.valueFhirPath()), "Quantity");
-            var whereExpression = ComparatorExpression.of(castExpr, comparator, quantityExpression(value, unit));
-            var queryExpr = QueryExpression.of(sourceClause, WhereClause.of(whereExpression));
-            return ExistsExpression.of(queryExpr);
+            var valueExpr = ComparatorExpression.of(castExpr, comparator, quantityExpression(value, unit));
+            var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));
+            if (modifiers.isEmpty()) {
+                return Container.of(existsExpr(sourceClause, valueExpr));
+            } else {
+                var modifiersExpr = modifiersExpr(modifiers, mappingContext, alias);
+                return Container.AND.apply(Container.of(valueExpr), modifiersExpr)
+                        .map(expr -> existsExpr(sourceClause, expr));
+            }
         });
     }
 

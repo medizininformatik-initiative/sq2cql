@@ -37,11 +37,16 @@ public interface Criterion {
     @JsonCreator
     static Criterion create(@JsonProperty("termCodes") List<TermCode> termCodes,
                             @JsonProperty("valueFilter") ObjectNode valueFilter,
-                            @JsonProperty("timeRestriction") ObjectNode timeRestriction) {
+                            @JsonProperty("timeRestriction") ObjectNode timeRestriction,
+                            @JsonProperty("attributeFilters") List<ObjectNode> attributeFilters) {
         var concept = Concept.of(requireNonNull(termCodes, "missing JSON property: termCodes"));
 
+        var attributes = (attributeFilters == null ? List.<ObjectNode>of() : attributeFilters).stream()
+                .map(AttributeFilter::fromJsonNode)
+                .toArray(AttributeFilter[]::new);
+
         if (valueFilter == null) {
-            return ConceptCriterion.of(concept);
+            return ConceptCriterion.of(concept, attributes);
         }
 
         var type = valueFilter.get("type").asText();
@@ -71,7 +76,7 @@ public interface Criterion {
                 throw new IllegalArgumentException("Missing `selectedConcepts` key in concept criterion.");
             }
             return ValueSetCriterion.of(concept, StreamSupport.stream(selectedConcepts.spliterator(), false)
-                    .map(TermCode::fromJsonNode).toArray(TermCode[]::new));
+                    .map(TermCode::fromJsonNode).toList(), attributes);
         }
         throw new IllegalArgumentException("unknown valueFilter type: " + type);
     }
