@@ -2,20 +2,18 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class BetweenExpression implements BooleanExpression {
+public record BetweenExpression(Expression value,
+                                Expression lowerBound,
+                                Expression upperBound) implements BooleanExpression {
 
     public static final int PRECEDENCE = 10;
 
-    private final Expression value;
-    private final Expression lowerBound;
-    private final Expression upperBound;
-
-    private BetweenExpression(Expression value, Expression lowerBound, Expression upperBound) {
-        this.value = Objects.requireNonNull(value);
-        this.lowerBound = Objects.requireNonNull(lowerBound);
-        this.upperBound = Objects.requireNonNull(upperBound);
+    public BetweenExpression {
+        requireNonNull(value);
+        requireNonNull(lowerBound);
+        requireNonNull(upperBound);
     }
 
     public static BetweenExpression of(Expression value, Expression lowerBound, Expression upperBound) {

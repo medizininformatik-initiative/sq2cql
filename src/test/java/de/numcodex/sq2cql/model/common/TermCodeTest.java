@@ -16,15 +16,15 @@ class TermCodeTest {
 
         var termCode = mapper.readValue("""
                 {
-                  "system": "system-143705", 
+                  "system": "system-143705",
                   "code": "code-143708",
                   "display": "display-143716"
                 }
                 """, TermCode.class);
 
-        assertEquals("system-143705", termCode.getSystem());
-        assertEquals("code-143708", termCode.getCode());
-        assertEquals("display-143716", termCode.getDisplay());
+        assertEquals("system-143705", termCode.system());
+        assertEquals("code-143708", termCode.code());
+        assertEquals("display-143716", termCode.display());
     }
 
     @Test
@@ -33,15 +33,15 @@ class TermCodeTest {
 
         var termCode = mapper.readValue("""
                 {
-                  "system": "system-143705", 
+                  "system": "system-143705",
                   "code": "code-143708",
                   "display": "display-143716",
                   "foo-144401": "bar-144411"
                 }
                 """, TermCode.class);
 
-        assertEquals("system-143705", termCode.getSystem());
-        assertEquals("code-143708", termCode.getCode());
-        assertEquals("display-143716", termCode.getDisplay());
+        assertEquals("system-143705", termCode.system());
+        assertEquals("code-143708", termCode.code());
+        assertEquals("display-143716", termCode.display());
     }
 }

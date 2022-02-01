@@ -25,9 +25,9 @@ class TermCodeNodeTest {
 
     @Test
     void noChildren() {
-        var node = TermCodeNode.of();
+        var node = TermCodeNode.of(ROOT);
 
-        assertTrue(node.getChildren().isEmpty());
+        assertTrue(node.children().isEmpty());
     }
 
     @Test
@@ -75,7 +75,7 @@ class TermCodeNodeTest {
                 }
                 """, TermCodeNode.class);
 
-        assertEquals("system-143705", conceptNode.getTermCode().getSystem());
+        assertEquals("system-143705", conceptNode.termCode().system());
     }
 
     @Test
@@ -93,7 +93,7 @@ class TermCodeNodeTest {
                 }
                 """, TermCodeNode.class);
 
-        assertEquals("system-143705", conceptNode.getTermCode().getSystem());
+        assertEquals("system-143705", conceptNode.termCode().system());
     }
 
     @Test
@@ -121,8 +121,8 @@ class TermCodeNodeTest {
                 }
                 """, TermCodeNode.class);
 
-        assertEquals("system-143705", conceptNode.getTermCode().getSystem());
-        assertEquals("child-1-system-155856", conceptNode.getChildren().get(0).getTermCode().getSystem());
-        assertEquals("child-2-system-155958", conceptNode.getChildren().get(1).getTermCode().getSystem());
+        assertEquals("system-143705", conceptNode.termCode().system());
+        assertEquals("child-1-system-155856", conceptNode.children().get(0).termCode().system());
+        assertEquals("child-2-system-155958", conceptNode.children().get(1).termCode().system());
     }
 }

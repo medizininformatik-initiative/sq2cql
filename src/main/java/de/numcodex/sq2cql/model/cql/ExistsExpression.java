@@ -2,16 +2,14 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class ExistsExpression implements BooleanExpression {
+public record ExistsExpression(Expression expression) implements BooleanExpression {
 
     public static final int PRECEDENCE = 11;
 
-    private final Expression expression;
-
-    private ExistsExpression(Expression expression) {
-        this.expression = Objects.requireNonNull(expression);
+    public ExistsExpression {
+        requireNonNull(expression);
     }
 
     public static ExistsExpression of(Expression expression) {

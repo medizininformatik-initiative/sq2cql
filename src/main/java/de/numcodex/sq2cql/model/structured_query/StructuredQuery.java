@@ -5,25 +5,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Alexander Kiel
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class StructuredQuery {
+public record StructuredQuery(List<List<Criterion>> inclusionCriteria, List<List<Criterion>> exclusionCriteria) {
 
-    private final List<List<Criterion>> inclusionCriteria;
-    private final List<List<Criterion>> exclusionCriteria;
-
-    private StructuredQuery(List<List<Criterion>> inclusionCriteria, List<List<Criterion>> exclusionCriteria) {
-        this.inclusionCriteria = inclusionCriteria;
-        this.exclusionCriteria = exclusionCriteria;
+    public StructuredQuery {
+        inclusionCriteria = inclusionCriteria.stream().map(List::copyOf).toList();
+        exclusionCriteria = exclusionCriteria.stream().map(List::copyOf).toList();
     }
 
     public static StructuredQuery of(List<List<Criterion>> inclusionCriteria) {
-        return new StructuredQuery(inclusionCriteria.stream().map(List::copyOf).toList(),
-                List.of(List.of()));
+        return new StructuredQuery(inclusionCriteria, List.of(List.of()));
     }
 
     @JsonCreator
@@ -32,15 +27,7 @@ public final class StructuredQuery {
         if (inclusionCriteria.isEmpty() || inclusionCriteria.stream().allMatch(List::isEmpty)) {
             throw new IllegalArgumentException("empty inclusion criteria");
         }
-        return new StructuredQuery(inclusionCriteria.stream().map(List::copyOf).toList(),
-                exclusionCriteria == null ? List.of(List.of()) : exclusionCriteria.stream().map(List::copyOf).toList());
-    }
-
-    public List<List<Criterion>> getInclusionCriteria() {
-        return inclusionCriteria;
-    }
-
-    public List<List<Criterion>> getExclusionCriteria() {
-        return exclusionCriteria;
+        return new StructuredQuery(inclusionCriteria,
+                exclusionCriteria == null ? List.of(List.of()) : exclusionCriteria);
     }
 }

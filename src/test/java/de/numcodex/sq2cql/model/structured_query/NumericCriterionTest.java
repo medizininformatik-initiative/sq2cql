@@ -39,7 +39,7 @@ class NumericCriterionTest {
             PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
             SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value"),
             OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
-    ), TermCodeNode.of(), CODE_SYSTEM_ALIASES);
+    ), null, CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
     public static final CodeSystemDefinition ECRF_CODE_SYSTEM_DEF = CodeSystemDefinition.of("ecrf", "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes");

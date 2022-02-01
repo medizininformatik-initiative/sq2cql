@@ -2,17 +2,15 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author Alexander Kiel
  */
-public final class AliasExpression implements Expression {
+public record AliasExpression(String identifier) implements Expression {
 
-    private final String identifier;
-
-    private AliasExpression(String identifier) {
-        this.identifier = Objects.requireNonNull(identifier);
+    public AliasExpression {
+        requireNonNull(identifier);
     }
 
     public static AliasExpression of(String identifier) {

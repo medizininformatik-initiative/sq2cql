@@ -2,20 +2,15 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class MembershipExpression implements BooleanExpression {
+public record MembershipExpression(Expression a, String op, Expression b) implements BooleanExpression {
 
     public static final int PRECEDENCE = 5;
 
-    private final Expression a;
-    private final String op;
-    private final Expression b;
-
-    private MembershipExpression(Expression a, String op, Expression b) {
-        this.a = Objects.requireNonNull(a);
-        this.op = op;
-        this.b = Objects.requireNonNull(b);
+    public MembershipExpression {
+        requireNonNull(a);
+        requireNonNull(b);
     }
 
     public static MembershipExpression contains(Expression a, Expression b) {

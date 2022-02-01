@@ -4,6 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static de.numcodex.sq2cql.model.cql.BooleanExpression.TRUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,7 +29,7 @@ class LibraryTest {
 
     @Test
     void print_OnExpressionDefinition() {
-        var cql = Library.of(List.of(), List.of(ExpressionDefinition.of("InInitialPopulation", TRUE)))
+        var cql = Library.of(Set.of(), List.of(ExpressionDefinition.of("InInitialPopulation", TRUE)))
                 .print(PrintContext.ZERO);
 
         assertEquals("""

@@ -2,14 +2,12 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class WhereClause {
+public record WhereClause(Expression expression) {
 
-    private final Expression expression;
-
-    private WhereClause(Expression expression) {
-        this.expression = Objects.requireNonNull(expression);
+    public WhereClause {
+        requireNonNull(expression);
     }
 
     public static WhereClause of(Expression expression) {

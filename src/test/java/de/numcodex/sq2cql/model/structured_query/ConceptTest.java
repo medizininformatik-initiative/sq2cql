@@ -11,6 +11,11 @@ class ConceptTest {
     public static final TermCode C2 = TermCode.of("foo", "c2", "c2-d");
 
     @Test
+    void constructor_Null() {
+        assertThrows(NullPointerException.class, () -> new Concept(null));
+    }
+
+    @Test
     void format_WithOneTermCode() {
         assertEquals("(system: foo, code: c1, display: c1-d)", "%s".formatted(Concept.of(C1)));
     }

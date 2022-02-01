@@ -33,7 +33,7 @@ class RangeCriterionTest {
     public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
             PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
             OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
-    ), TermCodeNode.of(), CODE_SYSTEM_ALIASES);
+    ), null, CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
     public static final CodeSystemDefinition FOO_CODE_SYSTEM_DEF = CodeSystemDefinition.of("foo", "foo");

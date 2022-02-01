@@ -66,7 +66,7 @@ public final class ConceptCriterion extends AbstractCriterion {
     private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
         var mapping = mappingContext.getMapping(termCode)
                 .orElseThrow(() -> new MappingNotFoundException(termCode));
-        var modifiers = Lists.concat(mapping.getFixedCriteria(), this.modifiers);
+        var modifiers = Lists.concat(mapping.fixedCriteria(), this.modifiers);
         if (modifiers.isEmpty()) {
             return retrieveExpr(mappingContext, termCode).map(ExistsExpression::of);
         } else {

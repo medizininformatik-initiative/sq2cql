@@ -14,8 +14,6 @@ class QuantityExpressionTest {
 
     @Test
     void print_WithoutUnit() {
-        var cql = QuantityExpression.of(BigDecimal.ONE).print(PrintContext.ZERO);
-
-        assertEquals("1", cql);
+        assertEquals("1", QuantityExpression.of(BigDecimal.ONE).print(PrintContext.ZERO));
     }
 }

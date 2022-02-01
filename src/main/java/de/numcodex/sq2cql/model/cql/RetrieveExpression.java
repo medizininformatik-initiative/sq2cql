@@ -2,16 +2,13 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
-public final class RetrieveExpression implements Expression {
+public record RetrieveExpression(String resourceType, Expression terminology) implements Expression {
 
-    private final String resourceType;
-    private final Expression terminology;
-
-    private RetrieveExpression(String resourceType, Expression terminology) {
-        this.resourceType = Objects.requireNonNull(resourceType);
-        this.terminology = Objects.requireNonNull(terminology);
+    public RetrieveExpression {
+        requireNonNull(resourceType);
+        requireNonNull(terminology);
     }
 
     public static RetrieveExpression of(String resourceType, Expression terminology) {

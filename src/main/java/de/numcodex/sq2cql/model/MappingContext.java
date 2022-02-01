@@ -4,47 +4,50 @@ import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.model.structured_query.Concept;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * @author Alexander Kiel
  */
-public final class MappingContext {
+public record MappingContext(Map<TermCode, Mapping> mappings,
+                             TermCodeNode conceptTree,
+                             Map<String, String> codeSystemAliases) {
 
-    private final Map<TermCode, Mapping> mappings;
-    private final TermCodeNode conceptTree;
-    private final Map<String, String> codeSystemAliases;
-
-    private MappingContext(Map<TermCode, Mapping> mappings, TermCodeNode conceptTree,
-                           Map<String, String> codeSystemAliases) {
-        this.mappings = Objects.requireNonNull(mappings);
-        this.conceptTree = Objects.requireNonNull(conceptTree);
-        this.codeSystemAliases = Objects.requireNonNull(codeSystemAliases);
+    public MappingContext {
+        mappings = Map.copyOf(mappings);
+        codeSystemAliases = Map.copyOf(codeSystemAliases);
     }
 
     public static MappingContext of() {
-        return new MappingContext(Map.of(), TermCodeNode.of(), Map.of());
+        return new MappingContext(Map.of(), null, Map.of());
     }
 
     public static MappingContext of(Map<TermCode, Mapping> mappings, TermCodeNode conceptTree,
                                     Map<String, String> codeSystemAliases) {
-        return new MappingContext(Map.copyOf(mappings), conceptTree, Map.copyOf(codeSystemAliases));
+        return new MappingContext(mappings, conceptTree, codeSystemAliases);
     }
 
     public Optional<Mapping> getMapping(TermCode concept) {
-        return Optional.ofNullable(mappings.get(Objects.requireNonNull(concept)));
+        return Optional.ofNullable(mappings.get(requireNonNull(concept)));
     }
 
     public Stream<TermCode> expandConcept(Concept concept) {
-        var expandedCodes = concept.termCodes().stream().flatMap(conceptTree::expand).toList();
+        var expandedCodes = conceptTree == null ? List.<TermCode>of() : expandCodes(concept);
         return (expandedCodes.isEmpty() ? concept.termCodes() : expandedCodes).stream().filter(mappings::containsKey);
     }
 
+    private List<TermCode> expandCodes(Concept concept) {
+        return concept.termCodes().stream().flatMap(conceptTree::expand).toList();
+    }
+
     public CodeSystemDefinition codeSystemDefinition(String system) {
-        String name = codeSystemAliases.get(Objects.requireNonNull(system));
+        String name = codeSystemAliases.get(requireNonNull(system));
         if (name == null) {
             throw new IllegalStateException("code system alias for `%s` not found".formatted(system));
         }

@@ -5,11 +5,12 @@ import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.model.cql.OrExpression;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A container holds an expression together with the code system definitions it uses.
@@ -22,9 +23,11 @@ import java.util.function.Function;
  */
 public final class Container<T> {
 
-    private static final Container<?> EMPTY = new Container<>(null, Set.of());
     public static final BinaryOperator<Container<BooleanExpression>> AND = combiner(AndExpression::of);
     public static final BinaryOperator<Container<BooleanExpression>> OR = combiner(OrExpression::of);
+
+    private static final Container<?> EMPTY = new Container<>(null, Set.of());
+
     private final T expression;
     private final Set<CodeSystemDefinition> codeSystemDefinitions;
 
@@ -57,7 +60,7 @@ public final class Container<T> {
      * @throws NullPointerException if {@code expression} is null
      */
     public static <T> Container<T> of(T expression, CodeSystemDefinition... codeSystemDefinitions) {
-        return new Container<>(Objects.requireNonNull(expression), Set.of(codeSystemDefinitions));
+        return new Container<>(requireNonNull(expression), Set.of(codeSystemDefinitions));
     }
 
     /**
@@ -74,7 +77,6 @@ public final class Container<T> {
      * @throws NullPointerException if {@code combiner} is null
      */
     public static <T> BinaryOperator<Container<T>> combiner(BinaryOperator<T> combiner) {
-        Objects.requireNonNull(combiner);
         return (a, b) -> a == EMPTY
                 ? b : b == EMPTY ? a : new Container<>(combiner.apply(a.expression, b.expression),
                 Sets.union(a.codeSystemDefinitions, b.codeSystemDefinitions));
@@ -108,13 +110,11 @@ public final class Container<T> {
     }
 
     public <U> Container<U> map(Function<? super T, ? extends U> mapper) {
-        Objects.requireNonNull(mapper);
-        return isEmpty() ? empty() : new Container<>(Objects.requireNonNull(mapper.apply(expression)),
+        return isEmpty() ? empty() : new Container<>(requireNonNull(mapper.apply(expression)),
                 codeSystemDefinitions);
     }
 
     public <U> Container<U> flatMap(Function<? super T, ? extends Container<? extends U>> mapper) {
-        Objects.requireNonNull(mapper);
         if (isEmpty()) {
             return empty();
         }
@@ -123,7 +123,7 @@ public final class Container<T> {
             return empty();
         }
         assert container.getExpression().isPresent();
-        return new Container<>(Objects.requireNonNull(container.getExpression().get()),
+        return new Container<>(requireNonNull(container.getExpression().get()),
                 Sets.union(codeSystemDefinitions, container.getCodeSystemDefinitions()));
     }
 }

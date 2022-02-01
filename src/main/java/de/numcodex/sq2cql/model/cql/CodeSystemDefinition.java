@@ -2,29 +2,24 @@ package de.numcodex.sq2cql.model.cql;
 
 import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * A definition of a code system identifier.
  * <p>
- * Instances are immutable and implement {@code equals} and {@code hashCode} based on {@link #getName()} name}.
+ * Instances are immutable and implement {@code equals} and {@code hashCode} based on {@link #name()} name}.
  *
  * @author Alexander Kiel
  */
-public final class CodeSystemDefinition {
+public record CodeSystemDefinition(String name, String system) {
 
-    private final String name;
-    private final String system;
-
-    private CodeSystemDefinition(String name, String system) {
-        this.name = Objects.requireNonNull(name);
-        this.system = Objects.requireNonNull(system);
+    public CodeSystemDefinition {
+        requireNonNull(name);
+        requireNonNull(system);
     }
 
     public static CodeSystemDefinition of(String name, String system) {
         return new CodeSystemDefinition(name, system);
-    }
-
-    public String getName() {
-        return name;
     }
 
     public String print() {

@@ -22,8 +22,7 @@ class CodingModifierTest {
     public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status");
 
-    public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(), TermCodeNode.of(),
-            CODE_SYSTEM_ALIASES);
+    public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(), null, CODE_SYSTEM_ALIASES);
 
     @Test
     void expression() {

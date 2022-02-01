@@ -40,7 +40,7 @@ class StructuredQueryTest {
                 """, StructuredQuery.class);
 
         assertEquals(Concept.of(TC_1),
-                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
+                ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
     }
 
     @Test
@@ -59,7 +59,7 @@ class StructuredQueryTest {
                 """, StructuredQuery.class);
 
         assertEquals(Concept.of(TC_1),
-                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
+                ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
     }
 
     @Test
@@ -83,9 +83,9 @@ class StructuredQueryTest {
                 """, StructuredQuery.class);
 
         assertEquals(Concept.of(TC_1),
-                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
+                ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
         assertEquals(Concept.of(TC_2),
-                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(1).get(0)).getConcept());
+                ((ConceptCriterion) structuredQuery.inclusionCriteria().get(1).get(0)).getConcept());
     }
 
     @Test
@@ -109,9 +109,9 @@ class StructuredQueryTest {
                 """, StructuredQuery.class);
 
         assertEquals(Concept.of(TC_1),
-                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
+                ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
         assertEquals(Concept.of(TC_2),
-                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(1)).getConcept());
+                ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(1)).getConcept());
     }
 
     @Test
@@ -135,8 +135,8 @@ class StructuredQueryTest {
                 """, StructuredQuery.class);
 
         assertEquals(Concept.of(TC_1),
-                ((ConceptCriterion) structuredQuery.getInclusionCriteria().get(0).get(0)).getConcept());
+                ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
         assertEquals(Concept.of(TC_2),
-                ((ConceptCriterion) structuredQuery.getExclusionCriteria().get(0).get(0)).getConcept());
+                ((ConceptCriterion) structuredQuery.exclusionCriteria().get(0).get(0)).getConcept());
     }
 }

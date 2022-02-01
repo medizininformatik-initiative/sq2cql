@@ -6,25 +6,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Objects;
-import java.util.StringJoiner;
+
+import static java.util.Objects.requireNonNull;
 
 /**
- * A terminology code coding a concept.
+ * A terminology code, coding a concept.
  * <p>
- * Instances are immutable and implement {@code equals} and {@code hashCode} based on {@link #getSystem() system} and
- * {@link #getCode() code}.
+ * Instances are immutable and implement {@code equals} and {@code hashCode} based on {@link #system() system} and
+ * {@link #code() code}.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class TermCode {
+public record TermCode(String system, String code, String display) {
 
-    private final String system;
-    private final String code;
-    private final String display;
-
-    private TermCode(String system, String code, String display) {
-        this.system = Objects.requireNonNull(system);
-        this.code = Objects.requireNonNull(code);
-        this.display = Objects.requireNonNull(display);
+    public TermCode {
+        requireNonNull(system);
+        requireNonNull(code);
+        requireNonNull(display);
     }
 
     /**
@@ -32,7 +29,7 @@ public final class TermCode {
      *
      * @param system  the terminology to use (mostly represented by an URL)
      * @param code    the code within the terminology
-     * @param display a human readable string of the concept coded
+     * @param display a human-readable string of the concept coded
      * @return the terminology code
      */
     @JsonCreator
@@ -43,18 +40,6 @@ public final class TermCode {
 
     public static TermCode fromJsonNode(JsonNode node) {
         return TermCode.of(node.get("system").asText(), node.get("code").asText(), node.get("display").asText());
-    }
-
-    public String getSystem() {
-        return system;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getDisplay() {
-        return display;
     }
 
     @Override
@@ -68,14 +53,5 @@ public final class TermCode {
     @Override
     public int hashCode() {
         return Objects.hash(system, code);
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", TermCode.class.getSimpleName() + "[", "]")
-                .add("system='" + system + "'")
-                .add("code='" + code + "'")
-                .add("display='" + display + "'")
-                .toString();
     }
 }
