@@ -30,6 +30,9 @@ class ValueSetCriterionTest {
     public static final TermCode FEMALE = TermCode.of("http://hl7.org/fhir/administrative-gender", "female", "Female");
     public static final TermCode FINDING = TermCode.of("http://snomed.info/sct", "404684003", "Clinical finding (finding)");
     public static final TermCode SEVERE = TermCode.of("http://snomed.info/sct", "24484000", "Severe (severity modifier)");
+    public static final TermCode TNM_C = TermCode.of("http://loinc.org", "21908-9", "Stage group.clinical Cancer");
+    public static final TermCode TNM_P = TermCode.of("http://loinc.org", "21902-2", "Stage group.pathology Cancer");
+    public static final TermCode LA3649_6 = TermCode.of("http://loinc.org", "LA3649-6", "Stage IVB");
 
     public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
@@ -39,7 +42,9 @@ class ValueSetCriterionTest {
     public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
             COVID, Mapping.of(COVID, "Observation", "value"),
             SEX, Mapping.of(SEX, "Observation", "value"),
-            FINDING, Mapping.of(FINDING, "Condition", "severity")
+            FINDING, Mapping.of(FINDING, "Condition", "severity"),
+            TNM_C, Mapping.of(TNM_C, "Observation", "value"),
+            TNM_P, Mapping.of(TNM_P, "Observation", "value")
     ), null, CODE_SYSTEM_ALIASES);
 
     public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc",
@@ -83,12 +88,12 @@ class ValueSetCriterionTest {
     }
 
     @Test
-    void toCql_NoConcept() {
+    void toCql_WithNoConcept() {
         assertThrows(IllegalArgumentException.class, () -> ValueSetCriterion.of(Concept.of(COVID)));
     }
 
     @Test
-    void toCql_OneConcept() {
+    void toCql_WithOneConcept() {
         var criterion = ValueSetCriterion.of(Concept.of(COVID), POSITIVE);
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
@@ -101,7 +106,22 @@ class ValueSetCriterionTest {
     }
 
     @Test
-    void toCql_TwoConcepts() {
+    void toCql_WithOneConceptAndMultipleTermCodes() {
+        var criterion = ValueSetCriterion.of(Concept.of(TNM_C, TNM_P), LA3649_6);
+
+        Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
+
+        assertEquals("""
+                        exists from [Observation: Code '21908-9' from loinc] O
+                          where O.value.coding contains Code 'LA3649-6' from loinc or
+                        exists from [Observation: Code '21902-2' from loinc] O
+                          where O.value.coding contains Code 'LA3649-6' from loinc""",
+                container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
+        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_WithTwoConcepts() {
         var criterion = ValueSetCriterion.of(Concept.of(SEX), MALE, FEMALE);
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
@@ -115,7 +135,7 @@ class ValueSetCriterionTest {
     }
 
     @Test
-    void toCql_ConditionSeverity() {
+    void toCql_WithConditionSeverity() {
         var criterion = ValueSetCriterion.of(Concept.of(FINDING), SEVERE);
 
         Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
