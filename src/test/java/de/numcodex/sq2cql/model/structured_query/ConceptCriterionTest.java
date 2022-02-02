@@ -100,7 +100,7 @@ class ConceptCriterionTest {
 
     @Test
     void toCql() {
-        Criterion criterion = ConceptCriterion.of(Concept.of(C71));
+        var criterion = ConceptCriterion.of(Concept.of(C71));
         var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")), TermCodeNode.of(C71),
                 CODE_SYSTEM_ALIASES);
 
@@ -112,8 +112,23 @@ class ConceptCriterionTest {
     }
 
     @Test
+    void toCql_WithMultipleTermCodes() {
+        var criterion = ConceptCriterion.of(Concept.of(C71_1, C71_2));
+        var mappings = Map.of(C71_1, Mapping.of(C71_1, "Condition"), C71_2, Mapping.of(C71_2, "Condition"));
+        var mappingContext = MappingContext.of(mappings, TermCodeNode.of(C71), CODE_SYSTEM_ALIASES);
+
+        Container<BooleanExpression> container = criterion.toCql(mappingContext);
+
+        assertEquals("""
+                exists [Condition: Code 'C71.1' from icd10] or
+                exists [Condition: Code 'C71.2' from icd10]""", container.getExpression()
+                .map(e -> e.print(PrintContext.ZERO)).orElse(""));
+        assertEquals(Set.of(ICD10_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
     void toCql_WithModifier() {
-        Criterion criterion = ConceptCriterion.of(Concept.of(C71), CodingModifier.of("verificationStatus", CONFIRMED));
+        var criterion = ConceptCriterion.of(Concept.of(C71), CodingModifier.of("verificationStatus", CONFIRMED));
         var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")), TermCodeNode.of(C71),
                 CODE_SYSTEM_ALIASES);
 
@@ -128,7 +143,7 @@ class ConceptCriterionTest {
 
     @Test
     void toCql_FixedCriteria_Code() {
-        Criterion criterion = ConceptCriterion.of(Concept.of(THERAPEUTIC_PROCEDURE));
+        var criterion = ConceptCriterion.of(Concept.of(THERAPEUTIC_PROCEDURE));
         var mappingContext = MappingContext.of(Map.of(THERAPEUTIC_PROCEDURE, Mapping.of(THERAPEUTIC_PROCEDURE,
                         "Procedure", null, CodeModifier.of("status", "completed", "in-progress"))),
                 TermCodeNode.of(THERAPEUTIC_PROCEDURE), CODE_SYSTEM_ALIASES);
@@ -144,7 +159,7 @@ class ConceptCriterionTest {
 
     @Test
     void toCql_FixedCriteria_Coding() {
-        Criterion criterion = ConceptCriterion.of(Concept.of(C71));
+        var criterion = ConceptCriterion.of(Concept.of(C71));
         var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition", null,
                 CodingModifier.of("verificationStatus", CONFIRMED))), TermCodeNode.of(C71), CODE_SYSTEM_ALIASES);
 
@@ -159,7 +174,7 @@ class ConceptCriterionTest {
 
     @Test
     void toCql_Expanded_WithModifier() {
-        Criterion criterion = ConceptCriterion.of(Concept.of(C71), CodingModifier.of("verificationStatus", CONFIRMED));
+        var criterion = ConceptCriterion.of(Concept.of(C71), CodingModifier.of("verificationStatus", CONFIRMED));
         var mappingContext = MappingContext.of(Map.of(C71_1, Mapping.of(C71_1, "Condition"), C71_2, Mapping.of(C71_2,
                 "Condition")), TermCodeNode.of(C71, TermCodeNode.of(C71_1), TermCodeNode.of(C71_2)), CODE_SYSTEM_ALIASES);
 
