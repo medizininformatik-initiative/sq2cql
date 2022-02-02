@@ -4,7 +4,7 @@
 
     <groupId>de.numcodex</groupId>
     <artifactId>sq2cql</artifactId>
-    <version>0.1.13-SNAPSHOT</version>
+    <version>0.1.13</version>
 
     <name>sq2cql</name>
 
@@ -14,7 +14,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/num-codex/codex-sq2cql.git</url>
-        <tag>HEAD</tag>
+        <tag>v0.1.13</tag>
     </scm>
 
     <distributionManagement>
