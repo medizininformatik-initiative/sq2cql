@@ -4,13 +4,10 @@ import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.Lists;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.AliasExpression;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.model.cql.ExistsExpression;
-import de.numcodex.sq2cql.model.cql.QueryExpression;
 import de.numcodex.sq2cql.model.cql.SourceClause;
-import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.util.List;
 
@@ -21,19 +18,19 @@ import java.util.List;
  */
 public final class ConceptCriterion extends AbstractCriterion {
 
-    private ConceptCriterion(Concept concept, List<Modifier> modifiers) {
-        super(concept, modifiers);
+    private ConceptCriterion(Concept concept, List<AttributeFilter> attributeFilters) {
+        super(concept, attributeFilters);
     }
 
     /**
      * Returns a {@code ConceptCriterion}.
      *
-     * @param concept   the concept the criterion represents
-     * @param modifiers modifiers to use in addition to {@code concept}
+     * @param concept          the concept the criterion represents
+     * @param attributeFilters additional filters on particular attributes
      * @return the {@code ConceptCriterion}.
      */
-    public static ConceptCriterion of(Concept concept, Modifier... modifiers) {
-        return new ConceptCriterion(concept, List.of(modifiers));
+    public static ConceptCriterion of(Concept concept, AttributeFilter... attributeFilters) {
+        return new ConceptCriterion(concept, List.of(attributeFilters));
     }
 
     /**
@@ -64,17 +61,15 @@ public final class ConceptCriterion extends AbstractCriterion {
     }
 
     private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
-        var mapping = mappingContext.findMapping(termCode)
-                .orElseThrow(() -> new MappingNotFoundException(termCode));
-        var modifiers = Lists.concat(mapping.fixedCriteria(), this.modifiers);
+        var mapping = mappingContext.findMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
+        var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));
         if (modifiers.isEmpty()) {
             return retrieveExpr(mappingContext, termCode).map(ExistsExpression::of);
         } else {
             return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
-                var alias = AliasExpression.of(retrieveExpr.getResourceType().substring(0, 1));
-                return modifiersExpr(modifiers, mappingContext, alias)
-                        .map(modifiersExpr -> ExistsExpression.of(QueryExpression.of(SourceClause.of(retrieveExpr,
-                                alias), WhereClause.of(modifiersExpr))));
+                var alias = retrieveExpr.alias();
+                var sourceClause = SourceClause.of(retrieveExpr, alias);
+                return modifiersExpr(modifiers, mappingContext, alias).map(expr -> existsExpr(sourceClause, expr));
             });
         }
     }

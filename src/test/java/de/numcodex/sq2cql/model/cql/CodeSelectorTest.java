@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CodeSelectorTest {
 
-    private static final String CODE = "code-191141";
-    private static final String SYSTEM = "system-191157";
+    static final String CODE = "code-191141";
+    static final String SYSTEM = "system-191157";
 
     @Test
     void print() {

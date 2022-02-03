@@ -2,7 +2,6 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;

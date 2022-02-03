@@ -1,19 +1,13 @@
 package de.numcodex.sq2cql;
 
+import de.numcodex.sq2cql.model.cql.Expression;
+
 /**
  * @author Alexander Kiel
  */
-public final class PrintContext {
+public record PrintContext(int indent, int precedence) {
 
     public static final PrintContext ZERO = new PrintContext(0, 0);
-
-    private final int indent;
-    private final int precedence;
-
-    private PrintContext(int indent, int precedence) {
-        this.indent = indent;
-        this.precedence = precedence;
-    }
 
     public String getIndent() {
         return " ".repeat(indent);
@@ -33,5 +27,13 @@ public final class PrintContext {
 
     public PrintContext resetPrecedence() {
         return new PrintContext(indent, 0);
+    }
+
+    public String print(Expression expression) {
+        return expression.print(this);
+    }
+
+    public String print(Container<? extends Expression> container) {
+        return container.getExpression().map(this::print).orElse("");
     }
 }

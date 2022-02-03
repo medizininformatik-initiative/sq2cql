@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 class StructuredQueryTest {
 
-    public static final TermCode TC_1 = TermCode.of("tc", "1", "");
-    public static final TermCode TC_2 = TermCode.of("tc", "2", "");
+    static final TermCode TC_1 = TermCode.of("tc", "1", "");
+    static final TermCode TC_2 = TermCode.of("tc", "2", "");
 
     @Test
     void fromJson_NoInclusionCriteria() {

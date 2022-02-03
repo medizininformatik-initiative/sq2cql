@@ -21,13 +21,12 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Alexander Kiel
  */
+@SuppressWarnings("ClassCanBeRecord")
 public final class Container<T> {
 
+    private static final Container<?> EMPTY = new Container<>(null, Set.of());
     public static final BinaryOperator<Container<BooleanExpression>> AND = combiner(AndExpression::of);
     public static final BinaryOperator<Container<BooleanExpression>> OR = combiner(OrExpression::of);
-
-    private static final Container<?> EMPTY = new Container<>(null, Set.of());
-
     private final T expression;
     private final Set<CodeSystemDefinition> codeSystemDefinitions;
 

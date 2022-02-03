@@ -1,17 +1,16 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.PrintContext;
-import de.numcodex.sq2cql.model.TermCodeNode;
+import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -26,24 +25,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class NumericCriterionTest {
 
-    public static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
-    public static final TermCode SOFA_SCORE = TermCode.of("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "06", "SOFA-Score");
-    public static final TermCode OTHER_VALUE_PATH = TermCode.of("foo", "other-value-path", "");
+    static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
+    static final TermCode SOFA_SCORE = TermCode.of("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "06", "SOFA-Score");
+    static final TermCode OTHER_VALUE_PATH = TermCode.of("foo", "other-value-path", "");
+    static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
+    static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
 
-    public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
+    static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
             "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "ecrf",
             "foo", "foo");
 
-    public static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
+    static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
             PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-            SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value"),
+            SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", List.of(),
+                    List.of(AttributeMapping.of("code", STATUS, "status"))),
             OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
     ), null, CODE_SYSTEM_ALIASES);
 
-    public static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
-    public static final CodeSystemDefinition ECRF_CODE_SYSTEM_DEF = CodeSystemDefinition.of("ecrf", "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes");
-    public static final CodeSystemDefinition FOO_CODE_SYSTEM_DEF = CodeSystemDefinition.of("foo", "foo");
+    static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
+    static final CodeSystemDefinition ECRF_CODE_SYSTEM_DEF = CodeSystemDefinition.of("ecrf", "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes");
+    static final CodeSystemDefinition FOO_CODE_SYSTEM_DEF = CodeSystemDefinition.of("foo", "foo");
 
     @Test
     void fromJson() throws Exception {
@@ -100,40 +102,73 @@ class NumericCriterionTest {
 
     @Test
     void toCql() {
-        Criterion criterion = NumericCriterion.of(Concept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50), "g/dl");
+        var criterion = NumericCriterion.of(Concept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50), "g/dl");
 
-        Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
+        var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
                         exists from [Observation: Code '26515-7' from loinc] O
                           where O.value as Quantity < 50 'g/dl'""",
-                container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
+                PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
 
     @Test
-    void toCql_withoutUnit() {
-        Criterion criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
+    void toCql_WithoutUnit() {
+        var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
 
-        Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
+        var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
                         exists from [Observation: Code '06' from ecrf] O
                           where O.value as Quantity = 6""",
-                container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
+                PrintContext.ZERO.print(container));
         assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
 
     @Test
-    void toCql_otherFhirValuePath() {
-        Criterion criterion = NumericCriterion.of(Concept.of(OTHER_VALUE_PATH), EQUAL, BigDecimal.valueOf(1));
+    void toCql_WithOtherFhirValuePath() {
+        var criterion = NumericCriterion.of(Concept.of(OTHER_VALUE_PATH), EQUAL, BigDecimal.valueOf(1));
 
-        Container<BooleanExpression> container = criterion.toCql(MAPPING_CONTEXT);
+        var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
                         exists from [Observation: Code 'other-value-path' from foo] O
                           where O.other as Quantity = 1""",
-                container.getExpression().map(e -> e.print(PrintContext.ZERO)).orElse(""));
+                PrintContext.ZERO.print(container));
         assertEquals(Set.of(FOO_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_WithStatusAttributeFilter() {
+        var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6),
+                ValueSetAttributeFilter.of(STATUS, FINAL));
+
+        var container = criterion.toCql(MAPPING_CONTEXT);
+
+        assertEquals("""
+                        exists from [Observation: Code '06' from ecrf] O
+                          where O.value as Quantity = 6 and
+                            O.status = 'final'""",
+                PrintContext.ZERO.print(container));
+        assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_WithFixedCriteria() {
+        var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
+        var mappingContext = MappingContext.of(Map.of(
+                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", List.of(CodeModifier.of("status", "final")),
+                        List.of())
+        ), null, CODE_SYSTEM_ALIASES);
+
+        var container = criterion.toCql(mappingContext);
+
+        assertEquals("""
+                        exists from [Observation: Code '06' from ecrf] O
+                          where O.value as Quantity = 6 and
+                            O.status = 'final'""",
+                PrintContext.ZERO.print(container));
+        assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
 }

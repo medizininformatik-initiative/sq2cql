@@ -3,12 +3,13 @@ package de.numcodex.sq2cql.model.structured_query;
 import de.numcodex.sq2cql.model.common.TermCode;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ConceptTest {
 
-    public static final TermCode C1 = TermCode.of("foo", "c1", "c1-d");
-    public static final TermCode C2 = TermCode.of("foo", "c2", "c2-d");
+    static final TermCode C1 = TermCode.of("foo", "c1", "c1-d");
+    static final TermCode C2 = TermCode.of("foo", "c2", "c2-d");
 
     @Test
     void constructor_Null() {

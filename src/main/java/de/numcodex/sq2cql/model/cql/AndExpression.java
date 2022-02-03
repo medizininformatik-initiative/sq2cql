@@ -31,7 +31,7 @@ public record AndExpression(List<BooleanExpression> expressions) implements Bool
     @Override
     public String print(PrintContext printContext) {
         return printContext.parenthesize(PRECEDENCE, expressions.stream()
-                .map(e -> e.print(printContext.withPrecedence(PRECEDENCE)))
+                .map(printContext.withPrecedence(PRECEDENCE)::print)
                 .collect(joining(" and\n" + printContext.getIndent())));
     }
 }

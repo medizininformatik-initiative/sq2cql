@@ -4,9 +4,9 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
-import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.Concept;
 import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.PullPolicy;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -44,12 +44,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SuppressWarnings("NewClassNamingConvention")
 public class EvaluationIT {
 
-    public static final TermCode ROOT = TermCode.of("", "", "");
-    public static final TermCode BLOOD_PRESSURE = TermCode.of("http://loinc.org", "85354-9",
+    static final TermCode ROOT = TermCode.of("", "", "");
+    static final TermCode BLOOD_PRESSURE = TermCode.of("http://loinc.org", "85354-9",
             "Blood pressure panel with all children optional");
-    public static final TermCode DIASTOLIC_BLOOD_PRESSURE = TermCode.of("http://loinc.org", "8462-4",
+    static final TermCode DIASTOLIC_BLOOD_PRESSURE = TermCode.of("http://loinc.org", "8462-4",
             "Diastolic blood pressure");
-    public static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of("http://loinc.org", "loinc");
+    static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of("http://loinc.org", "loinc");
 
     @Container
     private final GenericContainer<?> blaze = new GenericContainer<>(DockerImageName.parse("samply/blaze:0.15"))
@@ -60,6 +60,26 @@ public class EvaluationIT {
 
     private final FhirContext fhirContext = FhirContext.forR4();
     private IGenericClient fhirClient;
+
+    private static String slurp(String name) throws Exception {
+        try (InputStream in = EvaluationIT.class.getResourceAsStream(name)) {
+            if (in == null) {
+                throw new Exception(format("Can't find `%s` in classpath.", name));
+            } else {
+                return new String(in.readAllBytes(), UTF_8);
+            }
+        } catch (IOException e) {
+            throw new Exception(format("error while reading the file `%s` from classpath", name));
+        }
+    }
+
+    private static Bundle createBundle(Library library, Measure measure) {
+        var bundle = new Bundle();
+        bundle.setType(TRANSACTION);
+        bundle.addEntry().setResource(library).getRequest().setMethod(POST).setUrl("Library");
+        bundle.addEntry().setResource(measure).getRequest().setMethod(POST).setUrl("Measure");
+        return bundle;
+    }
 
     @BeforeEach
     public void setUp() {
@@ -100,18 +120,6 @@ public class EvaluationIT {
         assertEquals(1, report.getGroupFirstRep().getPopulationFirstRep().getCount());
     }
 
-    private static String slurp(String name) throws Exception {
-        try (InputStream in = EvaluationIT.class.getResourceAsStream(name)) {
-            if (in == null) {
-                throw new Exception(format("Can't find `%s` in classpath.", name));
-            } else {
-                return new String(in.readAllBytes(), UTF_8);
-            }
-        } catch (IOException e) {
-            throw new Exception(format("error while reading the file `%s` from classpath", name));
-        }
-    }
-
     private <T extends IBaseResource> T parseResource(Class<T> type, String s) {
         var parser = fhirContext.newJsonParser();
         return type.cast(parser.parseResource(s));
@@ -121,13 +129,5 @@ public class EvaluationIT {
         library.getContentFirstRep().setContentType("text/cql");
         library.getContentFirstRep().setData(cql.getBytes(UTF_8));
         return library;
-    }
-
-    private static Bundle createBundle(Library library, Measure measure) {
-        var bundle = new Bundle();
-        bundle.setType(TRANSACTION);
-        bundle.addEntry().setResource(library).getRequest().setMethod(POST).setUrl("Library");
-        bundle.addEntry().setResource(measure).getRequest().setMethod(POST).setUrl("Measure");
-        return bundle;
     }
 }

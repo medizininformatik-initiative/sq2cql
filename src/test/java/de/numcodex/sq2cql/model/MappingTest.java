@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.Optional;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,9 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class MappingTest {
 
-    public static final TermCode TC_1 = TermCode.of("http://loinc.org", "72166-2", "tabacco smoking status");
-    public static final TermCode CONFIRMED = TermCode.of("http://terminology.hl7.org/CodeSystem/condition-ver-status",
+    static final TermCode TC_1 = TermCode.of("http://loinc.org", "72166-2", "tabacco smoking status");
+    static final TermCode CONFIRMED = TermCode.of("http://terminology.hl7.org/CodeSystem/condition-ver-status",
             "confirmed", "Confirmed");
+    private static final TermCode TNM_T = TermCode.of("http://loinc.org", "21899-0", "Primary tumor.pathology Cancer");
 
     @Test
     void fromJson() throws Exception {
@@ -146,5 +147,36 @@ class MappingTest {
         assertEquals(TC_1, mapping.key());
         assertEquals("Observation", mapping.resourceType());
         assertEquals(CodingModifier.of("verificationStatus", CONFIRMED), mapping.fixedCriteria().get(0));
+    }
+
+    @Test
+    void fromJson_WithAttributeMapping() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var mapping = mapper.readValue("""
+                {
+                  "fhirResourceType": "Observation",
+                  "key": {
+                    "system": "http://loinc.org",
+                    "code": "21908-9",
+                    "display": "Stage group.clinical Cancer"
+                  },
+                  "attributeMappings": [
+                    {
+                      "attributeType": "coding",
+                      "attributeKey": {
+                        "system": "http://loinc.org",
+                        "code": "21899-0",
+                        "display": "Primary tumor.pathology Cancer"
+                      },
+                      "attributeFhirPath": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()"
+                    }
+                  ]
+                }
+                """, Mapping.class);
+
+        assertEquals(Map.of(TNM_T, AttributeMapping.of("coding", TNM_T,
+                        "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()")),
+                mapping.attributeMappings());
     }
 }
