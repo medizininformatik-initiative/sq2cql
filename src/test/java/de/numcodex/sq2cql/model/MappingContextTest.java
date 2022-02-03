@@ -7,29 +7,59 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MappingContextTest {
 
-    public static final TermCode C1 = TermCode.of("foo", "c1", "c1-d");
+    static final TermCode C1 = TermCode.of("foo", "c1", "c1-d");
+    static final String CODE_SYSTEM_URL = "url-164919";
+    static final String ALIAS = "alias-164923";
 
     @Test
     void expandConcept_EmptyContext() {
-        assertTrue(MappingContext.of().expandConcept(Concept.of(C1)).toList().isEmpty());
+        var context = MappingContext.of();
+
+        var termCodes = context.expandConcept(Concept.of(C1)).toList();
+
+        assertTrue(termCodes.isEmpty());
     }
 
     @Test
     void expandConcept_EmptyTree() {
-        var mappings = Map.of(C1, Mapping.of(C1, "Observation"));
-        var context = MappingContext.of(mappings, null, Map.of());
+        var context = MappingContext.of(Map.of(C1, Mapping.of(C1, "Observation")), null, Map.of());
 
-        assertEquals(List.of(C1), context.expandConcept(Concept.of(C1)).toList());
+        var termCodes = context.expandConcept(Concept.of(C1)).toList();
+
+        assertEquals(List.of(C1), termCodes);
     }
 
     @Test
     void expandConcept_MissingMapping() {
         var context = MappingContext.of(Map.of(), TermCodeNode.of(C1), Map.of());
 
-        assertTrue(context.expandConcept(Concept.of(C1)).toList().isEmpty());
+        var termCodes = context.expandConcept(Concept.of(C1)).toList();
+
+        assertTrue(termCodes.isEmpty());
+    }
+
+    @Test
+    void codeSystemDefinition_ExistingAlias() {
+        var context = MappingContext.of(Map.of(), null, Map.of(CODE_SYSTEM_URL, ALIAS));
+
+        var definition = context.findCodeSystemDefinition(CODE_SYSTEM_URL);
+
+        assertTrue(definition.isPresent());
+        assertEquals(ALIAS, definition.get().name());
+        assertEquals(CODE_SYSTEM_URL, definition.get().system());
+    }
+
+    @Test
+    void codeSystemDefinition_MissingAlias() {
+        var context = MappingContext.of(Map.of(), null, Map.of(CODE_SYSTEM_URL, ALIAS));
+
+        var definition = context.findCodeSystemDefinition("missing-url-165330");
+
+        assertTrue(definition.isEmpty());
     }
 }

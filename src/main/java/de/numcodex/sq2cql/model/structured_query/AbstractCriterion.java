@@ -34,7 +34,9 @@ public abstract class AbstractCriterion implements Criterion {
      * @return a {@link Container} of the code selector expression together with its used {@link CodeSystemDefinition}
      */
     static Container<CodeSelector> codeSelector(MappingContext mappingContext, TermCode termCode) {
-        var codeSystemDefinition = mappingContext.codeSystemDefinition(termCode.system());
+        var codeSystemDefinition = mappingContext.findCodeSystemDefinition(termCode.system())
+                .orElseThrow(() -> new IllegalStateException("code system alias for `%s` not found"
+                        .formatted(termCode.system())));
         return Container.of(CodeSelector.of(termCode.code(), codeSystemDefinition.name()), codeSystemDefinition);
     }
 
@@ -51,7 +53,8 @@ public abstract class AbstractCriterion implements Criterion {
      */
     static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext, TermCode termCode) {
         return codeSelector(mappingContext, termCode).map(terminology -> {
-            var mapping = mappingContext.getMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
+            var mapping = mappingContext.findMapping(termCode)
+                    .orElseThrow(() -> new MappingNotFoundException(termCode));
             return RetrieveExpression.of(mapping.resourceType(), terminology);
         });
     }
