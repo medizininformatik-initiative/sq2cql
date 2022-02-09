@@ -12,6 +12,7 @@ import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static java.util.Objects.requireNonNull;
@@ -43,6 +44,7 @@ public interface Criterion {
 
         var attributes = (attributeFilters == null ? List.<ObjectNode>of() : attributeFilters).stream()
                 .map(AttributeFilter::fromJsonNode)
+                .flatMap(Optional::stream)
                 .toArray(AttributeFilter[]::new);
 
         if (valueFilter == null) {
@@ -72,8 +74,8 @@ public interface Criterion {
         }
         if ("concept".equals(type)) {
             var selectedConcepts = valueFilter.get("selectedConcepts");
-            if (selectedConcepts == null) {
-                throw new IllegalArgumentException("Missing `selectedConcepts` key in concept criterion.");
+            if (selectedConcepts == null || selectedConcepts.isEmpty()) {
+                throw new IllegalArgumentException("Missing or empty `selectedConcepts` key in concept criterion.");
             }
             return ValueSetCriterion.of(concept, StreamSupport.stream(selectedConcepts.spliterator(), false)
                     .map(TermCode::fromJsonNode).toList(), attributes);

@@ -5,42 +5,58 @@ import com.fasterxml.jackson.databind.JsonNode;
 import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public interface AttributeFilter {
 
-    static AttributeFilter fromJsonNode(JsonNode attributeFilter) {
-        var attributeCode = TermCode.fromJsonNode(attributeFilter.get("attributeCode"));
-        var type = attributeFilter.get("type").asText();
+    Logger logger = LoggerFactory.getLogger(AttributeFilter.class);
+
+    /**
+     * Tries to parse an {@code AttributeFilter}.
+     * <p>
+     * Returns {@link Optional#empty() nothing} if the filter is of type concept and there are no concepts given.
+     *
+     * @param node the JSON representation of the {@code AttributeFilter}
+     * @return either the {@code AttributeFilter} or {@link Optional#empty() nothing} if the {@code AttributeFilter} is empty
+     */
+    static Optional<AttributeFilter> fromJsonNode(JsonNode node) {
+        var attributeCode = TermCode.fromJsonNode(node.get("attributeCode"));
+        var type = node.get("type").asText();
         if ("quantity-comparator".equals(type)) {
-            var comparator = Comparator.fromJson(attributeFilter.get("comparator").asText());
-            var value = attributeFilter.get("value").decimalValue();
-            var unit = attributeFilter.get("unit");
+            var comparator = Comparator.fromJson(node.get("comparator").asText());
+            var value = node.get("value").decimalValue();
+            var unit = node.get("unit");
             if (unit == null) {
-                return NumericAttributeFilter.of(attributeCode, comparator, value);
+                return Optional.of(NumericAttributeFilter.of(attributeCode, comparator, value));
             } else {
-                return NumericAttributeFilter.of(attributeCode, comparator, value, unit.get("code").asText());
+                return Optional.of(NumericAttributeFilter.of(attributeCode, comparator, value, unit.get("code").asText()));
             }
         }
         if ("quantity-range".equals(type)) {
-            var lowerBound = attributeFilter.get("minValue").decimalValue();
-            var upperBound = attributeFilter.get("maxValue").decimalValue();
-            var unit = attributeFilter.get("unit");
+            var lowerBound = node.get("minValue").decimalValue();
+            var upperBound = node.get("maxValue").decimalValue();
+            var unit = node.get("unit");
             if (unit == null) {
-                return RangeAttributeFilter.of(attributeCode, lowerBound, upperBound);
+                return Optional.of(RangeAttributeFilter.of(attributeCode, lowerBound, upperBound));
             } else {
-                return RangeAttributeFilter.of(attributeCode, lowerBound, upperBound, unit.get("code").asText());
+                return Optional.of(RangeAttributeFilter.of(attributeCode, lowerBound, upperBound, unit.get("code").asText()));
             }
         }
         if ("concept".equals(type)) {
-            var selectedConcepts = attributeFilter.get("selectedConcepts");
-            if (selectedConcepts == null) {
-                throw new IllegalArgumentException("Missing `selectedConcepts` key in concept criterion.");
+            var selectedConcepts = node.get("selectedConcepts");
+            if (selectedConcepts == null || selectedConcepts.isEmpty()) {
+                logger.warn("Skip attribute filter with code `{}` because of empty selected concepts.", attributeCode.code());
+                return Optional.empty();
+            } else {
+                return Optional.of(ValueSetAttributeFilter.of(attributeCode,
+                        StreamSupport.stream(selectedConcepts.spliterator(), false)
+                                .map(TermCode::fromJsonNode).toArray(TermCode[]::new)));
             }
-            return ValueSetAttributeFilter.of(attributeCode, StreamSupport.stream(selectedConcepts.spliterator(), false)
-                    .map(TermCode::fromJsonNode).toArray(TermCode[]::new));
         }
         throw new IllegalArgumentException("unknown valueFilter type: " + type);
     }
