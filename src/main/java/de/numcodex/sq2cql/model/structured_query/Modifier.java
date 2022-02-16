@@ -31,7 +31,7 @@ public interface Modifier {
         }
 
         if ("code".equals(type)) {
-            return CodeModifier.of(path, Stream.of(values).map(JsonNode::asText).toArray(String[]::new));
+            return CodeModifier.of(path, Stream.of(values).map(TermCode::fromJsonNode).map(TermCode::code).toArray(String[]::new));
         }
         if ("coding".equals(type)) {
             return CodingModifier.of(path, Stream.of(values).map(TermCode::fromJsonNode).toArray(TermCode[]::new));

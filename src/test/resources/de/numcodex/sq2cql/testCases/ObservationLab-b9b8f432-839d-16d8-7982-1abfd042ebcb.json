@@ -1,0 +1,26 @@
+{
+    "inclusionCriteria": [
+        [
+            {
+                "attributeFilters": [],
+                "termCodes": [
+                    {
+                        "code": "33959-8",
+                        "display": "",
+                        "system": "http://loinc.org"
+                    }
+                ],
+                "valueFilter": {
+                    "comparator": "eq",
+                    "type": "quantity-comparator",
+                    "unit": {
+                        "code": "ng/mL",
+                        "display": "ng/mL"
+                    },
+                    "value": 0.050564
+                }
+            }
+        ]
+    ],
+    "version": "http://to_be_decided.com/draft-1/schema#"
+}

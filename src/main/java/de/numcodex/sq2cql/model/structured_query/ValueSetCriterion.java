@@ -83,6 +83,20 @@ public final class ValueSetCriterion extends AbstractCriterion {
             var alias = retrieveExpr.alias();
             var sourceClause = SourceClause.of(retrieveExpr, alias);
             var mapping = mappingContext.findMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
+
+            //TODO: Add switch case once all values have a valueType
+            if (mapping.valueType() != null && mapping.valueType().equals("concept_coding")) {
+                var codeExpr = InvocationExpression.of(alias, mapping.valueFhirPath());
+                var selectedConceptsExpr = selectedConceptsExpr(mappingContext, codeExpr);
+                var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));
+                if (modifiers.isEmpty()) {
+                    return selectedConceptsExpr.map(expr -> existsExpr(sourceClause, expr));
+                } else {
+                    var modifiersExpr = modifiersExpr(modifiers, mappingContext, alias);
+                    return Container.AND.apply(selectedConceptsExpr, modifiersExpr)
+                        .map(expr -> existsExpr(sourceClause, expr));
+                }
+            }
             var codingExpr = InvocationExpression.of(InvocationExpression.of(alias, mapping.valueFhirPath()), "coding");
             var selectedConceptsExpr = selectedConceptsExpr(mappingContext, codingExpr);
             var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));

@@ -101,9 +101,16 @@ class MappingTest {
                       "type": "code",
                       "searchParameter": "status",
                       "fhirPath": "status",
-                      "value": [
-                        "completed",
-                        "in-progress"
+                      "value": [ {
+                          "code": "completed",
+                          "system": "http://hl7.org/fhir/report-status-codes",
+                          "display": "completed"
+                        },
+                        {
+                          "code": "in-progress",
+                          "system": "http://hl7.org/fhir/report-status-codes",
+                          "display": "in-progress"
+                        }
                       ]
                     }
                   ]

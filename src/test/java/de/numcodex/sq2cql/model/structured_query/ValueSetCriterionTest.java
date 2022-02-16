@@ -42,7 +42,7 @@ class ValueSetCriterionTest {
             "http://hl7.org/fhir/administrative-gender", "gender");
 
     static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
-            COVID, Mapping.of(COVID, "Observation", "value", List.of(),
+            COVID, Mapping.of(COVID, "Observation", "value", null, List.of(),
                     List.of(AttributeMapping.of("code", STATUS, "status"))),
             SEX, Mapping.of(SEX, "Observation", "value"),
             FINDING, Mapping.of(FINDING, "Condition", "severity"),
@@ -332,7 +332,7 @@ class ValueSetCriterionTest {
     void toCql_WithFixedCriteria() {
         var criterion = ValueSetCriterion.of(Concept.of(COVID), List.of(POSITIVE));
         var mappingContext = MappingContext.of(Map.of(
-                COVID, Mapping.of(COVID, "Observation", "value", List.of(CodeModifier.of("status", "final")),
+                COVID, Mapping.of(COVID, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
                         List.of())
         ), null, CODE_SYSTEM_ALIASES);
 

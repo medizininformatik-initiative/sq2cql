@@ -220,8 +220,8 @@ class TranslatorTest {
     @Test
     void toCQL_Test_Task1() {
         var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-                C71_0, Mapping.of(C71_0, "Condition", null, List.of(), List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
-                C71_1, Mapping.of(C71_1, "Condition", null, List.of(), List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
+                C71_0, Mapping.of(C71_0, "Condition", null, null, List.of(), List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
+                C71_1, Mapping.of(C71_1, "Condition", null, null, List.of(), List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
                 TMZ, Mapping.of(TMZ, "MedicationStatement"));
         var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(TMZ), TermCodeNode.of(C71, TermCodeNode.of(C71_0),
                 TermCodeNode.of(C71_1)));
@@ -258,7 +258,7 @@ class TranslatorTest {
     @Test
     void toCQL_Test_Task2() {
         var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-                HYPERTENSION, Mapping.of(HYPERTENSION, "Condition", null, List.of(),
+                HYPERTENSION, Mapping.of(HYPERTENSION, "Condition",null, null, List.of(),
                         List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
                 SERUM, Mapping.of(SERUM, "Specimen"),
                 LIPID, Mapping.of(LIPID, "MedicationStatement"));
@@ -302,9 +302,9 @@ class TranslatorTest {
     @Test
     void toCQL_GeccoTask2() {
         var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", "value"),
-                COPD, Mapping.of(COPD, "Condition", null, List.of(CodingModifier.of("verificationStatus", CONFIRMED)),
+                COPD, Mapping.of(COPD, "Condition", null, null, List.of(CodingModifier.of("verificationStatus", CONFIRMED)),
                         List.of()),
-                G47_31, Mapping.of(G47_31, "Condition", null, List.of(CodingModifier.of("verificationStatus", CONFIRMED)),
+                G47_31, Mapping.of(G47_31, "Condition", null, null, List.of(CodingModifier.of("verificationStatus", CONFIRMED)),
                         List.of()),
                 TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
         var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COPD), TermCodeNode.of(G47_31));

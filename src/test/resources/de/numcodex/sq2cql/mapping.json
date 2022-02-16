@@ -1,0 +1,31 @@
+
+  {
+    "fhirResourceType": "MedicationAdministration",
+    "fixedCriteria": [
+      {
+        "fhirPath": "status",
+        "searchParameter": "status",
+        "type": "code",
+        "value": [
+          {
+            "code": "active",
+            "display": "active",
+            "system": "http://hl7.org/fhir/CodeSystem/medication-admin-status"
+          },
+          {
+            "code": "completed",
+            "display": "completed",
+            "system": "http://hl7.org/fhir/CodeSystem/medication-admin-status"
+          }
+        ]
+      }
+    ],
+    "key": {
+      "code": "V09IB03",
+      "display": "(111In)Indium Antiovariumkarzinomantik\u00f6rper",
+      "system": "http://fhir.de/CodeSystem/bfarm/atc",
+      "version": "2021"
+    },
+    "termCodeSearchParameter": "code",
+    "timeRestrictionParameter": "effective-time"
+  }

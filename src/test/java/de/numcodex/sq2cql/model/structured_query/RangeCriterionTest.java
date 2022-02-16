@@ -32,7 +32,7 @@ class RangeCriterionTest {
             "foo", "foo");
 
     static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
-            PLATELETS, Mapping.of(PLATELETS, "Observation", "value", List.of(),
+            PLATELETS, Mapping.of(PLATELETS, "Observation", "value", null, List.of(),
                     List.of(AttributeMapping.of("code", STATUS, "status"))),
             OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
     ), null, CODE_SYSTEM_ALIASES);
@@ -137,7 +137,7 @@ class RangeCriterionTest {
     void toCql_WithFixedCriteria() {
         var criterion = RangeCriterion.of(Concept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30), "g/dl");
         var mappingContext = MappingContext.of(Map.of(
-                PLATELETS, Mapping.of(PLATELETS, "Observation", "value", List.of(CodeModifier.of("status", "final")),
+                PLATELETS, Mapping.of(PLATELETS, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
                         List.of())
         ), null, CODE_SYSTEM_ALIASES);
 

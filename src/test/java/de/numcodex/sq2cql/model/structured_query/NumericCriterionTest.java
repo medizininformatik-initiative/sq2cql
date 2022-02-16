@@ -38,7 +38,7 @@ class NumericCriterionTest {
 
     static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
             PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-            SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", List.of(),
+            SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(),
                     List.of(AttributeMapping.of("code", STATUS, "status"))),
             OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
     ), null, CODE_SYSTEM_ALIASES);
@@ -158,7 +158,7 @@ class NumericCriterionTest {
     void toCql_WithFixedCriteria() {
         var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
         var mappingContext = MappingContext.of(Map.of(
-                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", List.of(CodeModifier.of("status", "final")),
+                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
                         List.of())
         ), null, CODE_SYSTEM_ALIASES);
 
