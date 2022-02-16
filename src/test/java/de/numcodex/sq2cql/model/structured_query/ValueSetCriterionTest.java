@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.AttributeMapping;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexander Kiel
@@ -56,7 +58,7 @@ class ValueSetCriterionTest {
             "http://hl7.org/fhir/administrative-gender");
 
     @Test
-    void fromJson() throws Exception {
+    void fromJson_WithTwoSelectedConcepts() throws Exception {
         var mapper = new ObjectMapper();
 
         var criterion = (ValueSetCriterion) mapper.readValue("""
@@ -86,6 +88,47 @@ class ValueSetCriterionTest {
 
         assertEquals(Concept.of(SEX), criterion.getConcept());
         assertEquals(List.of(MALE, FEMALE), criterion.getSelectedConcepts());
+    }
+
+    @Test
+    void fromJson_WithMissingSelectedConcepts() {
+        var mapper = new ObjectMapper();
+
+        var error = assertThrows(JsonMappingException.class, () -> mapper.readValue("""
+                {
+                  "termCodes": [{
+                    "system": "http://loinc.org",
+                    "code": "76689-9",
+                    "display": "Sex assigned at birth"
+                  }],
+                  "valueFilter": {
+                    "type": "concept"
+                  }
+                }
+                """, Criterion.class));
+
+        assertTrue(error.getMessage().startsWith("Cannot construct instance of `de.numcodex.sq2cql.model.structured_query.Criterion`"));
+    }
+
+    @Test
+    void fromJson_WithEmptySelectedConcepts() {
+        var mapper = new ObjectMapper();
+
+        var error = assertThrows(JsonMappingException.class, () -> mapper.readValue("""
+                {
+                  "termCodes": [{
+                    "system": "http://loinc.org",
+                    "code": "76689-9",
+                    "display": "Sex assigned at birth"
+                  }],
+                  "valueFilter": {
+                    "type": "concept",
+                    "selectedConcepts": []
+                  }
+                }
+                """, Criterion.class));
+
+        assertTrue(error.getMessage().startsWith("Cannot construct instance of `de.numcodex.sq2cql.model.structured_query.Criterion`"));
     }
 
     @Test
@@ -132,6 +175,81 @@ class ValueSetCriterionTest {
         assertEquals(Concept.of(SEX), criterion.getConcept());
         assertEquals(List.of(MALE), criterion.getSelectedConcepts());
         assertEquals(List.of(ValueSetAttributeFilter.of(STATUS, FINAL)), criterion.attributeFilters);
+    }
+
+    @Test
+    void fromJson_WithAttributeFilterAndMissingSelectedConcepts() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var criterion = (ValueSetCriterion) mapper.readValue("""
+                {
+                  "termCodes": [{
+                    "system": "http://loinc.org",
+                    "code": "76689-9",
+                    "display": "Sex assigned at birth"
+                  }],
+                  "valueFilter": {
+                    "type": "concept",
+                    "selectedConcepts": [
+                      {
+                        "system": "http://hl7.org/fhir/administrative-gender",
+                        "code": "male",
+                        "display": "Male"
+                      }
+                    ]
+                  },
+                  "attributeFilters": [
+                    {
+                      "attributeCode": {
+                        "system": "http://hl7.org/fhir",
+                        "code": "observation-status",
+                        "display": "observation-status"
+                      },
+                      "type": "concept"
+                    }
+                  ]
+                }
+                """, Criterion.class);
+
+        assertTrue(criterion.attributeFilters.isEmpty());
+    }
+
+    @Test
+    void fromJson_WithAttributeFilterAndEmptySelectedConcepts() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var criterion = (ValueSetCriterion) mapper.readValue("""
+                {
+                  "termCodes": [{
+                    "system": "http://loinc.org",
+                    "code": "76689-9",
+                    "display": "Sex assigned at birth"
+                  }],
+                  "valueFilter": {
+                    "type": "concept",
+                    "selectedConcepts": [
+                      {
+                        "system": "http://hl7.org/fhir/administrative-gender",
+                        "code": "male",
+                        "display": "Male"
+                      }
+                    ]
+                  },
+                  "attributeFilters": [
+                    {
+                      "attributeCode": {
+                        "system": "http://hl7.org/fhir",
+                        "code": "observation-status",
+                        "display": "observation-status"
+                      },
+                      "type": "concept",
+                      "selectedConcepts": []
+                    }
+                  ]
+                }
+                """, Criterion.class);
+
+        assertTrue(criterion.attributeFilters.isEmpty());
     }
 
     @Test

@@ -21,6 +21,8 @@ public record ValueSetAttributeFilter(TermCode attributeCode, List<TermCode> sel
      * @param attributeCode    the code identifying the attribute
      * @param selectedConcepts at least one selected value concept
      * @return the {@code ValueSetCriterion}
+     * @throws IllegalArgumentException if {@code selectedConcepts} are empty
+     * @throws NullPointerException     if any of the {@code selectedConcepts} is null
      */
     public static ValueSetAttributeFilter of(TermCode attributeCode, TermCode... selectedConcepts) {
         if (selectedConcepts == null || selectedConcepts.length == 0) {
