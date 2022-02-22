@@ -19,6 +19,7 @@ import static de.numcodex.sq2cql.model.common.Comparator.EQUAL;
 import static de.numcodex.sq2cql.model.common.Comparator.GREATER_THAN;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexander Kiel
@@ -30,9 +31,11 @@ class NumericCriterionTest {
     static final TermCode OTHER_VALUE_PATH = TermCode.of("foo", "other-value-path", "");
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
+    static final TermCode AGE = TermCode.of("http://snomed.info/sct", "424144002", "Current chronological age (observable entity)");
 
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
+            "http://snomed.info/sct", "snomed",
             "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "ecrf",
             "foo", "foo");
 
@@ -170,5 +173,20 @@ class NumericCriterionTest {
                             O.status = 'final'""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_WithValueOnPatient() {
+        var criterion = NumericCriterion.of(Concept.of(AGE), EQUAL, BigDecimal.valueOf(16), "a");
+        var mappingContext = MappingContext.of(Map.of(
+                AGE, Mapping.of(AGE, "Patient", "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/age').extension.where(url='age').value.first()")
+        ), null, CODE_SYSTEM_ALIASES);
+
+        var container = criterion.toCql(mappingContext);
+
+        assertEquals("""
+                        Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/age').extension.where(url='age').value.first() as Quantity = 16 'a'""",
+                PrintContext.ZERO.print(container));
+        assertTrue(container.getCodeSystemDefinitions().isEmpty());
     }
 }

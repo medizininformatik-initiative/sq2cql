@@ -5,6 +5,7 @@ import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.BetweenExpression;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.Expression;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.QuantityExpression;
 import de.numcodex.sq2cql.model.cql.TypeExpression;
@@ -29,8 +30,8 @@ public class RangeModifier extends AbstractModifier {
     }
 
     @Override
-    public Container<BooleanExpression> expression(MappingContext mappingContext, Expression alias) {
-        var castExpr = TypeExpression.of(InvocationExpression.of(alias, path), "Quantity");
+    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
+        var castExpr = TypeExpression.of(InvocationExpression.of(identifier, path), "Quantity");
         return Container.of(BetweenExpression.of(castExpr, quantityExpression(lowerBound, unit),
                 quantityExpression(upperBound, unit)));
     }

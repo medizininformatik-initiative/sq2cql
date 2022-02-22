@@ -186,6 +186,8 @@ class TranslatorTest {
                 include FHIRHelpers version '4.0.0'
                                                    
                 codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+                       
+                context Patient
                                 
                 define InInitialPopulation:
                   exists [Condition: Code 'C71.1' from icd10]
@@ -210,6 +212,8 @@ class TranslatorTest {
                 include FHIRHelpers version '4.0.0'
                                                    
                 codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+                               
+                context Patient
                                 
                 define InInitialPopulation:
                   exists from [Condition: Code 'C71.1' from icd10] C
@@ -243,6 +247,8 @@ class TranslatorTest {
                 codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
                 codesystem loinc: 'http://loinc.org'
                 codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+
+                context Patient
 
                 define InInitialPopulation:
                   (exists from [Condition: Code 'C71.0' from icd10] C
@@ -284,6 +290,8 @@ class TranslatorTest {
                 codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
                 codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'
                 codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                                
+                context Patient
 
                 define Inclusion:
                   exists from [Condition: Code 'I10' from icd10] C
@@ -326,6 +334,8 @@ class TranslatorTest {
                 codesystem loinc: 'http://loinc.org'
                 codesystem snomed: 'http://snomed.info/sct'
                 codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                                
+                context Patient
                                 
                 define Inclusion:
                   exists from [Observation: Code '713636003' from snomed] O

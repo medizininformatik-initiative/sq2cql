@@ -1,13 +1,10 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
-import de.numcodex.sq2cql.Lists;
+import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
-import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
-import de.numcodex.sq2cql.model.cql.ExistsExpression;
-import de.numcodex.sq2cql.model.cql.SourceClause;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 
 import java.util.List;
 
@@ -33,44 +30,9 @@ public final class ConceptCriterion extends AbstractCriterion {
         return new ConceptCriterion(concept, List.of(attributeFilters));
     }
 
-    /**
-     * Translates this criterion into a CQL expression.
-     * <p>
-     * Expands {@link #getConcept() concept} returning a disjunction of exists expressions on multiple expansions.
-     *
-     * @param mappingContext contains the mappings needed to create the CQL expression
-     * @return a {@link Container} of the {@link BooleanExpression} together with its used {@link CodeSystemDefinition
-     * CodeSystemDefinitions}; never {@link Container#isEmpty() empty}
-     * @throws TranslationException if this criterion can't be translated into a {@link BooleanExpression}
-     */
-    public Container<BooleanExpression> toCql(MappingContext mappingContext) {
-        var expr = fullExpr(mappingContext);
-        if (expr.isEmpty()) {
-            throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
-        }
-        return expr;
-    }
-
-    /**
-     * Builds an OR-expression with an expression for each concept of the expansion of {@code termCode}.
-     */
-    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
-        return mappingContext.expandConcept(concept)
-                .map(termCode -> expr(mappingContext, termCode))
-                .reduce(Container.empty(), Container.OR);
-    }
-
-    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
-        var mapping = mappingContext.findMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
-        var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));
-        if (modifiers.isEmpty()) {
-            return retrieveExpr(mappingContext, termCode).map(ExistsExpression::of);
-        } else {
-            return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
-                var alias = retrieveExpr.alias();
-                var sourceClause = SourceClause.of(retrieveExpr, alias);
-                return modifiersExpr(modifiers, mappingContext, alias).map(expr -> existsExpr(sourceClause, expr));
-            });
-        }
+    @Override
+    Container<BooleanExpression> valueExpr(MappingContext mappingContext,
+                                           Mapping mapping, IdentifierExpression identifier) {
+        return Container.empty();
     }
 }

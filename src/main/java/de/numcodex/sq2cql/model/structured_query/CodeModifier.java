@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.ComparatorExpression;
-import de.numcodex.sq2cql.model.cql.Expression;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.ListSelector;
 import de.numcodex.sq2cql.model.cql.MembershipExpression;
@@ -31,8 +31,8 @@ public final class CodeModifier extends AbstractModifier {
         return new CodeModifier(path, codes == null ? List.of() : List.of(codes));
     }
 
-    public Container<BooleanExpression> expression(MappingContext mappingContext, Expression alias) {
-        var propertyExpr = InvocationExpression.of(alias, path);
+    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
+        var propertyExpr = InvocationExpression.of(identifier, path);
         if (codes.size() == 1) {
             return Container.of(ComparatorExpression.of(propertyExpr, EQUAL, StringLiteralExpression.of(codes.get(0))));
         } else {

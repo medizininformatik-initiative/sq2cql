@@ -1,14 +1,16 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
+import de.numcodex.sq2cql.Lists;
 import de.numcodex.sq2cql.model.AttributeMapping;
+import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.AliasExpression;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSelector;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.model.cql.ExistsExpression;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
 import de.numcodex.sq2cql.model.cql.RetrieveExpression;
 import de.numcodex.sq2cql.model.cql.SourceClause;
@@ -24,6 +26,8 @@ import static java.util.Objects.requireNonNull;
  * Abstract criterion holding the concept, every non-static criterion has.
  */
 abstract class AbstractCriterion implements Criterion {
+
+    private static final IdentifierExpression PATIENT = IdentifierExpression.of("Patient");
 
     final Concept concept;
     final List<AttributeFilter> attributeFilters;
@@ -49,34 +53,31 @@ abstract class AbstractCriterion implements Criterion {
         return Container.of(CodeSelector.of(termCode.code(), codeSystemDefinition.name()), codeSystemDefinition);
     }
 
-  /**
-   * Returns the retrieve expression according to the given term code.
-   * <p>
-   * Uses the mapping context to determine the resource type of the retrieve expression and the code
-   * system definition of the concept.
-   *
-   * @param mappingContext the mapping context
-   * @param termCode       the term code to use
-   * @return a {@link Container} of the retrieve expression together with its used {@link
-   * CodeSystemDefinition}
-   * @throws TranslationException if the {@link RetrieveExpression} can't be build
-   */
-  static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext,
-      TermCode termCode) {
-    return codeSelector(mappingContext, termCode).map(terminology -> {
-      var mapping = mappingContext.findMapping(termCode)
-          .orElseThrow(() -> new MappingNotFoundException(termCode));
-      if (mapping.resourceType().equals("Patient")) {
-        return RetrieveExpression.of(mapping.resourceType());
-      }
-      return RetrieveExpression.of(mapping.resourceType(), terminology);
-    });
-  }
+    /**
+     * Returns the retrieve expression according to the given term code.
+     * <p>
+     * Uses the mapping context to determine the resource type of the retrieve expression and the code
+     * system definition of the concept.
+     *
+     * @param mappingContext the mapping context
+     * @param termCode       the term code to use
+     * @return a {@link Container} of the retrieve expression together with its used {@link
+     * CodeSystemDefinition}
+     * @throws TranslationException if the {@link RetrieveExpression} can't be build
+     */
+    static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext,
+                                                      TermCode termCode) {
+        return codeSelector(mappingContext, termCode).map(terminology -> {
+            var mapping = mappingContext.findMapping(termCode)
+                    .orElseThrow(() -> new MappingNotFoundException(termCode));
+            return RetrieveExpression.of(mapping.resourceType(), terminology);
+        });
+    }
 
     static Container<BooleanExpression> modifiersExpr(List<Modifier> modifiers, MappingContext mappingContext,
-                                                      AliasExpression alias) {
+                                                      IdentifierExpression identifier) {
         return modifiers.stream()
-                .map(m -> m.expression(mappingContext, alias))
+                .map(m -> m.expression(mappingContext, identifier))
                 .reduce(Container.empty(), Container.AND);
     }
 
@@ -88,7 +89,57 @@ abstract class AbstractCriterion implements Criterion {
         return concept;
     }
 
-    protected List<Modifier> resolveAttributeModifiers(Map<TermCode, AttributeMapping> attributeMappings) {
+    @Override
+    public Container<BooleanExpression> toCql(MappingContext mappingContext) {
+        var expr = fullExpr(mappingContext);
+        if (expr.isEmpty()) {
+            throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
+        }
+        return expr;
+    }
+
+    /**
+     * Builds an OR-expression with an expression for each concept of the expansion of {@code termCode}.
+     */
+    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
+        return mappingContext.expandConcept(concept)
+                .map(termCode -> expr(mappingContext, termCode))
+                .reduce(Container.empty(), Container.OR);
+    }
+
+    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
+        var mapping = mappingContext.findMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
+        if ("Patient".equals(mapping.resourceType())) {
+            return valueAndModifierExpr(mappingContext, mapping, PATIENT);
+        } else {
+            return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
+                var alias = retrieveExpr.alias();
+                var sourceClause = SourceClause.of(retrieveExpr, alias);
+                var valueAndModifierExpr = valueAndModifierExpr(mappingContext, mapping, alias);
+                if (valueAndModifierExpr.isEmpty()) {
+                    return Container.of(ExistsExpression.of(retrieveExpr));
+                } else {
+                    return valueAndModifierExpr.map(expr -> existsExpr(sourceClause, expr));
+                }
+            });
+        }
+    }
+
+    private Container<BooleanExpression> valueAndModifierExpr(MappingContext mappingContext, Mapping mapping,
+                                                              IdentifierExpression identifier) {
+        var valueExpr = valueExpr(mappingContext, mapping, identifier);
+        var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));
+        if (modifiers.isEmpty()) {
+            return valueExpr;
+        } else {
+            return Container.AND.apply(valueExpr, modifiersExpr(modifiers, mappingContext, identifier));
+        }
+    }
+
+    abstract Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
+                                                    IdentifierExpression identifier);
+
+    private List<Modifier> resolveAttributeModifiers(Map<TermCode, AttributeMapping> attributeMappings) {
         return attributeFilters.stream().map(attributeFilter -> {
             var key = attributeFilter.attributeCode();
             var mapping = Optional.ofNullable(attributeMappings.get(key)).orElseThrow(() ->

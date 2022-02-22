@@ -1,16 +1,15 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
-import de.numcodex.sq2cql.Lists;
+import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.Comparator;
-import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.ComparatorExpression;
 import de.numcodex.sq2cql.model.cql.Expression;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.QuantityExpression;
-import de.numcodex.sq2cql.model.cql.SourceClause;
 import de.numcodex.sq2cql.model.cql.TypeExpression;
 
 import java.math.BigDecimal;
@@ -80,39 +79,9 @@ public final class NumericCriterion extends AbstractCriterion {
         return Optional.ofNullable(unit);
     }
 
-    public Container<BooleanExpression> toCql(MappingContext mappingContext) {
-        var expr = fullExpr(mappingContext);
-        if (expr.isEmpty()) {
-            throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
-        }
-        return expr;
-    }
-
-    /**
-     * Builds an OR-expression with an expression for each concept of the expansion of {@code termCode}.
-     */
-    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
-        return mappingContext.expandConcept(concept)
-                .map(termCode -> expr(mappingContext, termCode))
-                .reduce(Container.empty(), Container.OR);
-    }
-
-    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
-        return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
-            var alias = retrieveExpr.alias();
-            var sourceClause = SourceClause.of(retrieveExpr, alias);
-            var mapping = mappingContext.findMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
-            var castExpr = TypeExpression.of(InvocationExpression.of(alias, mapping.valueFhirPath()), "Quantity");
-            var valueExpr = ComparatorExpression.of(castExpr, comparator, quantityExpression(value, unit));
-            var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));
-            if (modifiers.isEmpty()) {
-                return Container.of(existsExpr(sourceClause, valueExpr));
-            } else {
-                var modifiersExpr = modifiersExpr(modifiers, mappingContext, alias);
-                return Container.AND.apply(Container.of(valueExpr), modifiersExpr)
-                        .map(expr -> existsExpr(sourceClause, expr));
-            }
-        });
+    Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping, IdentifierExpression identifier) {
+        var castExpr = TypeExpression.of(InvocationExpression.of(identifier, mapping.valueFhirPath()), "Quantity");
+        return Container.of(ComparatorExpression.of(castExpr, comparator, quantityExpression(value, unit)));
     }
 
     private Expression quantityExpression(BigDecimal value, String unit) {

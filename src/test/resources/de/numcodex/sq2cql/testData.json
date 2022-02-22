@@ -5,7 +5,6 @@
     "fullUrl": "Patient/3f1a34ec-868c-2f11-0c58-266cf3937db4",
     "resource": {
       "resourceType": "Patient",
-      "id": "3f1a34ec-868c-2f11-0c58-266cf3937db4",
       "meta": {
         "profile": [ "https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/Patient" ]
       },
@@ -29,20 +28,38 @@
             "system": "http://unitsofmeasure.org",
             "code": "a"
           }
-        } ]
-      } ],
+        }
+        ]
+      }
+      ],
       "birthDate": "2003-06-25"
     },
     "request": {
       "method": "POST",
       "url": "Patient"
     }
-  }, {
-    "fullUrl": "eaed115b-d7c8-075d-32e4-39827adb4d0d",
-    "resource": {
-      "resourceType": "Condition",
-      "id": "eaed115b-d7c8-075d-32e4-39827adb4d0d",
-      "meta": {
+  },
+    {
+      "fullUrl": "Patient/5e746fc9-536a-47f4-8168-b48cf9d372f7",
+      "resource": {
+        "resourceType": "Patient",
+        "meta": {
+          "profile": [
+            "https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/Patient"
+          ]
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "Patient"
+      }
+    },
+    {
+      "fullUrl": "eaed115b-d7c8-075d-32e4-39827adb4d0d",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "eaed115b-d7c8-075d-32e4-39827adb4d0d",
+        "meta": {
         "profile": [ "https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/complications-covid-19" ]
       },
       "clinicalStatus": {
