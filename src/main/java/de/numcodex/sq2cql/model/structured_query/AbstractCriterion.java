@@ -153,4 +153,8 @@ abstract class AbstractCriterion implements Criterion {
             return attributeFilter.toModifier(mapping);
         }).toList();
     }
+
+    public TimeRestriction timeRestriction() {
+        return timeRestriction;
+    }
 }

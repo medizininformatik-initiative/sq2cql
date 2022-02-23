@@ -139,4 +139,35 @@ class StructuredQueryTest {
         assertEquals(Concept.of(TC_2),
                 ((ConceptCriterion) structuredQuery.exclusionCriteria().get(0).get(0)).getConcept());
     }
+
+    @Test
+    void fromJson_EmptyTimeRestriction() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var structuredQuery = mapper.readValue("""
+            {
+              "version": "http://to_be_decided.com/draft-1/schema#",
+              "display": "",
+              "inclusionCriteria": [
+                [
+                  {
+                    "termCodes": [
+                      {
+                        "code": "Q50",
+                        "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
+                        "version": "2021",
+                        "display": "Angeborene Fehlbildungen der Ovarien, der Tubae uterinae und der Ligg. lata uteri"
+                      }
+                    ],
+                    "attributeFilters": [],
+                    "timeRestriction": {}
+                  }
+                ]
+              ]
+            }
+            """,  StructuredQuery.class);
+
+        AbstractCriterion criterion = (AbstractCriterion)structuredQuery.inclusionCriteria().get(0).get(0);
+        assertEquals(null, criterion.timeRestriction());
+    }
 }
