@@ -29,23 +29,40 @@ public final class RangeCriterion extends AbstractCriterion {
     private final BigDecimal upperBound;
     private final String unit;
 
-    private RangeCriterion(Concept concept, List<AttributeFilter> attributeFilters, BigDecimal lowerBound,
-                           BigDecimal upperBound, String unit) {
-        super(concept, attributeFilters);
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
-        this.unit = unit;
-    }
+  private RangeCriterion(Concept concept, List<AttributeFilter> attributeFilters,
+      TimeRestriction timeRestriction, BigDecimal lowerBound,
+      BigDecimal upperBound, String unit) {
+    super(concept, attributeFilters, timeRestriction);
+    this.lowerBound = lowerBound;
+    this.upperBound = upperBound;
+    this.unit = unit;
+  }
 
-    public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound) {
-        return new RangeCriterion(concept, List.of(), requireNonNull(lowerBound), requireNonNull(upperBound), null);
-    }
+  public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound) {
+    return new RangeCriterion(concept, List.of(), null, requireNonNull(lowerBound),
+        requireNonNull(upperBound), null);
+  }
 
-    public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound, String unit,
-                                    AttributeFilter... attributeFilters) {
-        return new RangeCriterion(concept, List.of(attributeFilters), requireNonNull(lowerBound),
-                requireNonNull(upperBound), requireNonNull(unit));
-    }
+  public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
+      String unit,
+      AttributeFilter... attributeFilters) {
+    return new RangeCriterion(concept, List.of(attributeFilters), null, requireNonNull(lowerBound),
+        requireNonNull(upperBound), requireNonNull(unit));
+  }
+
+  public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
+      TimeRestriction timeRestriction,
+      AttributeFilter... attributeFilters) {
+    return new RangeCriterion(concept, List.of(attributeFilters), null, requireNonNull(lowerBound),
+        requireNonNull(upperBound), null);
+  }
+
+  public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
+      String unit, TimeRestriction timeRestriction,
+      AttributeFilter... attributeFilters) {
+    return new RangeCriterion(concept, List.of(attributeFilters), null, requireNonNull(lowerBound),
+        requireNonNull(upperBound), requireNonNull(unit));
+  }
 
     public BigDecimal getLowerBound() {
         return lowerBound;

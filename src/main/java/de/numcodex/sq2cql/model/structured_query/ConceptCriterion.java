@@ -15,8 +15,8 @@ import java.util.List;
  */
 public final class ConceptCriterion extends AbstractCriterion {
 
-    private ConceptCriterion(Concept concept, List<AttributeFilter> attributeFilters) {
-        super(concept, attributeFilters);
+    private ConceptCriterion(Concept concept, List<AttributeFilter> attributeFilters, TimeRestriction timeRestriction) {
+        super(concept, attributeFilters, timeRestriction);
     }
 
     /**
@@ -27,7 +27,21 @@ public final class ConceptCriterion extends AbstractCriterion {
      * @return the {@code ConceptCriterion}.
      */
     public static ConceptCriterion of(Concept concept, AttributeFilter... attributeFilters) {
-        return new ConceptCriterion(concept, List.of(attributeFilters));
+        return new ConceptCriterion(concept, List.of(attributeFilters), null);
+    }
+
+
+    /**
+     * Returns a {@code ConceptCriterion}.
+     *
+     * @param concept          the concept the criterion represents
+     * @param timeRestriction  the time restriction on the critieria
+     * @param attributeFilters additional filters on particular attributes
+     * @return the {@code ConceptCriterion}.
+     */
+    public static ConceptCriterion of(Concept concept,
+        TimeRestriction timeRestriction, AttributeFilter... attributeFilters) {
+        return new ConceptCriterion(concept, List.of(attributeFilters), timeRestriction);
     }
 
     @Override

@@ -18,6 +18,12 @@
                         "display": "U/L"
                     },
                     "value": 38.377
+                },
+
+                "timeRestriction": {
+                    "afterDate": "2019-01-01T",
+                    "beforeDate": "2022-01-01T"
+
                 }
             }
         ]

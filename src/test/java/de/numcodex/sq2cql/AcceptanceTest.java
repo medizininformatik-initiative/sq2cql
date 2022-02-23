@@ -6,10 +6,18 @@ import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Functions;
+import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Library;
@@ -28,15 +36,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -92,7 +92,8 @@ public class AcceptanceTest {
 
     private Translator createTranslator() throws Exception {
         var mapper = new ObjectMapper();
-        var mappings = Arrays.stream(mapper.readValue(slurp("codex-term-code-mapping.json"), Mapping[].class))
+        var mappings = Arrays.stream(mapper.readValue(slurp(
+                "codex-term-code-mapping.json"), Mapping[].class))
                 .collect(Collectors.toMap(Mapping::key, Functions.identity()));
         var conceptTree = mapper.readValue(slurp("codex-code-tree.json"), TermCodeNode.class);
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);

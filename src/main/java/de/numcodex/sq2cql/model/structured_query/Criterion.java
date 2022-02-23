@@ -38,7 +38,7 @@ public interface Criterion {
     @JsonCreator
     static Criterion create(@JsonProperty("termCodes") List<TermCode> termCodes,
                             @JsonProperty("valueFilter") ObjectNode valueFilter,
-                            @JsonProperty("timeRestriction") ObjectNode timeRestriction,
+                            @JsonProperty("timeRestriction") TimeRestriction conceptTimeRestriction,
                             @JsonProperty("attributeFilters") List<ObjectNode> attributeFilters) {
         var concept = Concept.of(requireNonNull(termCodes, "missing JSON property: termCodes"));
 
@@ -48,7 +48,7 @@ public interface Criterion {
                 .toArray(AttributeFilter[]::new);
 
         if (valueFilter == null) {
-            return ConceptCriterion.of(concept, attributes);
+            return ConceptCriterion.of(concept, conceptTimeRestriction, attributes);
         }
 
         var type = valueFilter.get("type").asText();
@@ -57,9 +57,9 @@ public interface Criterion {
             var value = valueFilter.get("value").decimalValue();
             var unit = valueFilter.get("unit");
             if (unit == null) {
-                return NumericCriterion.of(concept, comparator, value);
+                return NumericCriterion.of(concept, comparator, value, conceptTimeRestriction, attributes);
             } else {
-                return NumericCriterion.of(concept, comparator, value, unit.get("code").asText());
+                return NumericCriterion.of(concept, comparator, value, unit.get("code").asText(), conceptTimeRestriction, attributes);
             }
         }
         if ("quantity-range".equals(type)) {
@@ -67,9 +67,9 @@ public interface Criterion {
             var upperBound = valueFilter.get("maxValue").decimalValue();
             var unit = valueFilter.get("unit");
             if (unit == null) {
-                return RangeCriterion.of(concept, lowerBound, upperBound);
+                return RangeCriterion.of(concept, lowerBound, upperBound, conceptTimeRestriction, attributes);
             } else {
-                return RangeCriterion.of(concept, lowerBound, upperBound, unit.get("code").asText());
+                return RangeCriterion.of(concept, lowerBound, upperBound, unit.get("code").asText(), conceptTimeRestriction, attributes);
             }
         }
         if ("concept".equals(type)) {
@@ -78,7 +78,7 @@ public interface Criterion {
                 throw new IllegalArgumentException("Missing or empty `selectedConcepts` key in concept criterion.");
             }
             return ValueSetCriterion.of(concept, StreamSupport.stream(selectedConcepts.spliterator(), false)
-                    .map(TermCode::fromJsonNode).toList(), attributes);
+                    .map(TermCode::fromJsonNode).toList(), conceptTimeRestriction, attributes);
         }
         throw new IllegalArgumentException("unknown valueFilter type: " + type);
     }

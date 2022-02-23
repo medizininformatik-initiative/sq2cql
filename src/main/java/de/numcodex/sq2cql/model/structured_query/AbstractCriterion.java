@@ -18,6 +18,7 @@ import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -31,10 +32,12 @@ abstract class AbstractCriterion implements Criterion {
 
     final Concept concept;
     final List<AttributeFilter> attributeFilters;
+    final TimeRestriction timeRestriction;
 
-    AbstractCriterion(Concept concept, List<AttributeFilter> attributeFilters) {
+    AbstractCriterion(Concept concept, List<AttributeFilter> attributeFilters, TimeRestriction timeRestriction) {
         this.concept = requireNonNull(concept);
         this.attributeFilters = List.copyOf(attributeFilters);
+        this.timeRestriction = timeRestriction;
     }
 
     /**
@@ -129,6 +132,9 @@ abstract class AbstractCriterion implements Criterion {
                                                               IdentifierExpression identifier) {
         var valueExpr = valueExpr(mappingContext, mapping, identifier);
         var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));
+        if (Objects.nonNull(timeRestriction)) {
+            modifiers = Lists.concat(modifiers, List.of(timeRestriction.toModifier(mapping)));
+        }
         if (modifiers.isEmpty()) {
             return valueExpr;
         } else {
