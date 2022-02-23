@@ -212,7 +212,7 @@ class ConceptCriterionTest {
     void toCql_WithAttributeFilter() {
         var criterion = ConceptCriterion.of(Concept.of(C71),
                 ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED));
-        var mapping = Mapping.of(C71, "Condition", null, List.of(),
+        var mapping = Mapping.of(C71, "Condition", null, null, List.of(),
                 List.of(AttributeMapping.of("coding", VERIFICATION_STATUS, "verificationStatus")));
         var mappingContext = MappingContext.of(Map.of(C71, mapping), TermCodeNode.of(C71), CODE_SYSTEM_ALIASES);
 
@@ -229,9 +229,9 @@ class ConceptCriterionTest {
     void toCql_Expanded_WithAttributeFilter() {
         var criterion = ConceptCriterion.of(Concept.of(C71),
                 ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED));
-        var mapping1 = Mapping.of(C71_1, "Condition", null, List.of(),
+        var mapping1 = Mapping.of(C71_1, "Condition", null, null, List.of(),
                 List.of(AttributeMapping.of("coding", VERIFICATION_STATUS, "verificationStatus")));
-        var mapping2 = Mapping.of(C71_2, "Condition", null, List.of(),
+        var mapping2 = Mapping.of(C71_2, "Condition", null, null, List.of(),
                 List.of(AttributeMapping.of("coding", VERIFICATION_STATUS, "verificationStatus")));
         var mappingContext = MappingContext.of(Map.of(C71_1, mapping1, C71_2, mapping2),
                 TermCodeNode.of(C71, TermCodeNode.of(C71_1), TermCodeNode.of(C71_2)), CODE_SYSTEM_ALIASES);
@@ -252,7 +252,7 @@ class ConceptCriterionTest {
         var criterion = ConceptCriterion.of(Concept.of(BLOOD_PRESSURE),
                 NumericAttributeFilter.of(DIASTOLIC_BLOOD_PRESSURE, LESS_THAN, BigDecimal.valueOf(80), "mm[Hg]"));
         var mappingContext = MappingContext.of(Map.of(
-                BLOOD_PRESSURE, Mapping.of(BLOOD_PRESSURE, "Observation", "value", List.of(),
+                BLOOD_PRESSURE, Mapping.of(BLOOD_PRESSURE, "Observation", "value", null, List.of(),
                         List.of(AttributeMapping.of("", DIASTOLIC_BLOOD_PRESSURE,
                                 format("component.where(code.coding.exists(system = '%s' and code = '%s')).value.first()",
                                         DIASTOLIC_BLOOD_PRESSURE.system(), DIASTOLIC_BLOOD_PRESSURE.code()))))
@@ -271,7 +271,7 @@ class ConceptCriterionTest {
     void toCql_FixedCriteria_Code() {
         var criterion = ConceptCriterion.of(Concept.of(THERAPEUTIC_PROCEDURE));
         var mappingContext = MappingContext.of(Map.of(
-                THERAPEUTIC_PROCEDURE, Mapping.of(THERAPEUTIC_PROCEDURE, "Procedure", null,
+                THERAPEUTIC_PROCEDURE, Mapping.of(THERAPEUTIC_PROCEDURE, "Procedure", null, null,
                         List.of(CodeModifier.of("status", "completed", "in-progress")), List.of())
         ), null, CODE_SYSTEM_ALIASES);
 
@@ -288,7 +288,7 @@ class ConceptCriterionTest {
     void toCql_FixedCriteria_Coding() {
         var criterion = ConceptCriterion.of(Concept.of(C71));
         var mappingContext = MappingContext.of(Map.of(
-                C71, Mapping.of(C71, "Condition", null, List.of(CodingModifier.of("verificationStatus", CONFIRMED)),
+                C71, Mapping.of(C71, "Condition", null, null, List.of(CodingModifier.of("verificationStatus", CONFIRMED)),
                         List.of())), TermCodeNode.of(C71), CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);

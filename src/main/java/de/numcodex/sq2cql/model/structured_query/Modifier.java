@@ -8,7 +8,7 @@ import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
-import de.numcodex.sq2cql.model.cql.Expression;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 
 import java.util.stream.Stream;
 
@@ -31,7 +31,7 @@ public interface Modifier {
         }
 
         if ("code".equals(type)) {
-            return CodeModifier.of(path, Stream.of(values).map(JsonNode::asText).toArray(String[]::new));
+            return CodeModifier.of(path, Stream.of(values).map(TermCode::fromJsonNode).map(TermCode::code).toArray(String[]::new));
         }
         if ("coding".equals(type)) {
             return CodingModifier.of(path, Stream.of(values).map(TermCode::fromJsonNode).toArray(TermCode[]::new));
@@ -39,5 +39,5 @@ public interface Modifier {
         throw new IllegalArgumentException("unknown type: " + type);
     }
 
-    Container<BooleanExpression> expression(MappingContext mappingContext, Expression alias);
+    Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier);
 }

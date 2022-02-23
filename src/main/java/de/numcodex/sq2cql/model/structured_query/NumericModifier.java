@@ -6,6 +6,7 @@ import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.ComparatorExpression;
 import de.numcodex.sq2cql.model.cql.Expression;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.QuantityExpression;
 import de.numcodex.sq2cql.model.cql.TypeExpression;
@@ -31,8 +32,8 @@ public class NumericModifier extends AbstractModifier {
     }
 
     @Override
-    public Container<BooleanExpression> expression(MappingContext mappingContext, Expression alias) {
-        var castExpr = TypeExpression.of(InvocationExpression.of(alias, path), "Quantity");
+    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
+        var castExpr = TypeExpression.of(InvocationExpression.of(identifier, path), "Quantity");
         return Container.of(ComparatorExpression.of(castExpr, comparator, quantityExpression(value, unit)));
     }
 

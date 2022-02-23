@@ -19,6 +19,7 @@ import static de.numcodex.sq2cql.model.common.Comparator.EQUAL;
 import static de.numcodex.sq2cql.model.common.Comparator.GREATER_THAN;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexander Kiel
@@ -30,15 +31,17 @@ class NumericCriterionTest {
     static final TermCode OTHER_VALUE_PATH = TermCode.of("foo", "other-value-path", "");
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
+    static final TermCode AGE = TermCode.of("http://snomed.info/sct", "424144002", "Current chronological age (observable entity)");
 
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
+            "http://snomed.info/sct", "snomed",
             "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "ecrf",
             "foo", "foo");
 
     static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
             PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-            SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", List.of(),
+            SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(),
                     List.of(AttributeMapping.of("code", STATUS, "status"))),
             OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
     ), null, CODE_SYSTEM_ALIASES);
@@ -158,7 +161,7 @@ class NumericCriterionTest {
     void toCql_WithFixedCriteria() {
         var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
         var mappingContext = MappingContext.of(Map.of(
-                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", List.of(CodeModifier.of("status", "final")),
+                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
                         List.of())
         ), null, CODE_SYSTEM_ALIASES);
 
@@ -170,5 +173,20 @@ class NumericCriterionTest {
                             O.status = 'final'""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_WithValueOnPatient() {
+        var criterion = NumericCriterion.of(Concept.of(AGE), EQUAL, BigDecimal.valueOf(16), "a");
+        var mappingContext = MappingContext.of(Map.of(
+                AGE, Mapping.of(AGE, "Patient", "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/age').extension.where(url='age').value.first()")
+        ), null, CODE_SYSTEM_ALIASES);
+
+        var container = criterion.toCql(mappingContext);
+
+        assertEquals("""
+                        Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/age').extension.where(url='age').value.first() as Quantity = 16 'a'""",
+                PrintContext.ZERO.print(container));
+        assertTrue(container.getCodeSystemDefinitions().isEmpty());
     }
 }

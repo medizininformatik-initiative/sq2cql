@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
-import de.numcodex.sq2cql.model.cql.Expression;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.MembershipExpression;
 
@@ -29,8 +29,8 @@ public final class CodingModifier extends AbstractModifier {
         return new CodingModifier(path, List.of(concepts));
     }
 
-    public Container<BooleanExpression> expression(MappingContext mappingContext, Expression alias) {
-        var codingExpr = InvocationExpression.of(InvocationExpression.of(alias, path), "coding");
+    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
+        var codingExpr = InvocationExpression.of(InvocationExpression.of(identifier, path), "coding");
         return concepts.stream()
                 .map(concept -> codeSelector(mappingContext, concept).map(terminology ->
                         (BooleanExpression) MembershipExpression.contains(codingExpr, terminology)))

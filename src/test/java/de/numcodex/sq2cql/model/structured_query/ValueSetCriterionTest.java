@@ -35,6 +35,8 @@ class ValueSetCriterionTest {
     static final TermCode LA3649_6 = TermCode.of("http://loinc.org", "LA3649-6", "Stage IVB");
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
+    static final TermCode ETHNIC_GROUP = TermCode.of("http://snomed.info/sct", "372148003", "Ethnic group (ethnic group)");
+    static final TermCode MIXED = TermCode.of("http://snomed.info/sct", "26242008", "Mixed (qualifier value)");
 
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
@@ -42,7 +44,7 @@ class ValueSetCriterionTest {
             "http://hl7.org/fhir/administrative-gender", "gender");
 
     static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
-            COVID, Mapping.of(COVID, "Observation", "value", List.of(),
+            COVID, Mapping.of(COVID, "Observation", "value", null, List.of(),
                     List.of(AttributeMapping.of("code", STATUS, "status"))),
             SEX, Mapping.of(SEX, "Observation", "value"),
             FINDING, Mapping.of(FINDING, "Condition", "severity"),
@@ -324,15 +326,14 @@ class ValueSetCriterionTest {
                           where O.value.coding contains Code 'positive' from snomed and
                             O.status = 'final'""",
                 PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF),
-                container.getCodeSystemDefinitions());
+        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
 
     @Test
     void toCql_WithFixedCriteria() {
         var criterion = ValueSetCriterion.of(Concept.of(COVID), List.of(POSITIVE));
         var mappingContext = MappingContext.of(Map.of(
-                COVID, Mapping.of(COVID, "Observation", "value", List.of(CodeModifier.of("status", "final")),
+                COVID, Mapping.of(COVID, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
                         List.of())
         ), null, CODE_SYSTEM_ALIASES);
 
@@ -343,7 +344,21 @@ class ValueSetCriterionTest {
                           where O.value.coding contains Code 'positive' from snomed and
                             O.status = 'final'""",
                 PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF),
-                container.getCodeSystemDefinitions());
+        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_WithCodingValueTypeOnPatient() {
+        var criterion = ValueSetCriterion.of(Concept.of(ETHNIC_GROUP), List.of(MIXED));
+        var mappingContext = MappingContext.of(Map.of(
+                ETHNIC_GROUP, Mapping.of(ETHNIC_GROUP, "Patient", "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first()", "Coding")
+        ), null, CODE_SYSTEM_ALIASES);
+
+        var container = criterion.toCql(mappingContext);
+
+        assertEquals("""
+                        Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first() contains Code '26242008' from snomed""",
+                PrintContext.ZERO.print(container));
+        assertEquals(Set.of(SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
 }

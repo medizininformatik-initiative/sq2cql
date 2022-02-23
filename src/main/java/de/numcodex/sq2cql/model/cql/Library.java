@@ -34,6 +34,8 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
                 library Retrieve
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
+                      
+                context Patient
                                 
                 %s
                 """
@@ -44,6 +46,8 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
                 include FHIRHelpers version '4.0.0'
                                 
                 %s
+                                
+                context Patient
                                 
                 %s
                 """

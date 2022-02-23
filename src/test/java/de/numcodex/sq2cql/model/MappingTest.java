@@ -1,9 +1,11 @@
 package de.numcodex.sq2cql.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.CodeModifier;
 import de.numcodex.sq2cql.model.structured_query.CodingModifier;
+import de.numcodex.sq2cql.model.structured_query.TimeRestrictionModifier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -101,9 +103,16 @@ class MappingTest {
                       "type": "code",
                       "searchParameter": "status",
                       "fhirPath": "status",
-                      "value": [
-                        "completed",
-                        "in-progress"
+                      "value": [ {
+                          "code": "completed",
+                          "system": "http://hl7.org/fhir/report-status-codes",
+                          "display": "completed"
+                        },
+                        {
+                          "code": "in-progress",
+                          "system": "http://hl7.org/fhir/report-status-codes",
+                          "display": "in-progress"
+                        }
                       ]
                     }
                   ]
@@ -161,7 +170,7 @@ class MappingTest {
                     "code": "21908-9",
                     "display": "Stage group.clinical Cancer"
                   },
-                  "attributeMappings": [
+                  "attributeSearchParameters": [
                     {
                       "attributeType": "coding",
                       "attributeKey": {
@@ -178,5 +187,24 @@ class MappingTest {
         assertEquals(Map.of(TNM_T, AttributeMapping.of("coding", TNM_T,
                         "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()")),
                 mapping.attributeMappings());
+    }
+
+    @Test
+    void fromJson_WithTimeRestriction() throws Exception {
+        var mapper = new ObjectMapper();
+
+        var mapping = mapper.readValue("""
+                {
+                  "fhirResourceType": "Observation",
+                  "key": {
+                    "system": "http://loinc.org",
+                    "code": "21908-9",
+                    "display": "Stage group.clinical Cancer"
+                  },
+                  "timeRestrictionPath": "effective"
+                }
+                """, Mapping.class);
+
+        assertEquals("effective", mapping.timeRestrictionPath());
     }
 }

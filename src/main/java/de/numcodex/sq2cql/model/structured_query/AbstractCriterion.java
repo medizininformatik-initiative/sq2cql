@@ -1,14 +1,16 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
+import de.numcodex.sq2cql.Lists;
 import de.numcodex.sq2cql.model.AttributeMapping;
+import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.AliasExpression;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSelector;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.model.cql.ExistsExpression;
+import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
 import de.numcodex.sq2cql.model.cql.RetrieveExpression;
 import de.numcodex.sq2cql.model.cql.SourceClause;
@@ -16,6 +18,7 @@ import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -25,12 +28,16 @@ import static java.util.Objects.requireNonNull;
  */
 abstract class AbstractCriterion implements Criterion {
 
+    private static final IdentifierExpression PATIENT = IdentifierExpression.of("Patient");
+
     final Concept concept;
     final List<AttributeFilter> attributeFilters;
+    final TimeRestriction timeRestriction;
 
-    AbstractCriterion(Concept concept, List<AttributeFilter> attributeFilters) {
+    AbstractCriterion(Concept concept, List<AttributeFilter> attributeFilters, TimeRestriction timeRestriction) {
         this.concept = requireNonNull(concept);
         this.attributeFilters = List.copyOf(attributeFilters);
+        this.timeRestriction = timeRestriction;
     }
 
     /**
@@ -71,9 +78,9 @@ abstract class AbstractCriterion implements Criterion {
     }
 
     static Container<BooleanExpression> modifiersExpr(List<Modifier> modifiers, MappingContext mappingContext,
-                                                      AliasExpression alias) {
+                                                      IdentifierExpression identifier) {
         return modifiers.stream()
-                .map(m -> m.expression(mappingContext, alias))
+                .map(m -> m.expression(mappingContext, identifier))
                 .reduce(Container.empty(), Container.AND);
     }
 
@@ -85,7 +92,60 @@ abstract class AbstractCriterion implements Criterion {
         return concept;
     }
 
-    protected List<Modifier> resolveAttributeModifiers(Map<TermCode, AttributeMapping> attributeMappings) {
+    @Override
+    public Container<BooleanExpression> toCql(MappingContext mappingContext) {
+        var expr = fullExpr(mappingContext);
+        if (expr.isEmpty()) {
+            throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
+        }
+        return expr;
+    }
+
+    /**
+     * Builds an OR-expression with an expression for each concept of the expansion of {@code termCode}.
+     */
+    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
+        return mappingContext.expandConcept(concept)
+                .map(termCode -> expr(mappingContext, termCode))
+                .reduce(Container.empty(), Container.OR);
+    }
+
+    private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
+        var mapping = mappingContext.findMapping(termCode).orElseThrow(() -> new MappingNotFoundException(termCode));
+        if ("Patient".equals(mapping.resourceType())) {
+            return valueAndModifierExpr(mappingContext, mapping, PATIENT);
+        } else {
+            return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
+                var alias = retrieveExpr.alias();
+                var sourceClause = SourceClause.of(retrieveExpr, alias);
+                var valueAndModifierExpr = valueAndModifierExpr(mappingContext, mapping, alias);
+                if (valueAndModifierExpr.isEmpty()) {
+                    return Container.of(ExistsExpression.of(retrieveExpr));
+                } else {
+                    return valueAndModifierExpr.map(expr -> existsExpr(sourceClause, expr));
+                }
+            });
+        }
+    }
+
+    private Container<BooleanExpression> valueAndModifierExpr(MappingContext mappingContext, Mapping mapping,
+                                                              IdentifierExpression identifier) {
+        var valueExpr = valueExpr(mappingContext, mapping, identifier);
+        var modifiers = Lists.concat(mapping.fixedCriteria(), resolveAttributeModifiers(mapping.attributeMappings()));
+        if (Objects.nonNull(timeRestriction)) {
+            modifiers = Lists.concat(modifiers, List.of(timeRestriction.toModifier(mapping)));
+        }
+        if (modifiers.isEmpty()) {
+            return valueExpr;
+        } else {
+            return Container.AND.apply(valueExpr, modifiersExpr(modifiers, mappingContext, identifier));
+        }
+    }
+
+    abstract Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
+                                                    IdentifierExpression identifier);
+
+    private List<Modifier> resolveAttributeModifiers(Map<TermCode, AttributeMapping> attributeMappings) {
         return attributeFilters.stream().map(attributeFilter -> {
             var key = attributeFilter.attributeCode();
             var mapping = Optional.ofNullable(attributeMappings.get(key)).orElseThrow(() ->

@@ -4,15 +4,15 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record SourceClause(RetrieveExpression retrieve, AliasExpression alias) {
+public record SourceClause(Expression retrieve, IdentifierExpression alias) {
 
     public SourceClause {
         requireNonNull(retrieve);
         requireNonNull(alias);
     }
 
-    public static SourceClause of(RetrieveExpression retrieveExpression, AliasExpression alias) {
-        return new SourceClause(retrieveExpression, alias);
+    public static SourceClause of(Expression querySource, IdentifierExpression alias) {
+        return new SourceClause(querySource, alias);
     }
 
     public String toCql(PrintContext printContext) {
