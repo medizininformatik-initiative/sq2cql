@@ -17,6 +17,10 @@ public record TimeRestriction(String afterDate, String beforeDate) {
   @JsonCreator
   public static TimeRestriction create(@JsonProperty("afterDate") String afterDate,
       @JsonProperty("beforeDate") String beforeDate) {
+    //FIXME: quick and dirty for empty timeRestriction
+    if (afterDate == null && beforeDate == null) {
+      return null;
+    }
     return TimeRestriction.of(afterDate, beforeDate);
   }
 }
