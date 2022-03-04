@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.numcodex</groupId>
-    <artifactId>sq2cql</artifactId>
+    <groupId>de.medizininformatik-initiative</groupId>
+    <artifactId>feasibility-sq2cql</artifactId>
     <version>0.1.19-SNAPSHOT</version>
 
     <name>sq2cql</name>
@@ -13,7 +13,7 @@
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <url>https://github.com/num-codex/codex-sq2cql.git</url>
+        <url>https://github.com/medizininformatik-initiative/feasibility-sq2cql</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -21,7 +21,7 @@
       <repository>
         <id>github</id>
         <name>GitHub Packages</name>
-        <url>https://maven.pkg.github.com/num-codex/codex-sq2cql</url>
+        <url>https://maven.pkg.github.com/medizininformatik-initiative/feasibility-sq2cql</url>
       </repository>
     </distributionManagement>
 
