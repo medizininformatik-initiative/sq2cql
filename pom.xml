@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.medizininformatik-initiative</groupId>
-    <artifactId>feasibility-sq2cql</artifactId>
+    <artifactId>codex-sq2cql</artifactId>
     <version>0.1.19-SNAPSHOT</version>
 
     <name>sq2cql</name>
@@ -13,7 +13,7 @@
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <url>https://github.com/medizininformatik-initiative/feasibility-sq2cql</url>
+        <url>https://github.com/medizininformatik-initiative/codex-sq2cql</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -21,7 +21,7 @@
       <repository>
         <id>github</id>
         <name>GitHub Packages</name>
-        <url>https://maven.pkg.github.com/medizininformatik-initiative/feasibility-sq2cql</url>
+        <url>https://maven.pkg.github.com/medizininformatik-initiative/codex-sq2cql</url>
       </repository>
     </distributionManagement>
 

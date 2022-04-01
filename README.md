@@ -1,4 +1,4 @@
-# CODEX - Structured Query to CQL Translator
+# MII - Structured Query to CQL Translator
 
 ## Usage
 
@@ -18,9 +18,9 @@ assertEquals("""
         library Retrieve
         using FHIR version '4.0.0'
         include FHIRHelpers version '4.0.0'
-                                           
-        codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'                
-                        
+
+        codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+
         define InInitialPopulation:
           exists [Condition: Code 'C71.1' from icd10]
         """, library.print(PrintContext.ZERO));
@@ -33,13 +33,13 @@ var mapper = new ObjectMapper();
 mapper.readValue("""
         {"inclusionCriteria": [[{
           "termCodes": [{
-            "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm", 
+            "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
             "code": "C71.1",
             "display": "Malignant neoplasm of brain"
           }]
         }], [{
           "termCodes": [{
-            "system": "http://loinc.org", 
+            "system": "http://loinc.org",
             "code": "76689-9",
             "display": "Sex assigned at birth"
           }],
