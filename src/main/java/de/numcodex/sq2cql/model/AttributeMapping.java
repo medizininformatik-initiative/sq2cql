@@ -12,19 +12,18 @@ import static java.util.Objects.requireNonNull;
  * @author Lorenz Rosenau
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record AttributeMapping(String type, TermCode key,
-                               String path) {
+public record AttributeMapping(String type, TermCode key, String path) {
 
-    public AttributeMapping(String type, TermCode key, String path) {
-        this.type = requireNonNull(type);
-        this.key = requireNonNull(key);
-        this.path = requireNonNull(path);
+    public AttributeMapping {
+        requireNonNull(type);
+        requireNonNull(key);
+        requireNonNull(path);
     }
 
     @JsonCreator
     public static AttributeMapping of(@JsonProperty("attributeType") String type,
-        @JsonProperty("attributeKey") JsonNode key,
-        @JsonProperty("attributeFhirPath") String path) {
+                                      @JsonProperty("attributeKey") JsonNode key,
+                                      @JsonProperty("attributeFhirPath") String path) {
         return new AttributeMapping(type, TermCode.fromJsonNode(key), path);
     }
 

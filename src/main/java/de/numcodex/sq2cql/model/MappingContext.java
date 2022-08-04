@@ -17,7 +17,6 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Alexander Kiel
  */
-@SuppressWarnings("ClassCanBeRecord")
 public class MappingContext {
 
     private final Map<TermCode, Mapping> mappings;

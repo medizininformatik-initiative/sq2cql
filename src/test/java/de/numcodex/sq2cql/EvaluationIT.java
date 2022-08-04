@@ -41,7 +41,6 @@ import static org.hl7.fhir.r4.model.Bundle.HTTPVerb.POST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
-@SuppressWarnings("NewClassNamingConvention")
 public class EvaluationIT {
 
     static final TermCode ROOT = TermCode.of("", "", "");

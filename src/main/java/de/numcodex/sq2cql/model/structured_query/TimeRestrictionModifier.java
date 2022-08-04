@@ -12,7 +12,7 @@ import de.numcodex.sq2cql.model.cql.OrExpression;
 import de.numcodex.sq2cql.model.cql.OverlapsIntervalOperatorPhrase;
 import de.numcodex.sq2cql.model.cql.TypeExpression;
 
-public final class TimeRestrictionModifier extends AbstractModifier{
+public final class TimeRestrictionModifier extends AbstractModifier {
 
   private final String beforeDate;
   private final String afterDate;
@@ -34,6 +34,5 @@ public final class TimeRestrictionModifier extends AbstractModifier{
     var dateTimeInExpr = MembershipExpression.in(castExp, intervalSelector);
     var intervalOverlapExpr = OverlapsIntervalOperatorPhrase.of(invocationExpr, intervalSelector);
     return Container.of(OrExpression.of(dateTimeInExpr, intervalOverlapExpr));
-
   }
 }
