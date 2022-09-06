@@ -1,11 +1,11 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TimeRestrictionModifierTest {
 

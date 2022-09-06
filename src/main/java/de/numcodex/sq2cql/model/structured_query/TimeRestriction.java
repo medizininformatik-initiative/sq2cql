@@ -7,7 +7,10 @@ import de.numcodex.sq2cql.model.Mapping;
 public record TimeRestriction(String afterDate, String beforeDate) {
 
   public Modifier toModifier(Mapping mapping) {
-    return TimeRestrictionModifier.of(mapping.timeRestrictionPath(), afterDate, beforeDate);
+    var path = mapping.timeRestrictionPath()
+            .orElseThrow(() -> new IllegalStateException("Missing timeRestrictionPath in mapping with key %s."
+                    .formatted(mapping.key())));
+    return TimeRestrictionModifier.of(path, afterDate, beforeDate);
   }
 
   public static TimeRestriction of(String afterDate, String beforeDate) {

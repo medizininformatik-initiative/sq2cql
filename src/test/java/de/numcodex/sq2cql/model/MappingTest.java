@@ -1,17 +1,14 @@
 package de.numcodex.sq2cql.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.CodeModifier;
 import de.numcodex.sq2cql.model.structured_query.CodingModifier;
-import de.numcodex.sq2cql.model.structured_query.TimeRestrictionModifier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.Map;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -184,9 +181,8 @@ class MappingTest {
                 }
                 """, Mapping.class);
 
-        assertEquals(Map.of(TNM_T, AttributeMapping.of("coding", TNM_T,
-                        "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()")),
-                mapping.attributeMappings());
+        assertThat(mapping.attributeMappings()).containsEntry(TNM_T, AttributeMapping.of("coding", TNM_T,
+                "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()"));
     }
 
     @Test
@@ -205,6 +201,6 @@ class MappingTest {
                 }
                 """, Mapping.class);
 
-        assertEquals("effective", mapping.timeRestrictionPath());
+        assertThat(mapping.timeRestrictionPath()).contains("effective");
     }
 }
