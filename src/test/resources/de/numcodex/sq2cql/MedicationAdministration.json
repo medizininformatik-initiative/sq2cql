@@ -1,0 +1,17 @@
+{
+  "version": "http://to_be_decided.com/draft-1/schema#",
+  "inclusionCriteria": [
+    [
+      {
+        "termCodes": [
+          {
+            "code": "B01AB01",
+            "system": "http://fhir.de/CodeSystem/bfarm/atc",
+            "version": "2021",
+            "display": "Enoxaparin natrium"
+          }
+        ]
+      }
+    ]
+  ]
+}
