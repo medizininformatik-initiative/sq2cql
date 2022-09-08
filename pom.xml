@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.medizininformatik-initiative</groupId>
-    <artifactId>feasibility-sq2cql</artifactId>
-    <version>0.1.19-SNAPSHOT</version>
+    <artifactId>sq2cql</artifactId>
+    <version>0.1.23-SNAPSHOT</version>
 
     <name>sq2cql</name>
 
@@ -13,7 +13,7 @@
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <url>https://github.com/medizininformatik-initiative/feasibility-sq2cql</url>
+        <url>https://github.com/medizininformatik-initiative/sq2cql</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -21,16 +21,17 @@
       <repository>
         <id>github</id>
         <name>GitHub Packages</name>
-        <url>https://maven.pkg.github.com/medizininformatik-initiative/feasibility-sq2cql</url>
+        <url>https://maven.pkg.github.com/medizininformatik-initiative/sq2cql</url>
       </repository>
     </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
-        <hapi-fhir.version>5.6.2</hapi-fhir.version>
-        <testcontainers.version>1.16.3</testcontainers.version>
+        <junit-jupiter.version>5.9.0</junit-jupiter.version>
+        <hapi-fhir.version>6.0.1</hapi-fhir.version>
+        <testcontainers.version>1.17.3</testcontainers.version>
+        <slf4j.version>1.7.36</slf4j.version>
     </properties>
 
     <dependencies>
@@ -38,13 +39,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.13.1</version>
+            <version>2.13.3</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.35</version>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
@@ -58,6 +59,13 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.23.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -78,7 +86,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
-            <version>1.7.33</version>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
 

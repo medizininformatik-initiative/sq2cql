@@ -8,6 +8,7 @@ import de.numcodex.sq2cql.model.structured_query.Modifier;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,7 @@ import static java.util.Objects.requireNonNull;
  * @author Alexander Kiel
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Mapping {
+public final class Mapping {
 
     private final TermCode key;
     private final String resourceType;
@@ -31,11 +32,11 @@ public class Mapping {
         List<AttributeMapping> attributeMappings, String timeRestrictionPath) {
         this.key = requireNonNull(key);
         this.resourceType = requireNonNull(resourceType);
-        this. valueFhirPath = requireNonNull(valueFhirPath);
+        this.valueFhirPath = requireNonNull(valueFhirPath);
+        this.valueType = valueType;
         this.fixedCriteria = List.copyOf(fixedCriteria);
         this.attributeMappings = (attributeMappings == null ? Map.of() : attributeMappings.stream()
-            .collect(Collectors.toMap(AttributeMapping::key, Function.identity())));
-        this.valueType = valueType;
+                .collect(Collectors.toMap(AttributeMapping::key, Function.identity())));
         this.timeRestrictionPath = timeRestrictionPath;
     }
 
@@ -94,7 +95,7 @@ public class Mapping {
         return attributeMappings;
     }
 
-    public String timeRestrictionPath() {
-        return timeRestrictionPath;
+    public Optional<String> timeRestrictionPath() {
+        return Optional.ofNullable(timeRestrictionPath);
     }
 }

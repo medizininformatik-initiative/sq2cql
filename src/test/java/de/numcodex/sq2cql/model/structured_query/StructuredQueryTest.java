@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import de.numcodex.sq2cql.model.common.TermCode;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -168,6 +169,6 @@ class StructuredQueryTest {
             """,  StructuredQuery.class);
 
         AbstractCriterion criterion = (AbstractCriterion)structuredQuery.inclusionCriteria().get(0).get(0);
-        assertEquals(null, criterion.timeRestriction());
+        assertThat(criterion.timeRestriction()).isNull();
     }
 }

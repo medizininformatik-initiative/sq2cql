@@ -22,7 +22,6 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Alexander Kiel
  */
-@SuppressWarnings("ClassCanBeRecord")
 public final class Container<T> {
 
     private static final Container<?> EMPTY = new Container<>(null, Set.of(), Set.of());

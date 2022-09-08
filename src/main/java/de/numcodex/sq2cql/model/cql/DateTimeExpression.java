@@ -1,8 +1,8 @@
 package de.numcodex.sq2cql.model.cql;
 
-import static java.util.Objects.requireNonNull;
-
 import de.numcodex.sq2cql.PrintContext;
+
+import static java.util.Objects.requireNonNull;
 
 public record DateTimeExpression(String dateTime) implements Expression {
 

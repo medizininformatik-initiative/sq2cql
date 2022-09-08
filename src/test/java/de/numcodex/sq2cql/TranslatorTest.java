@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -228,30 +229,47 @@ class TranslatorTest {
             TimeRestriction.of("2020-01-01T", "2020-01-02T"))))));
 
     assertEquals("""
-        library Retrieve
-        using FHIR version '4.0.0'
-        include FHIRHelpers version '4.0.0'
-                                           
-        codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
-                       
-        context Patient
-                        
-        define InInitialPopulation:
-          exists from [Condition: Code 'C71.1' from icd10] C
-            where C.onset as dateTime in Interval[@2020-01-01T, @2020-01-02T] or
-              C.onset overlaps Interval[@2020-01-01T, @2020-01-02T]
-        """, library.print(PrintContext.ZERO));
+            library Retrieve
+            using FHIR version '4.0.0'
+            include FHIRHelpers version '4.0.0'
+                                               
+            codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+                           
+            context Patient
+                            
+            define InInitialPopulation:
+              exists from [Condition: Code 'C71.1' from icd10] C
+                where C.onset as dateTime in Interval[@2020-01-01T, @2020-01-02T] or
+                  C.onset overlaps Interval[@2020-01-01T, @2020-01-02T]
+            """, library.print(PrintContext.ZERO));
   }
 
+  @Test
+  void toCQL_TimeRestriction_missingPathInMapping() {
+    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1",
+            "Malignant neoplasm of brain");
+    var mappings = Map.of(c71_1,
+            Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), null));
+    var conceptTree = TermCodeNode.of(c71_1);
+    var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
+    var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
+    var query = StructuredQuery.of(List.of(
+            List.of(ConceptCriterion.of(Concept.of(c71_1),
+                    TimeRestriction.of("2020-01-01T", "2020-01-02T")))));
+    var translator = Translator.of(mappingContext);
+
+    assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query))
+            .withMessage("Missing timeRestrictionPath in mapping with key TermCode[system=http://fhir.de/CodeSystem/dimdi/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain].");
+  }
 
   @Test
   void toCQL_Test_Task1() {
     var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-        C71_0, Mapping.of(C71_0, "Condition", null, null, List.of(),
-            List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
-        C71_1, Mapping.of(C71_1, "Condition", null, null, List.of(),
-            List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
-        TMZ, Mapping.of(TMZ, "MedicationStatement"));
+            C71_0, Mapping.of(C71_0, "Condition", null, null, List.of(),
+                    List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
+            C71_1, Mapping.of(C71_1, "Condition", null, null, List.of(),
+                    List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
+            TMZ, Mapping.of(TMZ, "MedicationStatement"));
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(TMZ),
         TermCodeNode.of(C71, TermCodeNode.of(C71_0),
             TermCodeNode.of(C71_1)));
