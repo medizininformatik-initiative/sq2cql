@@ -12,11 +12,11 @@ import static java.util.stream.Collectors.joining;
  * @author Alexander Kiel
  */
 public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
-                      List<ExpressionDefinition> expressionDefinitions) {
+                      List<Context> contexts) {
 
     public Library {
         codeSystemDefinitions = Set.copyOf(codeSystemDefinitions);
-        expressionDefinitions = List.copyOf(expressionDefinitions);
+        contexts = List.copyOf(contexts);
     }
 
     public static Library of() {
@@ -24,8 +24,8 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
     }
 
     public static Library of(Set<CodeSystemDefinition> codeSystemDefinitions,
-                             List<ExpressionDefinition> expressionDefinitions) {
-        return new Library(codeSystemDefinitions, expressionDefinitions);
+                             List<Context> contexts) {
+        return new Library(codeSystemDefinitions, contexts);
     }
 
     public String print(PrintContext printContext) {
@@ -34,12 +34,10 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
                 library Retrieve
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                      
-                context Patient
-                                
+                                      
                 %s
                 """
-                .formatted(expressionDefinitions.stream().map(d -> d.print(printContext)).collect(joining("\n\n")))
+                .formatted(contexts.stream().map(d -> d.print(printContext)).collect(joining("\n\n")))
                 : """
                 library Retrieve
                 using FHIR version '4.0.0'
@@ -47,13 +45,11 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
                                 
                 %s
                                 
-                context Patient
-                                
                 %s
                 """
                 .formatted(codeSystemDefinitions.stream()
                                 .sorted(Comparator.comparing(CodeSystemDefinition::name))
                                 .map(CodeSystemDefinition::print).collect(joining("\n")),
-                        expressionDefinitions.stream().map(d -> d.print(printContext)).collect(joining("\n\n")));
+                        contexts.stream().map(d -> d.print(printContext)).collect(joining("\n\n")));
     }
 }

@@ -88,7 +88,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE))));
 
     assertEquals("true",
-        library.expressionDefinitions().get(0).getExpression().print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(0).getExpression().print(PrintContext.ZERO));
   }
 
   @Test
@@ -96,7 +96,7 @@ class TranslatorTest {
     Library library = Translator.of().toCql(StructuredQuery.of(
         List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-    assertEquals("true or\nfalse", library.expressionDefinitions().get(0).getExpression()
+    assertEquals("true or\nfalse", library.contexts().get(0).expressionDefinitions().get(0).getExpression()
         .print(PrintContext.ZERO));
   }
 
@@ -105,7 +105,7 @@ class TranslatorTest {
     Library library = Translator.of().toCql(StructuredQuery.of(
         List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-    assertEquals("true and\nfalse", library.expressionDefinitions().get(0).getExpression()
+    assertEquals("true and\nfalse", library.contexts().get(0).expressionDefinitions().get(0).getExpression()
         .print(PrintContext.ZERO));
   }
 
@@ -115,7 +115,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE, Criterion.TRUE),
             List.of(Criterion.FALSE, Criterion.FALSE))));
 
-    assertEquals("(true or\ntrue) and\n(false or\nfalse)", library.expressionDefinitions().get(0)
+    assertEquals("(true or\ntrue) and\n(false or\nfalse)", library.contexts().get(0).expressionDefinitions().get(0)
         .getExpression().print(PrintContext.ZERO));
   }
 
@@ -126,9 +126,9 @@ class TranslatorTest {
         List.of(List.of(Criterion.FALSE))));
 
     assertEquals("define Inclusion:\n  true",
-        library.expressionDefinitions().get(0).print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(0).print(PrintContext.ZERO));
     assertEquals("define Exclusion:\n  false",
-        library.expressionDefinitions().get(1).print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(1).print(PrintContext.ZERO));
   }
 
   @Test
@@ -137,7 +137,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-    assertEquals("define Exclusion:\n  true and\n  false", library.expressionDefinitions().get(1)
+    assertEquals("define Exclusion:\n  true and\n  false", library.contexts().get(0).expressionDefinitions().get(1)
         .print(PrintContext.ZERO));
   }
 
@@ -147,7 +147,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-    assertEquals("true or\nfalse", library.expressionDefinitions().get(1).getExpression()
+    assertEquals("true or\nfalse", library.contexts().get(0).expressionDefinitions().get(1).getExpression()
         .print(PrintContext.ZERO));
   }
 
@@ -158,7 +158,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE, Criterion.TRUE),
             List.of(Criterion.FALSE, Criterion.FALSE))));
 
-    assertEquals("true and\ntrue or\nfalse and\nfalse", library.expressionDefinitions().get(1)
+    assertEquals("true and\ntrue or\nfalse and\nfalse", library.contexts().get(0).expressionDefinitions().get(1)
         .getExpression().print(PrintContext.ZERO));
   }
 
