@@ -39,7 +39,7 @@ public class MedicationAdministrationTest {
       entry("http://fhir.de/CodeSystem/bfarm/ops", "oops"));
 
   private static Path resourcePath(String name) throws URISyntaxException {
-    return Paths.get(Objects.requireNonNull(AcceptanceTestPolar.class.getResource(name)).toURI());
+    return Paths.get(Objects.requireNonNull(MedicationAdministrationTest.class.getResource(name)).toURI());
   }
 
   private static String slurp(String name) throws Exception {
