@@ -266,8 +266,8 @@ class ValueSetCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '94500-6' from loinc] O
-                          where O.value.coding contains Code 'positive' from snomed""",
+                        exists (from [Observation: Code '94500-6' from loinc] O
+                          where O.value.coding contains Code 'positive' from snomed)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -279,10 +279,10 @@ class ValueSetCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '21908-9' from loinc] O
-                          where O.value.coding contains Code 'LA3649-6' from loinc or
-                        exists from [Observation: Code '21902-2' from loinc] O
-                          where O.value.coding contains Code 'LA3649-6' from loinc""",
+                        exists (from [Observation: Code '21908-9' from loinc] O
+                          where O.value.coding contains Code 'LA3649-6' from loinc) or
+                        exists (from [Observation: Code '21902-2' from loinc] O
+                          where O.value.coding contains Code 'LA3649-6' from loinc)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -294,9 +294,9 @@ class ValueSetCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '76689-9' from loinc] O
+                        exists (from [Observation: Code '76689-9' from loinc] O
                           where O.value.coding contains Code 'male' from gender or
-                            O.value.coding contains Code 'female' from gender""",
+                            O.value.coding contains Code 'female' from gender)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, GENDER_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -308,8 +308,8 @@ class ValueSetCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Condition: Code '404684003' from snomed] C
-                          where C.severity.coding contains Code '24484000' from snomed""",
+                        exists (from [Condition: Code '404684003' from snomed] C
+                          where C.severity.coding contains Code '24484000' from snomed)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -322,9 +322,9 @@ class ValueSetCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '94500-6' from loinc] O
+                        exists (from [Observation: Code '94500-6' from loinc] O
                           where O.value.coding contains Code 'positive' from snomed and
-                            O.status = 'final'""",
+                            O.status = 'final')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -340,9 +340,9 @@ class ValueSetCriterionTest {
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        exists from [Observation: Code '94500-6' from loinc] O
+                        exists (from [Observation: Code '94500-6' from loinc] O
                           where O.value.coding contains Code 'positive' from snomed and
-                            O.status = 'final'""",
+                            O.status = 'final')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }

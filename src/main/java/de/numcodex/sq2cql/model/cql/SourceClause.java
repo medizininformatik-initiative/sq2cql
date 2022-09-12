@@ -4,10 +4,10 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record SourceClause(Expression retrieve, IdentifierExpression alias) {
+public record SourceClause(Expression querySource, IdentifierExpression alias) {
 
     public SourceClause {
-        requireNonNull(retrieve);
+        requireNonNull(querySource);
         requireNonNull(alias);
     }
 
@@ -16,6 +16,7 @@ public record SourceClause(Expression retrieve, IdentifierExpression alias) {
     }
 
     public String toCql(PrintContext printContext) {
-        return "from %s %s".formatted(retrieve.print(printContext), alias.print(printContext));
+        assert printContext.precedence() == 0;
+        return "from %s %s".formatted(querySource.print(printContext), alias.print(printContext));
     }
 }

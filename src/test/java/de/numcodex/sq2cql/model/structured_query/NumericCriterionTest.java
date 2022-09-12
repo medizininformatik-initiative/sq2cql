@@ -110,8 +110,8 @@ class NumericCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '26515-7' from loinc] O
-                          where O.value as Quantity < 50 'g/dl'""",
+                        exists (from [Observation: Code '26515-7' from loinc] O
+                          where O.value as Quantity < 50 'g/dl')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -123,8 +123,8 @@ class NumericCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '06' from ecrf] O
-                          where O.value as Quantity = 6""",
+                        exists (from [Observation: Code '06' from ecrf] O
+                          where O.value as Quantity = 6)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -136,8 +136,8 @@ class NumericCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code 'other-value-path' from foo] O
-                          where O.other as Quantity = 1""",
+                        exists (from [Observation: Code 'other-value-path' from foo] O
+                          where O.other as Quantity = 1)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(FOO_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -150,9 +150,9 @@ class NumericCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '06' from ecrf] O
+                        exists (from [Observation: Code '06' from ecrf] O
                           where O.value as Quantity = 6 and
-                            O.status = 'final'""",
+                            O.status = 'final')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -168,9 +168,9 @@ class NumericCriterionTest {
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        exists from [Observation: Code '06' from ecrf] O
+                        exists (from [Observation: Code '06' from ecrf] O
                           where O.value as Quantity = 6 and
-                            O.status = 'final'""",
+                            O.status = 'final')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }

@@ -17,8 +17,9 @@ public record QueryExpression(SourceClause sourceClause, WhereClause whereClause
 
     @Override
     public String print(PrintContext printContext) {
-        var wherePrintContext = printContext.increase();
-        return "%s\n%s%s".formatted(sourceClause.toCql(printContext.resetPrecedence()), wherePrintContext.getIndent(),
-                whereClause.toCql(wherePrintContext));
+        var sourcePrintContext = printContext.resetPrecedence();
+        var wherePrintContext = sourcePrintContext.increase();
+        return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.toCql(sourcePrintContext),
+                wherePrintContext.getIndent(), whereClause.toCql(wherePrintContext)));
     }
 }

@@ -99,8 +99,8 @@ class RangeCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '26515-7' from loinc] O
-                          where O.value as Quantity between 20 'g/dl' and 30 'g/dl'""",
+                        exists (from [Observation: Code '26515-7' from loinc] O
+                          where O.value as Quantity between 20 'g/dl' and 30 'g/dl')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -112,8 +112,8 @@ class RangeCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code 'other-value-path' from foo] O
-                          where O.other as Quantity between 1 and 2""",
+                        exists (from [Observation: Code 'other-value-path' from foo] O
+                          where O.other as Quantity between 1 and 2)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(FOO_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -126,9 +126,9 @@ class RangeCriterionTest {
         var container = criterion.toCql(MAPPING_CONTEXT);
 
         assertEquals("""
-                        exists from [Observation: Code '26515-7' from loinc] O
+                        exists (from [Observation: Code '26515-7' from loinc] O
                           where O.value as Quantity between 20 'g/dl' and 30 'g/dl' and
-                            O.status = 'final'""",
+                            O.status = 'final')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -144,9 +144,9 @@ class RangeCriterionTest {
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        exists from [Observation: Code '26515-7' from loinc] O
+                        exists (from [Observation: Code '26515-7' from loinc] O
                           where O.value as Quantity between 20 'g/dl' and 30 'g/dl' and
-                            O.status = 'final'""",
+                            O.status = 'final')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }

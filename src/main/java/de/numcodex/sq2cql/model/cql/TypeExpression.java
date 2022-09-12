@@ -19,7 +19,7 @@ public record TypeExpression(Expression expression, String typeSpecifier) implem
 
     @Override
     public String print(PrintContext printContext) {
-        return printContext.parenthesize(PRECEDENCE, "%s as %s".formatted(this.expression.print(printContext
+        return printContext.parenthesize(PRECEDENCE, "%s as %s".formatted(expression.print(printContext
                 .withPrecedence(PRECEDENCE)), typeSpecifier));
     }
 }
