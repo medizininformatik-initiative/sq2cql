@@ -31,7 +31,7 @@ class QueryExpressionTest {
 
     static QueryExpression query() {
         var retrieve = RetrieveExpression.of("Observation", CodeSelector.of("85354-9", "loinc"));
-        var sourceClause = SourceClause.of(retrieve, IdentifierExpression.of("O"));
+        var sourceClause = SourceClause.from(retrieve, IdentifierExpression.of("O"));
         return QueryExpression.of(sourceClause, WhereClause.of(BooleanExpression.TRUE));
     }
 }

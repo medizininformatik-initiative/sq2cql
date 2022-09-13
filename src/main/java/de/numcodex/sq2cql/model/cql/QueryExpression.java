@@ -9,7 +9,6 @@ public record QueryExpression(SourceClause sourceClause, WhereClause whereClause
 
     public QueryExpression {
         requireNonNull(sourceClause);
-        requireNonNull(whereClause);
     }
 
     public static QueryExpression of(SourceClause sourceClause, WhereClause whereClause) {
@@ -23,14 +22,14 @@ public record QueryExpression(SourceClause sourceClause, WhereClause whereClause
     @Override
     public String print(PrintContext printContext) {
         var sourcePrintContext = printContext.resetPrecedence();
-        var wherePrintContext = printContext.increase();
-        var returnPrintContext = printContext.increase();
         if (!Objects.isNull(whereClause)) {
+            var wherePrintContext = sourcePrintContext.increase();
             return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.toCql(sourcePrintContext),
                 wherePrintContext.getIndent(),
                 whereClause.toCql(wherePrintContext)));
         }
         else if (!Objects.isNull(returnClause)) {
+            var returnPrintContext = sourcePrintContext.increase();
             return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.toCql(sourcePrintContext),
                 returnPrintContext.getIndent(),
                 returnClause.toCql(returnPrintContext)));

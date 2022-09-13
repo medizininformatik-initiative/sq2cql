@@ -76,8 +76,8 @@ public class MedicationAdministrationTest {
         context Patient
                 
         define InInitialPopulation:
-          exists from [MedicationAdministration] M
-            where M.medication.reference in "Heparin"
+          exists (from [MedicationAdministration] M
+            where M.medication.reference in "Heparin")
             """, cql);
 
   }
