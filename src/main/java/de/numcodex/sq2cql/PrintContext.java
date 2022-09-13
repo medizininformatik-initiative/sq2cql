@@ -13,6 +13,10 @@ public record PrintContext(int indent, int precedence) {
         return " ".repeat(indent);
     }
 
+    public String parenthesizeZero(String s) {
+        return parenthesize(0, s);
+    }
+
     public String parenthesize(int precedence, String s) {
         return precedence < this.precedence ? "(%s)".formatted(s) : s;
     }
@@ -25,6 +29,11 @@ public record PrintContext(int indent, int precedence) {
         return new PrintContext(indent, precedence);
     }
 
+    /**
+     * Sets the {@link #precedence} to zero and keeps the {@link #indent}.
+     *
+     * @return a new {@code PrintContext} with a {@code precedence} of zero and an {@code indent} of this {@code PrintContext}
+     */
     public PrintContext resetPrecedence() {
         return new PrintContext(indent, 0);
     }

@@ -17,7 +17,7 @@ public record RetrieveExpression(String resourceType, Expression terminology) im
 
     @Override
     public String print(PrintContext printContext) {
-        return "[%s: %s]".formatted(resourceType, terminology.print(printContext));
+        return "[%s: %s]".formatted(resourceType, terminology.print(printContext.resetPrecedence()));
     }
 
     public IdentifierExpression alias() {

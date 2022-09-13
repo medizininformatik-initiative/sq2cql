@@ -219,8 +219,8 @@ class ConceptCriterionTest {
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        exists from [Condition: Code 'C71' from icd10] C
-                          where C.verificationStatus.coding contains Code 'confirmed' from ver_status""",
+                        exists (from [Condition: Code 'C71' from icd10] C
+                          where C.verificationStatus.coding contains Code 'confirmed' from ver_status)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(ICD10_CODE_SYSTEM_DEF, VER_STATUS_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -239,10 +239,10 @@ class ConceptCriterionTest {
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        exists from [Condition: Code 'C71.1' from icd10] C
-                          where C.verificationStatus.coding contains Code 'confirmed' from ver_status or
-                        exists from [Condition: Code 'C71.2' from icd10] C
-                          where C.verificationStatus.coding contains Code 'confirmed' from ver_status""",
+                        exists (from [Condition: Code 'C71.1' from icd10] C
+                          where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
+                        exists (from [Condition: Code 'C71.2' from icd10] C
+                          where C.verificationStatus.coding contains Code 'confirmed' from ver_status)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(ICD10_CODE_SYSTEM_DEF, VER_STATUS_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -261,8 +261,8 @@ class ConceptCriterionTest {
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        exists from [Observation: Code '85354-9' from loinc] O
-                          where O.component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first() as Quantity < 80 'mm[Hg]'""",
+                        exists (from [Observation: Code '85354-9' from loinc] O
+                          where O.component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first() as Quantity < 80 'mm[Hg]')""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -278,8 +278,8 @@ class ConceptCriterionTest {
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        exists from [Procedure: Code '277132007' from snomed] P
-                          where P.status in { 'completed', 'in-progress' }""",
+                        exists (from [Procedure: Code '277132007' from snomed] P
+                          where P.status in { 'completed', 'in-progress' })""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }
@@ -294,8 +294,8 @@ class ConceptCriterionTest {
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        exists from [Condition: Code 'C71' from icd10] C
-                          where C.verificationStatus.coding contains Code 'confirmed' from ver_status""",
+                        exists (from [Condition: Code 'C71' from icd10] C
+                          where C.verificationStatus.coding contains Code 'confirmed' from ver_status)""",
                 PrintContext.ZERO.print(container));
         assertEquals(Set.of(ICD10_CODE_SYSTEM_DEF, VER_STATUS_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
     }

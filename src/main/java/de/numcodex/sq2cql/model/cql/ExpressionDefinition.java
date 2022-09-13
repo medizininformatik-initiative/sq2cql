@@ -20,6 +20,7 @@ public record ExpressionDefinition(String identifier, Expression expression) imp
     }
 
     public String print(PrintContext printContext) {
+        assert printContext.precedence() == 0;
         var newPrintContext = printContext.increase();
         return "define %s:\n%s%s".formatted(identifier, newPrintContext.getIndent(),
                 expression.print(newPrintContext));

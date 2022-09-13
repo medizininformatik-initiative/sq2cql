@@ -8,20 +8,22 @@ public record OverlapsIntervalOperatorPhrase(Expression leftInterval,
                                              Expression rightInterval) implements
         BooleanExpression {
 
+  public static final int PRECEDENCE = 7;
+
   public OverlapsIntervalOperatorPhrase {
     requireNonNull(leftInterval);
     requireNonNull(rightInterval);
   }
 
   public static OverlapsIntervalOperatorPhrase of(Expression leftInterval,
-      Expression rightInterval) {
+                                                  Expression rightInterval) {
     return new OverlapsIntervalOperatorPhrase(leftInterval, rightInterval);
   }
 
   @Override
   public String print(PrintContext printContext) {
-    return "%s overlaps %s".formatted(leftInterval.print(printContext),
-        rightInterval.print(printContext));
+    var operatorPrintContext = printContext.withPrecedence(PRECEDENCE);
+    return printContext.parenthesize(PRECEDENCE, "%s overlaps %s".formatted(leftInterval.print(operatorPrintContext),
+            rightInterval.print(operatorPrintContext)));
   }
-
 }
