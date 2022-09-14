@@ -3,6 +3,7 @@ package de.numcodex.sq2cql;
 import de.numcodex.sq2cql.model.cql.AndExpression;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
+import de.numcodex.sq2cql.model.cql.ExpressionDefinition;
 import de.numcodex.sq2cql.model.cql.OrExpression;
 
 import java.util.Optional;
@@ -23,15 +24,17 @@ import static java.util.Objects.requireNonNull;
  */
 public final class Container<T> {
 
-    private static final Container<?> EMPTY = new Container<>(null, Set.of());
+    private static final Container<?> EMPTY = new Container<>(null, Set.of(), Set.of());
     public static final BinaryOperator<Container<BooleanExpression>> AND = combiner(AndExpression::of);
     public static final BinaryOperator<Container<BooleanExpression>> OR = combiner(OrExpression::of);
     private final T expression;
     private final Set<CodeSystemDefinition> codeSystemDefinitions;
+    private final Set<ExpressionDefinition> referencedDefinitions;
 
-    private Container(T expression, Set<CodeSystemDefinition> codeSystemDefinitions) {
+    private Container(T expression, Set<CodeSystemDefinition> codeSystemDefinitions, Set<ExpressionDefinition> referencedDefinitions) {
         this.expression = expression;
         this.codeSystemDefinitions = codeSystemDefinitions;
+        this.referencedDefinitions = referencedDefinitions;
     }
 
     /**
@@ -58,7 +61,21 @@ public final class Container<T> {
      * @throws NullPointerException if {@code expression} is null
      */
     public static <T> Container<T> of(T expression, CodeSystemDefinition... codeSystemDefinitions) {
-        return new Container<>(requireNonNull(expression), Set.of(codeSystemDefinitions));
+        return new Container<>(requireNonNull(expression), Set.of(codeSystemDefinitions), Set.of());
+    }
+
+    /**
+     * Returns a container holding {@code expression} and {@code codeSystemDefinitions}.
+     *
+     * @param expression            the expression being hold
+     * @param codeSystemDefinitions the code system definition being hold
+     * @param <T>                   the type of the expression
+     * @param referencedDefinitions the definitions that are referenced within the patient context
+     * @return a container
+     * @throws NullPointerException if {@code expression} is null
+     */
+    public static <T> Container<T> of(T expression, Set<CodeSystemDefinition> codeSystemDefinitions, Set<ExpressionDefinition> referencedDefinitions) {
+        return new Container<>(requireNonNull(expression), codeSystemDefinitions, referencedDefinitions);
     }
 
     /**
@@ -77,7 +94,7 @@ public final class Container<T> {
     public static <T> BinaryOperator<Container<T>> combiner(BinaryOperator<T> combiner) {
         return (a, b) -> a == EMPTY
                 ? b : b == EMPTY ? a : new Container<>(combiner.apply(a.expression, b.expression),
-                Sets.union(a.codeSystemDefinitions, b.codeSystemDefinitions));
+                Sets.union(a.codeSystemDefinitions, b.codeSystemDefinitions), Sets.union(a.referencedDefinitions, b.referencedDefinitions));
     }
 
     /**
@@ -99,6 +116,13 @@ public final class Container<T> {
     }
 
     /**
+     * Returns the referenced Codes
+     */
+    public Set<ExpressionDefinition> getReferencedDefinitions() {
+        return referencedDefinitions;
+    }
+
+    /**
      * Returns {@code true} iff this container is empty.
      *
      * @return {@code true} iff this container is empty
@@ -109,7 +133,7 @@ public final class Container<T> {
 
     public <U> Container<U> map(Function<? super T, ? extends U> mapper) {
         return isEmpty() ? empty() : new Container<>(requireNonNull(mapper.apply(expression)),
-                codeSystemDefinitions);
+                codeSystemDefinitions, referencedDefinitions);
     }
 
     public <U> Container<U> flatMap(Function<? super T, ? extends Container<? extends U>> mapper) {
@@ -122,6 +146,7 @@ public final class Container<T> {
         }
         assert container.getExpression().isPresent();
         return new Container<>(requireNonNull(container.getExpression().get()),
-                Sets.union(codeSystemDefinitions, container.getCodeSystemDefinitions()));
+                Sets.union(codeSystemDefinitions, container.getCodeSystemDefinitions()),
+                Sets.union(referencedDefinitions, container.getReferencedDefinitions()));
     }
 }
