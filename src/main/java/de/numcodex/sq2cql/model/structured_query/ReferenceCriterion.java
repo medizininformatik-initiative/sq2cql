@@ -1,11 +1,12 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
+import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
+import de.numcodex.sq2cql.model.cql.AdditionExpressionTerm;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
-import de.numcodex.sq2cql.model.cql.ExpressionDefinition;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.MembershipExpression;
@@ -13,12 +14,13 @@ import de.numcodex.sq2cql.model.cql.QueryExpression;
 import de.numcodex.sq2cql.model.cql.RetrieveExpression;
 import de.numcodex.sq2cql.model.cql.ReturnClause;
 import de.numcodex.sq2cql.model.cql.SourceClause;
+import de.numcodex.sq2cql.model.cql.StringLiteralExpression;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A {@code ReferenceCriterion} will select all patients that have at least one resource represented
- * by that concept through a reference.
+ * by that concept through a reference. Currently, ReferenceCriterion is not defined
+ * within the structured query (its virtual)
  */
 public final class ReferenceCriterion extends AbstractCriterion {
 
@@ -31,7 +33,7 @@ public final class ReferenceCriterion extends AbstractCriterion {
 
   }
 
-  public static ReferenceCriterion from(AbstractCriterion criterion, TermCode referencedTermCode) {
+  public static ReferenceCriterion of(AbstractCriterion criterion, TermCode referencedTermCode) {
     return new ReferenceCriterion(criterion.concept, criterion.attributeFilters,
         criterion.timeRestriction(), referencedTermCode);
   }
@@ -39,14 +41,20 @@ public final class ReferenceCriterion extends AbstractCriterion {
   @Override
   Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
       IdentifierExpression identifier) {
+    var retrieveExprContainer = codeSelector(mappingContext, referencedTermCode).map(
+        terminology -> RetrieveExpression.of("Medication", terminology));
+    var alias = retrieveExprContainer.getExpression().get().alias();
+    var returnClause = ReturnClause.of(
+        AdditionExpressionTerm.of(StringLiteralExpression.of("Medication/"),
+            InvocationExpression.of(alias, "id")));
+    var queryExprContainer = retrieveExprContainer.map(
+        retrieveExpr -> QueryExpression.of(SourceClause.of(retrieveExpr, retrieveExpr.alias()),
+            returnClause));
     var valueExpr = InvocationExpression.of(identifier, mapping.valueFhirPath());
-    var codeSelector = codeSelector(mappingContext, referencedTermCode).getExpression();
-    var retrieveExpr = RetrieveExpression.of("Medication", codeSelector.get());
-    var query = QueryExpression.of(SourceClause.of(retrieveExpr, retrieveExpr.alias()),
-        ReturnClause.of(IdentifierExpression.of("'Medication/' + M.id")));
-    var defineExpr = new ExpressionDefinition("\"%s\"".formatted(referencedTermCode.display()), query);
-    return Container.of(
-        MembershipExpression.in(valueExpr, referenceName(mappingContext, referencedTermCode)),
-        Set.of(), Set.of(defineExpr));
+    var membershipExprContainer = Container.<BooleanExpression>of(
+        MembershipExpression.in(valueExpr, referenceName(referencedTermCode)));
+    return membershipExprContainer.addReferenceDefinition(referenceName(referencedTermCode).print(
+            PrintContext.ZERO),
+        queryExprContainer);
   }
 }

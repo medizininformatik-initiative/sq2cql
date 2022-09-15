@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record IntervalSelector(Expression intervalStart, Expression intervalEnd) implements TermExpression {
+public record IntervalSelector(Expression intervalStart, Expression intervalEnd) implements ExpressionTerm {
 
   public IntervalSelector {
     requireNonNull(intervalStart);

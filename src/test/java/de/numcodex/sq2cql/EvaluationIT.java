@@ -97,7 +97,7 @@ public class EvaluationIT {
         var translator = Translator.of(mappingContext);
         var criterion = NumericCriterion.of(Concept.of(BLOOD_PRESSURE), LESS_THAN, BigDecimal.valueOf(80), "mm[Hg]");
         var structuredQuery = StructuredQuery.of(List.of(List.of(criterion)));
-        var cql = translator.toCql(structuredQuery).print(PrintContext.ZERO);
+        var cql = translator.toCql(structuredQuery).print();
         var libraryUri = "urn:uuid" + UUID.randomUUID();
         var library = appendCql(parseResource(Library.class, slurp("Library.json")).setUrl(libraryUri), cql);
         var measureUri = "urn:uuid" + UUID.randomUUID();

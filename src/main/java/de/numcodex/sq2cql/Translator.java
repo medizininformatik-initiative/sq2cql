@@ -59,15 +59,13 @@ public class Translator {
 
   private static Library inclusionOnlyLibrary(Container<BooleanExpression> inclusionExpr) {
     assert inclusionExpr.getExpression().isPresent();
-    var UndefinedContext = Context.of("Unfiltered",
+    var unfilteredContext = Context.of("Unfiltered",
         List.copyOf(inclusionExpr.getReferencedDefinitions()));
     var PatientContext = Context.of("Patient", List.of(
         ExpressionDefinition.of("InInitialPopulation", inclusionExpr.getExpression().get())));
-    if (UndefinedContext.expressionDefinitions().isEmpty()) {
-      return Library.of(inclusionExpr.getCodeSystemDefinitions(), List.of(PatientContext));
-    }
     return Library.of(inclusionExpr.getCodeSystemDefinitions(),
-        List.of(UndefinedContext, PatientContext));
+        Stream.of(unfilteredContext, PatientContext)
+            .filter(context -> !context.expressionDefinitions().isEmpty()).toList());
   }
 
   private static Library library(Container<BooleanExpression> inclusionExpr,
@@ -76,19 +74,14 @@ public class Translator {
     assert exclusionExpr.getExpression().isPresent();
     var definitions = Stream.concat(exclusionExpr.getReferencedDefinitions().stream(),
         inclusionExpr.getReferencedDefinitions().stream()).toList();
-    var UndefinedContext = Context.of("Unfiltered", definitions);
+    var unfilteredContext = Context.of("Unfiltered", definitions);
     var PatientContext = Context.of("Patient",
         List.of(ExpressionDefinition.of("Inclusion", inclusionExpr.getExpression().get()),
             ExpressionDefinition.of("Exclusion", exclusionExpr.getExpression().get()),
             IN_INITIAL_POPULATION));
-
-    if (UndefinedContext.expressionDefinitions().isEmpty()) {
-      return Library.of(Sets.union(inclusionExpr.getCodeSystemDefinitions(),
-          exclusionExpr.getCodeSystemDefinitions()), List.of(PatientContext));
-    }
     return Library.of(Sets.union(inclusionExpr.getCodeSystemDefinitions(),
-        exclusionExpr.getCodeSystemDefinitions()), List.of(UndefinedContext, PatientContext)
-    );
+        exclusionExpr.getCodeSystemDefinitions()), Stream.of(unfilteredContext, PatientContext)
+        .filter(context -> !context.expressionDefinitions().isEmpty()).toList());
   }
 
   /**

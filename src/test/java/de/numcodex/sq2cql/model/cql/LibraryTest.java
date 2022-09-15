@@ -16,7 +16,7 @@ class LibraryTest {
 
     @Test
     void print_Empty() {
-        var cql = Library.of().print(PrintContext.ZERO);
+        var cql = Library.of().print();
 
         assertEquals("""
                 library Retrieve
@@ -30,7 +30,7 @@ class LibraryTest {
     @Test
     void print_OnExpressionDefinition() {
         var cql = Library.of(Set.of(), List.of(Context.of("Patient", List.of(ExpressionDefinition.of("InInitialPopulation", TRUE)))))
-                .print(PrintContext.ZERO);
+                .print();
 
         assertEquals("""
                 library Retrieve

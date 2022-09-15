@@ -59,7 +59,7 @@ public class MedicationAdministrationTest {
   public void translateMedicationAdministration() throws Exception {
     var translator = createTranslator();
     var structuredQuery = readStructuredQuery();
-    var cql = translator.toCql(structuredQuery).print(PrintContext.ZERO);
+    var cql = translator.toCql(structuredQuery).print();
     assertEquals("""
         library Retrieve
         using FHIR version '4.0.0'
@@ -69,15 +69,15 @@ public class MedicationAdministrationTest {
                 
         context Unfiltered
                 
-        define "Heparin":
-          [Medication: Code 'B01AB01' from atc] M
+        define HeparinRef:
+          from [Medication: Code 'B01AB01' from atc] M
             return 'Medication/' + M.id
                 
         context Patient
                 
         define InInitialPopulation:
           exists (from [MedicationAdministration] M
-            where M.medication.reference in "Heparin")
+            where M.medication.reference in HeparinRef)
             """, cql);
 
   }

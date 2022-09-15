@@ -24,15 +24,15 @@ public record QueryExpression(SourceClause sourceClause, WhereClause whereClause
         var sourcePrintContext = printContext.resetPrecedence();
         if (!Objects.isNull(whereClause)) {
             var wherePrintContext = sourcePrintContext.increase();
-            return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.toCql(sourcePrintContext),
+            return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.print(sourcePrintContext),
                 wherePrintContext.getIndent(),
-                whereClause.toCql(wherePrintContext)));
+                whereClause.print(wherePrintContext)));
         }
         else if (!Objects.isNull(returnClause)) {
             var returnPrintContext = sourcePrintContext.increase();
-            return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.toCql(sourcePrintContext),
+            return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.print(sourcePrintContext),
                 returnPrintContext.getIndent(),
-                returnClause.toCql(returnPrintContext)));
+                returnClause.print(returnPrintContext)));
         }
         else return "";
     }

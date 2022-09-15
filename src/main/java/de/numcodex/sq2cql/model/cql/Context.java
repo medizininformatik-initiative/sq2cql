@@ -1,14 +1,16 @@
 package de.numcodex.sq2cql.model.cql;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
 import de.numcodex.sq2cql.PrintContext;
 import java.util.List;
 
-public record Context(String contextName, List<ExpressionDefinition> expressionDefinitions) {
+public record Context(String name, List<ExpressionDefinition> expressionDefinitions) {
 
 
   public Context {
+    requireNonNull(name);
     expressionDefinitions = List.copyOf(expressionDefinitions);
   }
 
@@ -20,11 +22,11 @@ public record Context(String contextName, List<ExpressionDefinition> expressionD
     return new Context(contextName, expressionDefinitions);
   }
 
-  public String print(PrintContext printContext) {
+  public String print() {
     return """
         context %s
         
-        %s""".formatted(contextName, expressionDefinitions.stream().map(d -> d.print(printContext)).collect(joining("\n\n")));
+        %s""".formatted(name, expressionDefinitions.stream().map(d -> d.print(PrintContext.ZERO)).collect(joining("\n\n")));
   }
 
 }

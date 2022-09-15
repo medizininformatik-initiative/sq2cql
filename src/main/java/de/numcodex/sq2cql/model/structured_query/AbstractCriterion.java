@@ -14,7 +14,6 @@ import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
 import de.numcodex.sq2cql.model.cql.RetrieveExpression;
 import de.numcodex.sq2cql.model.cql.SourceClause;
-import de.numcodex.sq2cql.model.cql.StringLiteralExpression;
 import de.numcodex.sq2cql.model.cql.WhereClause;
 
 import java.util.List;
@@ -60,11 +59,10 @@ abstract class AbstractCriterion implements Criterion {
   }
 
   /**
-   * Returns the name of a coding as stringliteralExpression to use as reference
+   * Returns the name of a coding as IdentifierExpression to use as reference
    */
-  static IdentifierExpression referenceName(MappingContext mappingContext,
-      TermCode termCode) {
-    return IdentifierExpression.of("\"%s\"".formatted(termCode.display()));
+  static IdentifierExpression referenceName(TermCode termCode) {
+    return IdentifierExpression.of("%s".formatted(termCode.display() + "Ref"));
   }
 
 
@@ -86,16 +84,6 @@ abstract class AbstractCriterion implements Criterion {
       var mapping = mappingContext.findMapping(termCode)
           .orElseThrow(() -> new MappingNotFoundException(termCode));
       return RetrieveExpression.of(mapping.resourceType(), terminology);
-    });
-  }
-
-
-  static Container<RetrieveExpression> retrieveResourceTypeExpr(MappingContext mappingContext,
-      TermCode termCode) {
-    return codeSelector(mappingContext, termCode).map(terminology -> {
-      var mapping = mappingContext.findMapping(termCode)
-          .orElseThrow(() -> new MappingNotFoundException(termCode));
-      return RetrieveExpression.of(mapping.resourceType());
     });
   }
 
@@ -141,21 +129,20 @@ abstract class AbstractCriterion implements Criterion {
     if ("Patient".equals(mapping.resourceType())) {
       return valueAndModifierExpr(mappingContext, mapping, PATIENT);
     } else if ("MedicationAdministration".equals(mapping.resourceType())) {
-      return retrieveResourceTypeExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
-        var self = ReferenceCriterion.from(this, termCode);
-        var alias = retrieveExpr.alias();
-        var sourceClause = SourceClause.from(retrieveExpr, alias);
-        var valueAndModifierExpr = self.valueAndModifierExpr(mappingContext, mapping, alias);
-        if (valueAndModifierExpr.isEmpty()) {
-          return Container.of(ExistsExpression.of(retrieveExpr));
-        } else {
-          return valueAndModifierExpr.map(expr -> existsExpr(sourceClause, expr));
-        }
-      });
+      var retrieveExpr = RetrieveExpression.of("MedicationAdministration");
+      var self = ReferenceCriterion.of(this, termCode);
+      var alias = retrieveExpr.alias();
+      var sourceClause = SourceClause.of(retrieveExpr, alias);
+      var valueAndModifierExpr = self.valueAndModifierExpr(mappingContext, mapping, alias);
+      if (valueAndModifierExpr.isEmpty()) {
+        return Container.of(ExistsExpression.of(retrieveExpr));
+      } else {
+        return valueAndModifierExpr.map(expr -> existsExpr(sourceClause, expr));
+      }
     } else {
       return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
         var alias = retrieveExpr.alias();
-        var sourceClause = SourceClause.from(retrieveExpr, alias);
+        var sourceClause = SourceClause.of(retrieveExpr, alias);
         var valueAndModifierExpr = valueAndModifierExpr(mappingContext, mapping, alias);
         if (valueAndModifierExpr.isEmpty()) {
           return Container.of(ExistsExpression.of(retrieveExpr));

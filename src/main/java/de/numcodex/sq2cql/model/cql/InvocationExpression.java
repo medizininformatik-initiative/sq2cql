@@ -7,7 +7,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * @author Alexander Kiel
  */
-public record InvocationExpression(Expression expression, String invocation) implements Expression {
+public record InvocationExpression(Expression expression, String invocation) implements ExpressionTerm {
 
     public InvocationExpression {
         requireNonNull(expression);

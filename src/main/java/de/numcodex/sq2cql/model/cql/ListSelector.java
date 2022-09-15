@@ -6,7 +6,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-public record ListSelector(List<? extends Expression> items) implements TermExpression {
+public record ListSelector(List<? extends Expression> items) implements ExpressionTerm {
 
     public ListSelector {
         items = List.copyOf(items);

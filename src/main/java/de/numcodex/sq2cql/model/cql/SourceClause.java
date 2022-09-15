@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record SourceClause(Expression querySource, IdentifierExpression alias, boolean from) {
+public record SourceClause(Expression querySource, IdentifierExpression alias) {
 
     public SourceClause {
         requireNonNull(querySource);
@@ -12,15 +12,11 @@ public record SourceClause(Expression querySource, IdentifierExpression alias, b
     }
 
     public static SourceClause of(Expression querySource, IdentifierExpression alias) {
-        return new SourceClause(querySource, alias, false);
+        return new SourceClause(querySource, alias);
     }
 
-    public static SourceClause from(Expression querySource, IdentifierExpression alias) {
-        return new SourceClause(querySource, alias, true);
-    }
-
-    public String toCql(PrintContext printContext) {
+    public String print(PrintContext printContext) {
         assert printContext.precedence() == 0;
-        return "%s%s %s".formatted(from ? "from " : "", querySource.print(printContext.increase()), alias.print(printContext));
+        return "from %s %s".formatted(querySource.print(printContext.increase()), alias.print(printContext));
     }
 }

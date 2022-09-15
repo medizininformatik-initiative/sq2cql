@@ -14,7 +14,7 @@ public record WhereClause(Expression expression) {
         return new WhereClause(expression);
     }
 
-    public String toCql(PrintContext printContext) {
+    public String print(PrintContext printContext) {
         assert printContext.precedence() == 0;
         return "where " + expression.print(printContext.increase());
     }

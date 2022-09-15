@@ -14,7 +14,7 @@ public record ReturnClause(Expression expression) {
     return new ReturnClause(expression);
   }
 
-  public String toCql(PrintContext printContext) {
+  public String print(PrintContext printContext) {
     return "return " + expression.print(printContext.resetPrecedence().increase());
   }
 }

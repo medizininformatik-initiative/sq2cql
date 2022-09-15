@@ -28,7 +28,7 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
         return new Library(codeSystemDefinitions, contexts);
     }
 
-    public String print(PrintContext printContext) {
+    public String print() {
         return codeSystemDefinitions.isEmpty()
                 ? """
                 library Retrieve
@@ -37,7 +37,7 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
                                       
                 %s
                 """
-                .formatted(contexts.stream().map(d -> d.print(printContext)).collect(joining("\n\n")))
+                .formatted(contexts.stream().map(Context::print).collect(joining("\n\n")))
                 : """
                 library Retrieve
                 using FHIR version '4.0.0'
@@ -50,6 +50,6 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
                 .formatted(codeSystemDefinitions.stream()
                                 .sorted(Comparator.comparing(CodeSystemDefinition::name))
                                 .map(CodeSystemDefinition::print).collect(joining("\n")),
-                        contexts.stream().map(d -> d.print(printContext)).collect(joining("\n\n")));
+                        contexts.stream().map(Context::print).collect(joining("\n\n")));
     }
 }

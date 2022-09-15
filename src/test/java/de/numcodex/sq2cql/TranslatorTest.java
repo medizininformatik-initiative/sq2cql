@@ -211,7 +211,7 @@ class TranslatorTest {
                         
         define InInitialPopulation:
           exists [Condition: Code 'C71.1' from icd10]
-        """, library.print(PrintContext.ZERO));
+        """, library.print());
   }
 
   @Test
@@ -241,7 +241,7 @@ class TranslatorTest {
               exists (from [Condition: Code 'C71.1' from icd10] C
                 where C.onset as dateTime in Interval[@2020-01-01T, @2020-01-02T] or
                   C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
-            """, library.print(PrintContext.ZERO));
+            """, library.print());
   }
 
   @Test
@@ -303,7 +303,7 @@ class TranslatorTest {
               exists (from [Observation: Code '26515-7' from loinc] O
                 where O.value as Quantity < 50 'g/dl') and
               exists [MedicationStatement: Code 'L01AX03' from atc]
-            """, library.print(PrintContext.ZERO));
+            """, library.print());
   }
 
   @Test
@@ -349,7 +349,7 @@ class TranslatorTest {
             define InInitialPopulation:
               Inclusion and
               not Exclusion
-            """, library.print(PrintContext.ZERO));
+            """, library.print());
   }
 
   @Test
@@ -401,6 +401,6 @@ class TranslatorTest {
             define InInitialPopulation:
               Inclusion and
               not Exclusion
-            """, library.print(PrintContext.ZERO));
+            """, library.print());
   }
 }
