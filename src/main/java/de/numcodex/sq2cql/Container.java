@@ -80,7 +80,7 @@ public final class Container<T extends Expression> {
    * @return a container
    * @throws NullPointerException if {@code expression} is null
    */
-  public static <T extends Expression> Container<T> of(T expression,
+  private static <T extends Expression> Container<T> of(T expression,
       Set<CodeSystemDefinition> codeSystemDefinitions,
       Set<ExpressionDefinition> referencedDefinitions) {
     return new Container<>(requireNonNull(expression), Set.copyOf(codeSystemDefinitions),

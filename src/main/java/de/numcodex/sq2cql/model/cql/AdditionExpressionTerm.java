@@ -10,11 +10,13 @@ import java.util.stream.Stream;
 public record AdditionExpressionTerm(List<ExpressionTerm> expressions) implements
     ExpressionTerm {
 
+  public static final int PRECEDENCE = 16;
+
+
   public AdditionExpressionTerm {
-    List.copyOf(expressions);
+    expressions = List.copyOf(expressions);
   }
 
-  public static final int PRECEDENCE = 16;
 
   public static Expression of(ExpressionTerm e1, ExpressionTerm e2) {
     if (e1 instanceof AdditionExpressionTerm) {

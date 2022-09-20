@@ -16,7 +16,7 @@ public record IdentifierExpression(String identifier) implements BooleanExpressi
 
   @Override
   public String print(PrintContext printContext) {
-    return identifier.matches("([A-Za-z]|'_')([A-Za-z0-9]|'_')*") ? identifier
+    return identifier.matches("([A-Za-z]|_)([A-Za-z0-9]|_)*") ? identifier
         : "\"%s\"".formatted(identifier);
   }
 }

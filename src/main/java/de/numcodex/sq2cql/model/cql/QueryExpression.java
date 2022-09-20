@@ -1,7 +1,6 @@
 package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
-import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
@@ -22,13 +21,13 @@ public record QueryExpression(SourceClause sourceClause, WhereClause whereClause
     @Override
     public String print(PrintContext printContext) {
         var sourcePrintContext = printContext.resetPrecedence();
-        if (!Objects.isNull(whereClause)) {
+        if (whereClause != null) {
             var wherePrintContext = sourcePrintContext.increase();
             return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.print(sourcePrintContext),
                 wherePrintContext.getIndent(),
                 whereClause.print(wherePrintContext)));
         }
-        else if (!Objects.isNull(returnClause)) {
+        else if (returnClause != null) {
             var returnPrintContext = sourcePrintContext.increase();
             return printContext.parenthesizeZero("%s\n%s%s".formatted(sourceClause.print(sourcePrintContext),
                 returnPrintContext.getIndent(),
