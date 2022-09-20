@@ -89,7 +89,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE))));
 
     assertEquals("true",
-        library.expressionDefinitions().get(0).getExpression().print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(0).getExpression().print(PrintContext.ZERO));
   }
 
   @Test
@@ -97,7 +97,7 @@ class TranslatorTest {
     Library library = Translator.of().toCql(StructuredQuery.of(
         List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-    assertEquals("true or\nfalse", library.expressionDefinitions().get(0).getExpression()
+    assertEquals("true or\nfalse", library.contexts().get(0).expressionDefinitions().get(0).getExpression()
         .print(PrintContext.ZERO));
   }
 
@@ -106,7 +106,7 @@ class TranslatorTest {
     Library library = Translator.of().toCql(StructuredQuery.of(
         List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-    assertEquals("true and\nfalse", library.expressionDefinitions().get(0).getExpression()
+    assertEquals("true and\nfalse", library.contexts().get(0).expressionDefinitions().get(0).getExpression()
         .print(PrintContext.ZERO));
   }
 
@@ -116,7 +116,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE, Criterion.TRUE),
             List.of(Criterion.FALSE, Criterion.FALSE))));
 
-    assertEquals("(true or\ntrue) and\n(false or\nfalse)", library.expressionDefinitions().get(0)
+    assertEquals("(true or\ntrue) and\n(false or\nfalse)", library.contexts().get(0).expressionDefinitions().get(0)
         .getExpression().print(PrintContext.ZERO));
   }
 
@@ -127,9 +127,9 @@ class TranslatorTest {
         List.of(List.of(Criterion.FALSE))));
 
     assertEquals("define Inclusion:\n  true",
-        library.expressionDefinitions().get(0).print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(0).print(PrintContext.ZERO));
     assertEquals("define Exclusion:\n  false",
-        library.expressionDefinitions().get(1).print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(1).print(PrintContext.ZERO));
   }
 
   @Test
@@ -138,7 +138,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-    assertEquals("define Exclusion:\n  true and\n  false", library.expressionDefinitions().get(1)
+    assertEquals("define Exclusion:\n  true and\n  false", library.contexts().get(0).expressionDefinitions().get(1)
         .print(PrintContext.ZERO));
   }
 
@@ -148,7 +148,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-    assertEquals("true or\nfalse", library.expressionDefinitions().get(1).getExpression()
+    assertEquals("true or\nfalse", library.contexts().get(0).expressionDefinitions().get(1).getExpression()
         .print(PrintContext.ZERO));
   }
 
@@ -159,7 +159,7 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE, Criterion.TRUE),
             List.of(Criterion.FALSE, Criterion.FALSE))));
 
-    assertEquals("true and\ntrue or\nfalse and\nfalse", library.expressionDefinitions().get(1)
+    assertEquals("true and\ntrue or\nfalse and\nfalse", library.contexts().get(0).expressionDefinitions().get(1)
         .getExpression().print(PrintContext.ZERO));
   }
 
@@ -211,7 +211,7 @@ class TranslatorTest {
                         
         define InInitialPopulation:
           exists [Condition: Code 'C71.1' from icd10]
-        """, library.print(PrintContext.ZERO));
+        """, library.print());
   }
 
   @Test
@@ -241,7 +241,7 @@ class TranslatorTest {
               exists (from [Condition: Code 'C71.1' from icd10] C
                 where C.onset as dateTime in Interval[@2020-01-01T, @2020-01-02T] or
                   C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
-            """, library.print(PrintContext.ZERO));
+            """, library.print());
   }
 
   @Test
@@ -303,7 +303,7 @@ class TranslatorTest {
               exists (from [Observation: Code '26515-7' from loinc] O
                 where O.value as Quantity < 50 'g/dl') and
               exists [MedicationStatement: Code 'L01AX03' from atc]
-            """, library.print(PrintContext.ZERO));
+            """, library.print());
   }
 
   @Test
@@ -349,7 +349,7 @@ class TranslatorTest {
             define InInitialPopulation:
               Inclusion and
               not Exclusion
-            """, library.print(PrintContext.ZERO));
+            """, library.print());
   }
 
   @Test
@@ -401,6 +401,6 @@ class TranslatorTest {
             define InInitialPopulation:
               Inclusion and
               not Exclusion
-            """, library.print(PrintContext.ZERO));
+            """, library.print());
   }
 }

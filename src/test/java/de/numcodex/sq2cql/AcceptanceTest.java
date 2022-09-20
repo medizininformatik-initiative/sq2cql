@@ -104,7 +104,7 @@ public class AcceptanceTest {
     @MethodSource("de.numcodex.sq2cql.AcceptanceTest#getSqFileNames")
     public void runTestCase(String testCaseQueryName) throws Exception {
         var structuredQuery = readStructuredQuery(testCaseQueryName);
-        var cql = translator.toCql(structuredQuery).print(PrintContext.ZERO);
+        var cql = translator.toCql(structuredQuery).print();
         var measureUri = createMeasureAndLibrary(cql);
 
         var report = evaluateMeasure(measureUri);

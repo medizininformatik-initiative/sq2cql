@@ -15,8 +15,8 @@ public record SourceClause(Expression querySource, IdentifierExpression alias) {
         return new SourceClause(querySource, alias);
     }
 
-    public String toCql(PrintContext printContext) {
+    public String print(PrintContext printContext) {
         assert printContext.precedence() == 0;
-        return "from %s %s".formatted(querySource.print(printContext), alias.print(printContext));
+        return "from %s %s".formatted(querySource.print(printContext.increase()), alias.print(printContext));
     }
 }

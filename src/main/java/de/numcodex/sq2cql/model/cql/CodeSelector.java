@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record CodeSelector(String code, String codeSystemIdentifier) implements TermExpression {
+public record CodeSelector(String code, String codeSystemIdentifier) implements ExpressionTerm {
 
     public CodeSelector {
         requireNonNull(code);
