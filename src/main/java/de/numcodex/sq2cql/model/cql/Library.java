@@ -31,7 +31,7 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
     public String print() {
         return codeSystemDefinitions.isEmpty()
                 ? """
-                library Retrieve
+                library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
                                       
@@ -39,7 +39,7 @@ public record Library(Set<CodeSystemDefinition> codeSystemDefinitions,
                 """
                 .formatted(contexts.stream().map(Context::print).collect(joining("\n\n")))
                 : """
-                library Retrieve
+                library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
                                 

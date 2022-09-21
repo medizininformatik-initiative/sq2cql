@@ -15,7 +15,7 @@ Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of
         List.of(ConceptCriterion.of(c71_1)))));
 
 assertEquals("""
-        library Retrieve
+        library Retrieve version '1.0.0'
         using FHIR version '4.0.0'
         include FHIRHelpers version '4.0.0'
                                            
