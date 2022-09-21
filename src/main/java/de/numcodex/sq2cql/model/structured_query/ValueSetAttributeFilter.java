@@ -12,7 +12,7 @@ public record ValueSetAttributeFilter(TermCode attributeCode, List<TermCode> sel
 
     public ValueSetAttributeFilter {
         requireNonNull(attributeCode);
-        requireNonNull(List.copyOf(selectedConcepts));
+        selectedConcepts = List.copyOf(selectedConcepts);
     }
 
     /**
