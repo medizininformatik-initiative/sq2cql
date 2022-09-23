@@ -19,7 +19,7 @@ class LibraryTest {
         var cql = Library.of().print();
 
         assertEquals("""
-                library Retrieve
+                library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
                                                                 
@@ -33,7 +33,7 @@ class LibraryTest {
                 .print();
 
         assertEquals("""
-                library Retrieve
+                library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
                                 

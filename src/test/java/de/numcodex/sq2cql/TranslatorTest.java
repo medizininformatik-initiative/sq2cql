@@ -201,7 +201,7 @@ class TranslatorTest {
         List.of(ConceptCriterion.of(Concept.of(c71_1))))));
 
     assertEquals("""
-        library Retrieve
+        library Retrieve version '1.0.0'
         using FHIR version '4.0.0'
         include FHIRHelpers version '4.0.0'
                                            
@@ -229,7 +229,7 @@ class TranslatorTest {
             TimeRestriction.of("2020-01-01T", "2020-01-02T"))))));
 
     assertEquals("""
-            library Retrieve
+            library Retrieve version '1.0.0'
             using FHIR version '4.0.0'
             include FHIRHelpers version '4.0.0'
                                                
@@ -284,7 +284,7 @@ class TranslatorTest {
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
     assertEquals("""
-            library Retrieve
+            library Retrieve version '1.0.0'
             using FHIR version '4.0.0'
             include FHIRHelpers version '4.0.0'
 
@@ -327,7 +327,7 @@ class TranslatorTest {
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
     assertEquals("""
-            library Retrieve
+            library Retrieve version '1.0.0'
             using FHIR version '4.0.0'
             include FHIRHelpers version '4.0.0'
 
@@ -373,7 +373,7 @@ class TranslatorTest {
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
     assertEquals("""
-            library Retrieve
+            library Retrieve version '1.0.0'
             using FHIR version '4.0.0'
             include FHIRHelpers version '4.0.0'
 
