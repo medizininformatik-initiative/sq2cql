@@ -16,7 +16,7 @@ class TimeRestrictionModifierTest {
     var expression = timeRestriction.expression(MappingContext.of(), identifier);
 
     assertEquals("""
-        O.effective as dateTime in Interval[@1900-01-01T, @2021-01-01T] or
+        ToDate(O.effective as dateTime) in Interval[@1900-01-01T, @2021-01-01T] or
         O.effective overlaps Interval[@1900-01-01T, @2021-01-01T]""", PrintContext.ZERO.print(expression));
   }
 
@@ -28,7 +28,7 @@ class TimeRestrictionModifierTest {
     var expression = timeRestriction.expression(MappingContext.of(), identifier);
 
     assertEquals("""
-        O.effective as dateTime in Interval[@2020-01-01T, @2040-01-01T] or
+        ToDate(O.effective as dateTime) in Interval[@2020-01-01T, @2040-01-01T] or
         O.effective overlaps Interval[@2020-01-01T, @2040-01-01T]""", PrintContext.ZERO.print(expression));
   }
 
@@ -40,7 +40,7 @@ class TimeRestrictionModifierTest {
     var expression = timeRestriction.expression(MappingContext.of(), identifier);
 
     assertEquals("""
-        O.effective as dateTime in Interval[@2021-01-01T, @2021-01-01T] or
+        ToDate(O.effective as dateTime) in Interval[@2021-01-01T, @2021-01-01T] or
         O.effective overlaps Interval[@2021-01-01T, @2021-01-01T]""", PrintContext.ZERO.print(expression));
   }
 }

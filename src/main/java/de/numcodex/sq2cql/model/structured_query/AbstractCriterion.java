@@ -62,7 +62,7 @@ abstract class AbstractCriterion implements Criterion {
    * Returns the name of a coding as IdentifierExpression to use as reference
    */
   static IdentifierExpression referenceName(TermCode termCode) {
-    return IdentifierExpression.of("%s".formatted(termCode.display() + "Ref"));
+    return IdentifierExpression.of("%s".formatted(termCode.display() + termCode.code() + "Ref"));
   }
 
 
