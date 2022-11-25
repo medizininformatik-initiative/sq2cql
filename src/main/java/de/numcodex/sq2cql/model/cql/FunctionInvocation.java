@@ -6,9 +6,7 @@ import de.numcodex.sq2cql.PrintContext;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public record FunctionInvocation(String identifier, List<Expression> paramList) implements
-    InvocationTerm {
-
+public record FunctionInvocation(String identifier, List<Expression> paramList) implements InvocationTerm {
 
   public FunctionInvocation {
     requireNonNull(identifier);
@@ -22,8 +20,7 @@ public record FunctionInvocation(String identifier, List<Expression> paramList) 
   @Override
   public String print(PrintContext printContext) {
     printContext.resetPrecedence();
-    return "%s(%s)".formatted(identifier,
-        paramList.stream().map(param -> param.print(printContext)).collect(
-            Collectors.joining(",")));
+    return "%s(%s)".formatted(identifier, paramList.stream().map(printContext::print)
+        .collect(Collectors.joining(", ")));
   }
 }
