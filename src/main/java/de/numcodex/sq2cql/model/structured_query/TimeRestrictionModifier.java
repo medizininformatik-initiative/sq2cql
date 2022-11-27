@@ -4,6 +4,7 @@ import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.DateTimeExpression;
+import de.numcodex.sq2cql.model.cql.FunctionInvocation;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.IntervalSelector;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
@@ -11,6 +12,7 @@ import de.numcodex.sq2cql.model.cql.MembershipExpression;
 import de.numcodex.sq2cql.model.cql.OrExpression;
 import de.numcodex.sq2cql.model.cql.OverlapsIntervalOperatorPhrase;
 import de.numcodex.sq2cql.model.cql.TypeExpression;
+import java.util.List;
 
 public final class TimeRestrictionModifier extends AbstractModifier {
 
@@ -30,8 +32,9 @@ public final class TimeRestrictionModifier extends AbstractModifier {
   public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
     var invocationExpr = InvocationExpression.of(identifier, path);
     var castExp = TypeExpression.of(invocationExpr, "dateTime");
+    var toDateFunction = FunctionInvocation.of("ToDate", List.of(castExp));
     var intervalSelector = IntervalSelector.of(DateTimeExpression.of(afterDate), DateTimeExpression.of(beforeDate));
-    var dateTimeInExpr = MembershipExpression.in(castExp, intervalSelector);
+    var dateTimeInExpr = MembershipExpression.in(toDateFunction, intervalSelector);
     var intervalOverlapExpr = OverlapsIntervalOperatorPhrase.of(invocationExpr, intervalSelector);
     return Container.of(OrExpression.of(dateTimeInExpr, intervalOverlapExpr));
   }

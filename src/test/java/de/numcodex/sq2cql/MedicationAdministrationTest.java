@@ -69,7 +69,7 @@ public class MedicationAdministrationTest {
                 
         context Unfiltered
                 
-        define HeparinRef:
+        define HeparinB01AB01Ref:
           from [Medication: Code 'B01AB01' from atc] M
             return 'Medication/' + M.id
                 
@@ -77,7 +77,7 @@ public class MedicationAdministrationTest {
                 
         define InInitialPopulation:
           exists (from [MedicationAdministration] M
-            where M.medication.reference in HeparinRef)
+            where M.medication.reference in HeparinB01AB01Ref)
             """, cql);
 
   }
