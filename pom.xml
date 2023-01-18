@@ -4,7 +4,7 @@
 
     <groupId>de.medizininformatik-initiative</groupId>
     <artifactId>sq2cql</artifactId>
-    <version>0.1.28-SNAPSHOT</version>
+    <version>0.1.28</version>
 
     <name>sq2cql</name>
 
@@ -14,7 +14,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/medizininformatik-initiative/sq2cql</url>
-        <tag>HEAD</tag>
+        <tag>v0.1.28</tag>
     </scm>
 
     <distributionManagement>
