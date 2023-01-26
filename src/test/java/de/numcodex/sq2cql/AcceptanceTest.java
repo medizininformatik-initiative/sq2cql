@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AcceptanceTest {
 
     private final Map<String, String> CODE_SYSTEM_ALIASES = Map.ofEntries(
-            entry("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10"),
+            entry("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10"),
             entry("http://loinc.org", "loinc"),
             entry("https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample"),
             entry("http://fhir.de/CodeSystem/dimdi/atc", "atc"),

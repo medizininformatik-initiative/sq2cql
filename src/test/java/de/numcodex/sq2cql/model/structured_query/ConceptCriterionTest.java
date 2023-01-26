@@ -24,11 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class ConceptCriterionTest {
 
-    static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71",
+    static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
             "Malignant neoplasm of brain");
-    static final TermCode C71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1",
+    static final TermCode C71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
             "Frontal lobe");
-    static final TermCode C71_2 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.2",
+    static final TermCode C71_2 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.2",
             "Temporal lobe");
     static final TermCode BLOOD_PRESSURE = TermCode.of("http://loinc.org", "85354-9",
             "Blood pressure panel with all children optional");
@@ -39,7 +39,7 @@ class ConceptCriterionTest {
     static final TermCode THERAPEUTIC_PROCEDURE = TermCode.of("http://snomed.info/sct",
             "277132007", "Therapeutic procedure (procedure)");
     static final CodeSystemDefinition ICD10_CODE_SYSTEM_DEF = CodeSystemDefinition.of("icd10",
-            "http://fhir.de/CodeSystem/dimdi/icd-10-gm");
+            "http://fhir.de/CodeSystem/bfarm/icd-10-gm");
     static final CodeSystemDefinition SNOMED_CODE_SYSTEM_DEF = CodeSystemDefinition.of("snomed",
             "http://snomed.info/sct");
     static final CodeSystemDefinition VER_STATUS_CODE_SYSTEM_DEF = CodeSystemDefinition.of("ver_status",
@@ -48,7 +48,7 @@ class ConceptCriterionTest {
             "verificationStatus");
 
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
-            "http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10",
+            "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10",
             "http://snomed.info/sct", "snomed",
             "http://loinc.org", "loinc",
             "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status");
@@ -62,7 +62,7 @@ class ConceptCriterionTest {
         var criterion = (ConceptCriterion) mapper.readValue("""
                 {
                   "termCodes": [{
-                    "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
+                    "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
                     "code": "C71",
                     "display": "Malignant neoplasm of brain"
                   }]
@@ -79,11 +79,11 @@ class ConceptCriterionTest {
         var criterion = (ConceptCriterion) mapper.readValue("""
                 {
                   "termCodes": [{
-                    "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
+                    "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
                     "code": "C71.1",
                     "display": "Frontal lobe"
                   }, {
-                    "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
+                    "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
                     "code": "C71.2",
                     "display": "Temporal lobe"
                   }]
@@ -101,7 +101,7 @@ class ConceptCriterionTest {
                 {
                   "foo-151633": "bar-151639",
                   "termCodes": [{
-                    "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm",
+                    "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
                     "code": "C71",
                     "display": "Malignant neoplasm of brain"
                   }]

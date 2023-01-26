@@ -33,12 +33,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class TranslatorTest {
 
   static final TermCode ROOT = TermCode.of("", "", "");
-  static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71",
-      "Malignant neoplasm of brain");
-  static final TermCode C71_0 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.0",
-      "");
-  static final TermCode C71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1",
-      "");
+  static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
+          "Malignant neoplasm of brain");
+  static final TermCode C71_0 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.0",
+          "");
+  static final TermCode C71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+          "");
   static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
   static final TermCode FRAILTY_SCORE = TermCode.of("http://snomed.info/sct", "713636003",
       "Canadian Study of Health and Aging Clinical Frailty Scale score");
@@ -48,16 +48,16 @@ class TranslatorTest {
   static final TermCode WELL = TermCode.of(
       "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "2", "Well");
   static final TermCode COPD = TermCode.of("http://snomed.info/sct", "13645005",
-      "Chronic obstructive lung disease (disorder)");
-  static final TermCode G47_31 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "G47.31",
-      "Obstruktives Schlafapnoe-Syndrom");
+          "Chronic obstructive lung disease (disorder)");
+  static final TermCode G47_31 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "G47.31",
+          "Obstruktives Schlafapnoe-Syndrom");
   static final TermCode TOBACCO_SMOKING_STATUS = TermCode.of("http://loinc.org", "72166-2",
       "Tobacco smoking status");
   static final TermCode CURRENT_EVERY_DAY_SMOKER = TermCode.of("http://loinc.org", "LA18976-3",
-      "Current every day smoker");
-  static final TermCode HYPERTENSION = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm",
-      "I10",
-      "Essential (Primary) Hypertension");
+          "Current every day smoker");
+  static final TermCode HYPERTENSION = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm",
+          "I10",
+          "Essential (Primary) Hypertension");
   static final TermCode SERUM = TermCode.of("https://fhir.bbmri.de/CodeSystem/SampleMaterialType",
       "Serum",
       "Serum");
@@ -69,15 +69,15 @@ class TranslatorTest {
       "http://terminology.hl7.org/CodeSystem/condition-ver-status",
       "confirmed", "Confirmed");
   static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
-      "http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10",
-      "http://loinc.org", "loinc",
-      "https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample",
-      "http://fhir.de/CodeSystem/dimdi/atc", "atc",
-      "http://snomed.info/sct", "snomed",
-      "http://hl7.org/fhir/administrative-gender", "gender",
-      "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status",
-      "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
-      "frailty-score");
+          "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10",
+          "http://loinc.org", "loinc",
+          "https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample",
+          "http://fhir.de/CodeSystem/dimdi/atc", "atc",
+          "http://snomed.info/sct", "snomed",
+          "http://hl7.org/fhir/administrative-gender", "gender",
+          "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status",
+          "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
+          "frailty-score");
   static final TermCode VERIFICATION_STATUS = TermCode.of("hl7.org", "verificationStatus",
       "verificationStatus");
   static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING =
@@ -170,8 +170,8 @@ class TranslatorTest {
             List.of(List.of(ConceptCriterion.of(Concept.of(C71))))))).getMessage();
 
     assertEquals(
-        "Failed to expand the concept (system: http://fhir.de/CodeSystem/dimdi/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
-        message);
+            "Failed to expand the concept (system: http://fhir.de/CodeSystem/bfarm/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
+            message);
   }
 
   @Test
@@ -184,44 +184,44 @@ class TranslatorTest {
             List.of(List.of(ConceptCriterion.of(Concept.of(C71))))))).getMessage();
 
     assertEquals(
-        "Failed to expand the concept (system: http://fhir.de/CodeSystem/dimdi/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
-        message);
+            "Failed to expand the concept (system: http://fhir.de/CodeSystem/bfarm/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
+            message);
   }
 
   @Test
   void toCQL_Usage_Documentation() {
-    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1",
-        "Malignant neoplasm of brain");
+    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+            "Malignant neoplasm of brain");
     var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
     var conceptTree = TermCodeNode.of(c71_1);
-    var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
+    var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
     var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
     Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
         List.of(ConceptCriterion.of(Concept.of(c71_1))))));
 
     assertEquals("""
-        library Retrieve version '1.0.0'
-        using FHIR version '4.0.0'
-        include FHIRHelpers version '4.0.0'
-                                           
-        codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
-               
-        context Patient
-                        
-        define InInitialPopulation:
-          exists [Condition: Code 'C71.1' from icd10]
-        """, library.print());
+            library Retrieve version '1.0.0'
+            using FHIR version '4.0.0'
+            include FHIRHelpers version '4.0.0'
+                                               
+            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+                   
+            context Patient
+                            
+            define InInitialPopulation:
+              exists [Condition: Code 'C71.1' from icd10]
+            """, library.print());
   }
 
   @Test
   void toCQL_TimeRestriction() {
-    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1",
-        "Malignant neoplasm of brain");
+    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+            "Malignant neoplasm of brain");
     var mappings = Map.of(c71_1,
         Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), "onset"));
     var conceptTree = TermCodeNode.of(c71_1);
-    var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
+    var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
     var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
     Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
@@ -233,7 +233,7 @@ class TranslatorTest {
             using FHIR version '4.0.0'
             include FHIRHelpers version '4.0.0'
                                                
-            codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
                            
             context Patient
                             
@@ -246,12 +246,12 @@ class TranslatorTest {
 
   @Test
   void toCQL_TimeRestriction_missingPathInMapping() {
-    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1",
-        "Malignant neoplasm of brain");
+    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+            "Malignant neoplasm of brain");
     var mappings = Map.of(c71_1,
         Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), null));
     var conceptTree = TermCodeNode.of(c71_1);
-    var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
+    var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
     var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
     var query = StructuredQuery.of(List.of(
         List.of(ConceptCriterion.of(Concept.of(c71_1),
@@ -259,7 +259,7 @@ class TranslatorTest {
     var translator = Translator.of(mappingContext);
 
     assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query))
-        .withMessage("Missing timeRestrictionPath in mapping with key TermCode[system=http://fhir.de/CodeSystem/dimdi/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain].");
+            .withMessage("Missing timeRestrictionPath in mapping with key TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain].");
   }
 
   @Test
@@ -289,7 +289,7 @@ class TranslatorTest {
             include FHIRHelpers version '4.0.0'
 
             codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
-            codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
             codesystem loinc: 'http://loinc.org'
             codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
 
@@ -332,7 +332,7 @@ class TranslatorTest {
             include FHIRHelpers version '4.0.0'
 
             codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
-            codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
             codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'
             codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
                             
@@ -378,7 +378,7 @@ class TranslatorTest {
             include FHIRHelpers version '4.0.0'
 
             codesystem frailty-score: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score'
-            codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'
+            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
             codesystem loinc: 'http://loinc.org'
             codesystem snomed: 'http://snomed.info/sct'
             codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
