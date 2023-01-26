@@ -54,7 +54,7 @@ public class EvaluationIT {
     private final GenericContainer<?> blaze = new GenericContainer<>(DockerImageName.parse("samply/blaze:0.18"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withExposedPorts(8080)
-            .waitingFor(Wait.forHttp("/health").forStatusCodeMatching(c -> c >= 200 && c <= 500))
+            .waitingFor(Wait.forHttp("/health").forStatusCode(200))
             .withStartupAttempts(3);
 
     private final FhirContext fhirContext = FhirContext.forR4();
