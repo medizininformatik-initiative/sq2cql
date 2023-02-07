@@ -80,11 +80,11 @@ abstract class AbstractCriterion implements Criterion {
    */
   static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext,
       TermCode termCode) {
-    return codeSelector(mappingContext, termCode).map(terminology -> {
-      var mapping = mappingContext.findMapping(termCode)
-          .orElseThrow(() -> new MappingNotFoundException(termCode));
-      return RetrieveExpression.of(mapping.resourceType(), terminology);
-    });
+    var mapping = mappingContext.findMapping(termCode)
+        .orElseThrow(() -> new MappingNotFoundException(termCode));
+    // TODO if no primary code retrieve all resources
+    return codeSelector(mappingContext, mapping.primaryCode()).map(terminology ->
+        RetrieveExpression.of(mapping.resourceType(), terminology));
   }
 
 

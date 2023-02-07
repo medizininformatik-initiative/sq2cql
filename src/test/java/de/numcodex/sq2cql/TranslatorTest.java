@@ -1,5 +1,11 @@
 package de.numcodex.sq2cql;
 
+import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -16,29 +22,24 @@ import de.numcodex.sq2cql.model.structured_query.TimeRestriction;
 import de.numcodex.sq2cql.model.structured_query.TranslationException;
 import de.numcodex.sq2cql.model.structured_query.ValueSetAttributeFilter;
 import de.numcodex.sq2cql.model.structured_query.ValueSetCriterion;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
-import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Alexander Kiel
  */
 class TranslatorTest {
 
+  static final TermCode COMBINED_CONSENT = TermCode.of("mii.abide", "combined-consent", "");
   static final TermCode ROOT = TermCode.of("", "", "");
   static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
-          "Malignant neoplasm of brain");
+      "Malignant neoplasm of brain");
   static final TermCode C71_0 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.0",
-          "");
+      "");
   static final TermCode C71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-          "");
+      "");
   static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
   static final TermCode FRAILTY_SCORE = TermCode.of("http://snomed.info/sct", "713636003",
       "Canadian Study of Health and Aging Clinical Frailty Scale score");
@@ -48,16 +49,16 @@ class TranslatorTest {
   static final TermCode WELL = TermCode.of(
       "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "2", "Well");
   static final TermCode COPD = TermCode.of("http://snomed.info/sct", "13645005",
-          "Chronic obstructive lung disease (disorder)");
+      "Chronic obstructive lung disease (disorder)");
   static final TermCode G47_31 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "G47.31",
-          "Obstruktives Schlafapnoe-Syndrom");
+      "Obstruktives Schlafapnoe-Syndrom");
   static final TermCode TOBACCO_SMOKING_STATUS = TermCode.of("http://loinc.org", "72166-2",
       "Tobacco smoking status");
   static final TermCode CURRENT_EVERY_DAY_SMOKER = TermCode.of("http://loinc.org", "LA18976-3",
-          "Current every day smoker");
+      "Current every day smoker");
   static final TermCode HYPERTENSION = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm",
-          "I10",
-          "Essential (Primary) Hypertension");
+      "I10",
+      "Essential (Primary) Hypertension");
   static final TermCode SERUM = TermCode.of("https://fhir.bbmri.de/CodeSystem/SampleMaterialType",
       "Serum",
       "Serum");
@@ -69,15 +70,17 @@ class TranslatorTest {
       "http://terminology.hl7.org/CodeSystem/condition-ver-status",
       "confirmed", "Confirmed");
   static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
-          "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10",
-          "http://loinc.org", "loinc",
-          "https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample",
-          "http://fhir.de/CodeSystem/dimdi/atc", "atc",
-          "http://snomed.info/sct", "snomed",
-          "http://hl7.org/fhir/administrative-gender", "gender",
-          "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status",
-          "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
-          "frailty-score");
+      "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10",
+      "http://loinc.org", "loinc",
+      "https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample",
+      "http://fhir.de/CodeSystem/dimdi/atc", "atc",
+      "http://snomed.info/sct", "snomed",
+      "http://hl7.org/fhir/administrative-gender", "gender",
+      "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status",
+      "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
+      "frailty-score",
+      "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3", "consent"
+  );
   static final TermCode VERIFICATION_STATUS = TermCode.of("hl7.org", "verificationStatus",
       "verificationStatus");
   static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING =
@@ -89,7 +92,8 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE))));
 
     assertEquals("true",
-        library.contexts().get(0).expressionDefinitions().get(0).getExpression().print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(0).getExpression()
+            .print(PrintContext.ZERO));
   }
 
   @Test
@@ -97,8 +101,9 @@ class TranslatorTest {
     Library library = Translator.of().toCql(StructuredQuery.of(
         List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-    assertEquals("true or\nfalse", library.contexts().get(0).expressionDefinitions().get(0).getExpression()
-        .print(PrintContext.ZERO));
+    assertEquals("true or\nfalse",
+        library.contexts().get(0).expressionDefinitions().get(0).getExpression()
+            .print(PrintContext.ZERO));
   }
 
   @Test
@@ -106,8 +111,9 @@ class TranslatorTest {
     Library library = Translator.of().toCql(StructuredQuery.of(
         List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-    assertEquals("true and\nfalse", library.contexts().get(0).expressionDefinitions().get(0).getExpression()
-        .print(PrintContext.ZERO));
+    assertEquals("true and\nfalse",
+        library.contexts().get(0).expressionDefinitions().get(0).getExpression()
+            .print(PrintContext.ZERO));
   }
 
   @Test
@@ -116,8 +122,9 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE, Criterion.TRUE),
             List.of(Criterion.FALSE, Criterion.FALSE))));
 
-    assertEquals("(true or\ntrue) and\n(false or\nfalse)", library.contexts().get(0).expressionDefinitions().get(0)
-        .getExpression().print(PrintContext.ZERO));
+    assertEquals("(true or\ntrue) and\n(false or\nfalse)",
+        library.contexts().get(0).expressionDefinitions().get(0)
+            .getExpression().print(PrintContext.ZERO));
   }
 
   @Test
@@ -138,8 +145,9 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
-    assertEquals("define Exclusion:\n  true and\n  false", library.contexts().get(0).expressionDefinitions().get(1)
-        .print(PrintContext.ZERO));
+    assertEquals("define Exclusion:\n  true and\n  false",
+        library.contexts().get(0).expressionDefinitions().get(1)
+            .print(PrintContext.ZERO));
   }
 
   @Test
@@ -148,8 +156,9 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
-    assertEquals("true or\nfalse", library.contexts().get(0).expressionDefinitions().get(1).getExpression()
-        .print(PrintContext.ZERO));
+    assertEquals("true or\nfalse",
+        library.contexts().get(0).expressionDefinitions().get(1).getExpression()
+            .print(PrintContext.ZERO));
   }
 
   @Test
@@ -159,8 +168,9 @@ class TranslatorTest {
         List.of(List.of(Criterion.TRUE, Criterion.TRUE),
             List.of(Criterion.FALSE, Criterion.FALSE))));
 
-    assertEquals("true and\ntrue or\nfalse and\nfalse", library.contexts().get(0).expressionDefinitions().get(1)
-        .getExpression().print(PrintContext.ZERO));
+    assertEquals("true and\ntrue or\nfalse and\nfalse",
+        library.contexts().get(0).expressionDefinitions().get(1)
+            .getExpression().print(PrintContext.ZERO));
   }
 
   @Test
@@ -170,8 +180,8 @@ class TranslatorTest {
             List.of(List.of(ConceptCriterion.of(Concept.of(C71))))))).getMessage();
 
     assertEquals(
-            "Failed to expand the concept (system: http://fhir.de/CodeSystem/bfarm/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
-            message);
+        "Failed to expand the concept (system: http://fhir.de/CodeSystem/bfarm/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
+        message);
   }
 
   @Test
@@ -184,14 +194,14 @@ class TranslatorTest {
             List.of(List.of(ConceptCriterion.of(Concept.of(C71))))))).getMessage();
 
     assertEquals(
-            "Failed to expand the concept (system: http://fhir.de/CodeSystem/bfarm/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
-            message);
+        "Failed to expand the concept (system: http://fhir.de/CodeSystem/bfarm/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
+        message);
   }
 
   @Test
   void toCQL_Usage_Documentation() {
     var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-            "Malignant neoplasm of brain");
+        "Malignant neoplasm of brain");
     var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
     var conceptTree = TermCodeNode.of(c71_1);
     var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
@@ -201,23 +211,23 @@ class TranslatorTest {
         List.of(ConceptCriterion.of(Concept.of(c71_1))))));
 
     assertEquals("""
-            library Retrieve version '1.0.0'
-            using FHIR version '4.0.0'
-            include FHIRHelpers version '4.0.0'
-                                               
-            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                   
-            context Patient
-                            
-            define InInitialPopulation:
-              exists [Condition: Code 'C71.1' from icd10]
-            """, library.print());
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
+                                           
+        codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+               
+        context Patient
+                        
+        define InInitialPopulation:
+          exists [Condition: Code 'C71.1' from icd10]
+        """, library.print());
   }
 
   @Test
   void toCQL_TimeRestriction() {
     var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-            "Malignant neoplasm of brain");
+        "Malignant neoplasm of brain");
     var mappings = Map.of(c71_1,
         Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), "onset"));
     var conceptTree = TermCodeNode.of(c71_1);
@@ -229,25 +239,25 @@ class TranslatorTest {
             TimeRestriction.of("2020-01-01T", "2020-01-02T"))))));
 
     assertEquals("""
-            library Retrieve version '1.0.0'
-            using FHIR version '4.0.0'
-            include FHIRHelpers version '4.0.0'
-                                               
-            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                           
-            context Patient
-                            
-            define InInitialPopulation:
-              exists (from [Condition: Code 'C71.1' from icd10] C
-                where ToDate(C.onset as dateTime) in Interval[@2020-01-01T, @2020-01-02T] or
-                  C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
-            """, library.print());
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
+                                           
+        codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+                       
+        context Patient
+                        
+        define InInitialPopulation:
+          exists (from [Condition: Code 'C71.1' from icd10] C
+            where ToDate(C.onset as dateTime) in Interval[@2020-01-01T, @2020-01-02T] or
+              C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
+        """, library.print());
   }
 
   @Test
   void toCQL_TimeRestriction_missingPathInMapping() {
     var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-            "Malignant neoplasm of brain");
+        "Malignant neoplasm of brain");
     var mappings = Map.of(c71_1,
         Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), null));
     var conceptTree = TermCodeNode.of(c71_1);
@@ -259,7 +269,8 @@ class TranslatorTest {
     var translator = Translator.of(mappingContext);
 
     assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query))
-            .withMessage("Missing timeRestrictionPath in mapping with key TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain].");
+        .withMessage(
+            "Missing timeRestrictionPath in mapping with key TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain].");
   }
 
   @Test
@@ -284,26 +295,26 @@ class TranslatorTest {
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
     assertEquals("""
-            library Retrieve version '1.0.0'
-            using FHIR version '4.0.0'
-            include FHIRHelpers version '4.0.0'
-
-            codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
-            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-            codesystem loinc: 'http://loinc.org'
-            codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-
-            context Patient
-
-            define InInitialPopulation:
-              (exists (from [Condition: Code 'C71.0' from icd10] C
-                where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
-              exists (from [Condition: Code 'C71.1' from icd10] C
-                where C.verificationStatus.coding contains Code 'confirmed' from ver_status)) and
-              exists (from [Observation: Code '26515-7' from loinc] O
-                where O.value as Quantity < 50 'g/dl') and
-              exists [MedicationStatement: Code 'L01AX03' from atc]
-            """, library.print());
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
+                
+        codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
+        codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+        codesystem loinc: 'http://loinc.org'
+        codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                
+        context Patient
+                
+        define InInitialPopulation:
+          (exists (from [Condition: Code 'C71.0' from icd10] C
+            where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
+          exists (from [Condition: Code 'C71.1' from icd10] C
+            where C.verificationStatus.coding contains Code 'confirmed' from ver_status)) and
+          exists (from [Observation: Code '26515-7' from loinc] O
+            where O.value as Quantity < 50 'g/dl') and
+          exists [MedicationStatement: Code 'L01AX03' from atc]
+        """, library.print());
   }
 
   @Test
@@ -327,29 +338,29 @@ class TranslatorTest {
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
     assertEquals("""
-            library Retrieve version '1.0.0'
-            using FHIR version '4.0.0'
-            include FHIRHelpers version '4.0.0'
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
 
-            codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
-            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-            codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'
-            codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                            
-            context Patient
+        codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
+        codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+        codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'
+        codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                        
+        context Patient
 
-            define Inclusion:
-              exists (from [Condition: Code 'I10' from icd10] C
-                where C.verificationStatus.coding contains Code 'confirmed' from ver_status) and
-              exists [Specimen: Code 'Serum' from sample]
+        define Inclusion:
+          exists (from [Condition: Code 'I10' from icd10] C
+            where C.verificationStatus.coding contains Code 'confirmed' from ver_status) and
+          exists [Specimen: Code 'Serum' from sample]
 
-            define Exclusion:
-              exists [MedicationStatement: Code 'C10AA' from atc]
+        define Exclusion:
+          exists [MedicationStatement: Code 'C10AA' from atc]
 
-            define InInitialPopulation:
-              Inclusion and
-              not Exclusion
-            """, library.print());
+        define InInitialPopulation:
+          Inclusion and
+          not Exclusion
+        """, library.print());
   }
 
   @Test
@@ -373,34 +384,140 @@ class TranslatorTest {
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
     assertEquals("""
-            library Retrieve version '1.0.0'
-            using FHIR version '4.0.0'
-            include FHIRHelpers version '4.0.0'
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
 
-            codesystem frailty-score: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score'
-            codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-            codesystem loinc: 'http://loinc.org'
-            codesystem snomed: 'http://snomed.info/sct'
-            codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                            
-            context Patient
-                            
-            define Inclusion:
-              exists (from [Observation: Code '713636003' from snomed] O
-                where O.value.coding contains Code '1' from frailty-score or
-                  O.value.coding contains Code '2' from frailty-score)
-                            
-            define Exclusion:
-              exists (from [Condition: Code '13645005' from snomed] C
-                where C.verificationStatus.coding contains Code 'confirmed' from ver_status) and
-              exists (from [Condition: Code 'G47.31' from icd10] C
-                where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
-              exists (from [Observation: Code '72166-2' from loinc] O
-                where O.value.coding contains Code 'LA18976-3' from loinc)
-                            
-            define InInitialPopulation:
-              Inclusion and
-              not Exclusion
-            """, library.print());
+        codesystem frailty-score: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score'
+        codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+        codesystem loinc: 'http://loinc.org'
+        codesystem snomed: 'http://snomed.info/sct'
+        codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                        
+        context Patient
+                        
+        define Inclusion:
+          exists (from [Observation: Code '713636003' from snomed] O
+            where O.value.coding contains Code '1' from frailty-score or
+              O.value.coding contains Code '2' from frailty-score)
+                        
+        define Exclusion:
+          exists (from [Condition: Code '13645005' from snomed] C
+            where C.verificationStatus.coding contains Code 'confirmed' from ver_status) and
+          exists (from [Condition: Code 'G47.31' from icd10] C
+            where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
+          exists (from [Observation: Code '72166-2' from loinc] O
+            where O.value.coding contains Code 'LA18976-3' from loinc)
+                        
+        define InInitialPopulation:
+          Inclusion and
+          not Exclusion
+        """, library.print());
+  }
+
+
+  @Test
+  void toCql_OnlyFixedCriteria() throws Exception {
+    var mapper = new ObjectMapper();
+
+    var mapping = mapper.readValue("""
+            {
+                "fhirResourceType": "Consent",
+                "fixedCriteria": [
+                    {
+                        "fhirPath": "status",
+                        "searchParameter": "status",
+                        "type": "code",
+                        "value": [
+                            {
+                                "code": "active",
+                                "display": "Active",
+                                "system": "http://hl7.org/fhir/consent-state-codes"
+                            }
+                        ]
+                    },
+                    {
+                        "fhirPath": "provision.provision.code",
+                        "searchParameter": "mii-provision-provision-code",
+                        "type": "coding",
+                        "value": [
+                            {
+                                "code": "2.16.840.1.113883.3.1937.777.24.5.3.5",
+                                "display": "IDAT bereitstellen EU DSGVO NIVEAU",
+                                "system": "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3"
+                            }
+                        ]
+                    },
+                    {
+                        "fhirPath": "provision.provision.code",
+                        "searchParameter": "mii-provision-provision-code",
+                        "type": "coding",
+                        "value": [
+                            {
+                                "code": "2.16.840.1.113883.3.1937.777.24.5.3.2",
+                                "display": "IDAT erheben",
+                                "system": "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3"
+                            }
+                        ]
+                    }
+                ],
+                "key": {
+                    "code": "combined-consent",
+                    "display": "Einwilligung f\\u00fcr die zentrale Datenanalyse",
+                    "system": "mii.abide"
+                },
+                "primaryCode": {
+                    "code": "54133-1",
+                    "display": "Consent Document",
+                    "system": "http://loinc.org"
+                },
+                "timeRestrictionParameter": "date",
+                "timeRestrictionPath": "dateTime"
+            }
+        """, Mapping.class);
+    var structuredQuery = mapper.readValue("""
+        {
+          "version": "http://to_be_decided.com/draft-1/schema#",
+          "display": "",
+          "inclusionCriteria": [
+            [
+              {
+                "termCodes": [
+                  {
+                    "code": "combined-consent",
+                    "system": "mii.abide",
+                    "display": "Einwilligung für die zentrale Datenanalyse"
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+        """, StructuredQuery.class);
+
+    var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COMBINED_CONSENT));
+    var mappings = Map.of(COMBINED_CONSENT, mapping);
+    var mappingContext = MappingContext.of(mappings,
+        conceptTree,
+        CODE_SYSTEM_ALIASES);
+
+    Library library = Translator.of(mappingContext).toCql(structuredQuery);
+
+    assertEquals("""
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
+                
+        codesystem consent: 'urn:oid:2.16.840.1.113883.3.1937.777.24.5.3'
+        codesystem loinc: 'http://loinc.org'
+                
+        context Patient
+                
+        define InInitialPopulation:
+          exists (from [Consent: Code '54133-1' from loinc] C
+            where C.status = 'active' and
+              C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.5' from consent and
+              C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.2' from consent)
+        """, library.print());
   }
 }
