@@ -70,7 +70,7 @@ public class AcceptanceTest {
             entry("http://hl7.org/fhir/consent-provision-type", "provision-type"));
 
     private final GenericContainer<?> blaze = new GenericContainer<>(
-            DockerImageName.parse("samply/blaze:0.17"))
+            DockerImageName.parse("samply/blaze:0.19"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withExposedPorts(8080)
             .waitingFor(Wait.forHttp("/health").forStatusCode(200))
