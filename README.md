@@ -5,10 +5,10 @@
 ### Translator
 
 ```
-var c71_1 = TermCode.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
+var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
 var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
 var conceptTree = ConceptNode.of(c71_1);
-var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10");
+var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
 var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
 Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
@@ -19,7 +19,7 @@ assertEquals("""
         using FHIR version '4.0.0'
         include FHIRHelpers version '4.0.0'
                                            
-        codesystem icd10: 'http://fhir.de/CodeSystem/dimdi/icd-10-gm'                
+        codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'                
                         
         define InInitialPopulation:
           exists [Condition: Code 'C71.1' from icd10]
@@ -33,7 +33,7 @@ var mapper = new ObjectMapper();
 mapper.readValue("""
         {"inclusionCriteria": [[{
           "termCodes": [{
-            "system": "http://fhir.de/CodeSystem/dimdi/icd-10-gm", 
+            "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm", 
             "code": "C71.1",
             "display": "Malignant neoplasm of brain"
           }]

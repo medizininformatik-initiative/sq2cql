@@ -27,6 +27,7 @@ import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -50,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AcceptanceTest {
 
     private final Map<String, String> CODE_SYSTEM_ALIASES = Map.ofEntries(
-            entry("http://fhir.de/CodeSystem/dimdi/icd-10-gm", "icd10"),
+            entry("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10"),
             entry("http://loinc.org", "loinc"),
             entry("https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample"),
             entry("http://fhir.de/CodeSystem/dimdi/atc", "atc"),
@@ -68,10 +70,10 @@ public class AcceptanceTest {
             entry("http://hl7.org/fhir/consent-provision-type", "provision-type"));
 
     private final GenericContainer<?> blaze = new GenericContainer<>(
-            DockerImageName.parse("samply/blaze:0.17"))
+            DockerImageName.parse("samply/blaze:0.19"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withExposedPorts(8080)
-            .waitingFor(Wait.forHttp("/health").forStatusCodeMatching(c -> c >= 200 && c <= 500))
+            .waitingFor(Wait.forHttp("/health").forStatusCode(200))
             .withStartupAttempts(3);
 
     private final FhirContext fhirContext = FhirContext.forR4();
@@ -93,7 +95,7 @@ public class AcceptanceTest {
     private Translator createTranslator() throws Exception {
         var mapper = new ObjectMapper();
         var mappings = Arrays.stream(mapper.readValue(slurp(
-                "codex-term-code-mapping.json"), Mapping[].class))
+                        "codex-term-code-mapping.json"), Mapping[].class))
                 .collect(Collectors.toMap(Mapping::key, Functions.identity()));
         var conceptTree = mapper.readValue(slurp("codex-code-tree.json"), TermCodeNode.class);
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
@@ -143,13 +145,21 @@ public class AcceptanceTest {
     }
 
     public List<String> getSqFileNames() throws Exception {
-        var disabledTests = Files.lines(resourcePath("disabled_test_cases")).collect(Collectors.toSet());
-        return Files.walk(resourcePath("testCases"))
-                .filter(Files::isRegularFile)
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .filter(filePath -> !disabledTests.contains(filePath))
-                .toList();
+        var disabledTests = readLines(resourcePath("disabled_test_cases"));
+        try (Stream<Path> stream = Files.walk(resourcePath("testCases"))) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .filter(filePath -> !disabledTests.contains(filePath))
+                    .toList();
+        }
+    }
+
+    private java.util.Set<String> readLines(Path path) throws IOException {
+        try (var stream = Files.lines(path)) {
+            return stream.collect(Collectors.toSet());
+        }
     }
 
     private static Path resourcePath(String name) throws URISyntaxException {
