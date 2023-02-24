@@ -11,13 +11,13 @@
                     }
                 ],
                 "valueFilter": {
-                    "comparator": "eq",
+                    "comparator": "ge",
                     "type": "quantity-comparator",
                     "unit": {
                         "code": "a",
                         "display": "years"
                     },
-                    "value": 16
+                    "value": 19
                 }
             }
         ]

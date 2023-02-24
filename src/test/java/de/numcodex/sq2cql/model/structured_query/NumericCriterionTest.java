@@ -179,13 +179,13 @@ class NumericCriterionTest {
     void toCql_WithValueOnPatient() {
         var criterion = NumericCriterion.of(Concept.of(AGE), EQUAL, BigDecimal.valueOf(16), "a");
         var mappingContext = MappingContext.of(Map.of(
-                AGE, Mapping.of(AGE, "Patient", "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/age').extension.where(url='age').value.first()")
+                AGE, Mapping.of(AGE, "Patient", "birthDate")
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
         assertEquals("""
-                        Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/age').extension.where(url='age').value.first() as Quantity = 16 'a'""",
+                        AgeInYears() = 16""",
                 PrintContext.ZERO.print(container));
         assertTrue(container.getCodeSystemDefinitions().isEmpty());
     }

@@ -33,6 +33,8 @@ import org.junit.jupiter.api.Test;
 class TranslatorTest {
 
   static final TermCode COMBINED_CONSENT = TermCode.of("mii.abide", "combined-consent", "");
+  static final TermCode AGE = TermCode.of("http://snomed.info/sct", "424144002",
+      "Current chronological age");
   static final TermCode ROOT = TermCode.of("", "", "");
   static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
       "Malignant neoplasm of brain");
@@ -518,6 +520,208 @@ class TranslatorTest {
             where C.status = 'active' and
               C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.5' from consent and
               C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.2' from consent)
+        """, library.print());
+  }
+
+  @Test
+  void test_NumericAgeTranslation() throws Exception {
+    var objectMapper = new ObjectMapper();
+
+    var mapping = objectMapper.readValue("""
+        {
+            "fhirResourceType": "Patient",
+            "key": {
+                "code": "424144002",
+                "display": "Current chronological age",
+                "system": "http://snomed.info/sct"
+            },
+            "valueFhirPath": "birthDate",
+            "valueSearchParameter": "birthDate",
+            "valueType": "Age"
+        }
+        """, Mapping.class);
+
+    var structuredQuery = objectMapper.readValue("""
+        {
+          "version": "http://to_be_decided.com/draft-1/schema#",
+          "display": "",
+          "inclusionCriteria": [
+            [
+              {
+                "termCodes": [
+                  {
+                    "code": "424144002",
+                    "system": "http://snomed.info/sct",
+                    "display": "Current chronological age"
+                  }
+                ],
+                "valueFilter": {
+                  "selectedConcepts": [],
+                  "type": "quantity-comparator",
+                  "unit": {
+                    "code": "a",
+                    "display": "a"
+                  },
+                  "value": 5,
+                  "comparator": "gt"
+                }
+              }
+            ]
+          ]
+        }
+        """, StructuredQuery.class);
+    var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+    var mappings = Map.of(AGE, mapping);
+    var mappingContext = MappingContext.of(mappings,
+        conceptTree,
+        CODE_SYSTEM_ALIASES);
+
+    Library library = Translator.of(mappingContext).toCql(structuredQuery);
+
+    assertEquals("""
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
+                
+        context Patient
+                
+        define InInitialPopulation:
+          AgeInYears() > 5
+        """, library.print());
+  }
+
+  @Test
+  void test_AgeRangeTranslation() throws Exception {
+    var objectMapper = new ObjectMapper();
+
+    var mapping = objectMapper.readValue("""
+        {
+            "fhirResourceType": "Patient",
+            "key": {
+                "code": "424144002",
+                "display": "Current chronological age",
+                "system": "http://snomed.info/sct"
+            },
+            "valueFhirPath": "birthDate",
+            "valueSearchParameter": "birthDate",
+            "valueType": "Age"
+        }
+        """, Mapping.class);
+
+    var structuredQuery = objectMapper.readValue("""
+        {
+          "version": "http://to_be_decided.com/draft-1/schema#",
+          "display": "",
+          "inclusionCriteria": [
+            [
+              {
+                "termCodes": [
+                  {
+                    "code": "424144002",
+                    "system": "http://snomed.info/sct",
+                    "display": "Current chronological age"
+                  }
+                ],
+                "valueFilter": {
+                  "selectedConcepts": [],
+                  "type": "quantity-range",
+                  "unit": {
+                    "code": "a",
+                    "display": "a"
+                  },
+                  "minValue": 5,
+                  "maxValue": 10
+                }
+              }
+            ]
+          ]
+        }
+        """, StructuredQuery.class);
+    var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+    var mappings = Map.of(AGE, mapping);
+    var mappingContext = MappingContext.of(mappings,
+        conceptTree,
+        CODE_SYSTEM_ALIASES);
+
+    Library library = Translator.of(mappingContext).toCql(structuredQuery);
+
+    assertEquals("""
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
+                
+        context Patient
+                
+        define InInitialPopulation:
+          AgeInYears() between 5 and 10
+        """, library.print());
+  }
+
+
+  @Test
+  void test_NumericAgeTranslationInHours() throws Exception {
+    var objectMapper = new ObjectMapper();
+
+    var mapping = objectMapper.readValue("""
+        {
+            "fhirResourceType": "Patient",
+            "key": {
+                "code": "424144002",
+                "display": "Current chronological age",
+                "system": "http://snomed.info/sct"
+            },
+            "valueFhirPath": "birthDate",
+            "valueSearchParameter": "birthDate",
+            "valueType": "Age"
+        }
+        """, Mapping.class);
+
+    var structuredQuery = objectMapper.readValue("""
+        {
+          "version": "http://to_be_decided.com/draft-1/schema#",
+          "display": "",
+          "inclusionCriteria": [
+            [
+              {
+                "termCodes": [
+                  {
+                    "code": "424144002",
+                    "system": "http://snomed.info/sct",
+                    "display": "Current chronological age"
+                  }
+                ],
+                "valueFilter": {
+                  "selectedConcepts": [],
+                  "type": "quantity-comparator",
+                  "unit": {
+                    "code": "h",
+                    "display": "h"
+                  },
+                  "value": 5,
+                  "comparator": "lt"
+                }
+              }
+            ]
+          ]
+        }
+        """, StructuredQuery.class);
+    var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+    var mappings = Map.of(AGE, mapping);
+    var mappingContext = MappingContext.of(mappings,
+        conceptTree,
+        CODE_SYSTEM_ALIASES);
+
+    Library library = Translator.of(mappingContext).toCql(structuredQuery);
+
+    assertEquals("""
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
+                
+        context Patient
+                
+        define InInitialPopulation:
+          AgeInHours() < 5
         """, library.print());
   }
 }
