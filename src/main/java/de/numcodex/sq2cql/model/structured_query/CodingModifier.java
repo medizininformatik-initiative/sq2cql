@@ -29,6 +29,7 @@ public final class CodingModifier extends AbstractModifier {
         return new CodingModifier(path, List.of(concepts));
     }
 
+    @Override
     public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
         var codingExpr = InvocationExpression.of(InvocationExpression.of(identifier, path), "coding");
         return concepts.stream()

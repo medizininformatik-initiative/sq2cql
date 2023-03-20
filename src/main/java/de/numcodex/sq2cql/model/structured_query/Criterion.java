@@ -42,45 +42,54 @@ public interface Criterion {
                             @JsonProperty("attributeFilters") List<ObjectNode> attributeFilters) {
         var concept = Concept.of(requireNonNull(termCodes, "missing JSON property: termCodes"));
 
-        var attributes = (attributeFilters == null ? List.<ObjectNode>of() : attributeFilters).stream()
-                .map(AttributeFilter::fromJsonNode)
-                .flatMap(Optional::stream)
-                .toArray(AttributeFilter[]::new);
+        AbstractCriterion<?> criterion;
 
         if (valueFilter == null) {
-            return ConceptCriterion.of(concept, conceptTimeRestriction, attributes);
+            criterion = ConceptCriterion.of(concept, conceptTimeRestriction);
+        } else {
+            var type = valueFilter.get("type").asText();
+            switch (type) {
+                case "quantity-comparator" -> {
+                    var comparator = Comparator.fromJson(valueFilter.get("comparator").asText());
+                    var value = valueFilter.get("value").decimalValue();
+                    var unit = valueFilter.get("unit");
+                    criterion = unit == null
+                        ? NumericCriterion.of(concept, comparator, value, conceptTimeRestriction)
+                        : NumericCriterion.of(concept, comparator, value, unit.get("code").asText(),
+                            conceptTimeRestriction);
+                }
+                case "quantity-range" -> {
+                    var lowerBound = valueFilter.get("minValue").decimalValue();
+                    var upperBound = valueFilter.get("maxValue").decimalValue();
+                    var unit = valueFilter.get("unit");
+                    criterion = unit == null
+                        ? RangeCriterion.of(concept, lowerBound, upperBound, conceptTimeRestriction)
+                        : RangeCriterion.of(concept, lowerBound, upperBound,
+                            unit.get("code").asText(),
+                            conceptTimeRestriction);
+                }
+                case "concept" -> {
+                    var selectedConcepts = valueFilter.get("selectedConcepts");
+                    if (selectedConcepts == null || selectedConcepts.isEmpty()) {
+                        throw new IllegalArgumentException(
+                            "Missing or empty `selectedConcepts` key in concept criterion.");
+                    }
+                    criterion = ValueSetCriterion.of(concept,
+                        StreamSupport.stream(selectedConcepts.spliterator(), false)
+                            .map(TermCode::fromJsonNode).toList(), conceptTimeRestriction);
+                }
+                default -> throw new IllegalArgumentException("unknown valueFilter type: " + type);
+            }
         }
 
-        var type = valueFilter.get("type").asText();
-        if ("quantity-comparator".equals(type)) {
-            var comparator = Comparator.fromJson(valueFilter.get("comparator").asText());
-            var value = valueFilter.get("value").decimalValue();
-            var unit = valueFilter.get("unit");
-            if (unit == null) {
-                return NumericCriterion.of(concept, comparator, value, conceptTimeRestriction, attributes);
-            } else {
-                return NumericCriterion.of(concept, comparator, value, unit.get("code").asText(), conceptTimeRestriction, attributes);
-            }
+        var attributes = (attributeFilters == null ? List.<ObjectNode>of() : attributeFilters).stream()
+            .map(AttributeFilter::fromJsonNode)
+            .flatMap(Optional::stream)
+            .toList();
+        for (var filter : attributes) {
+            criterion = criterion.appendAttributeFilter(filter);
         }
-        if ("quantity-range".equals(type)) {
-            var lowerBound = valueFilter.get("minValue").decimalValue();
-            var upperBound = valueFilter.get("maxValue").decimalValue();
-            var unit = valueFilter.get("unit");
-            if (unit == null) {
-                return RangeCriterion.of(concept, lowerBound, upperBound, conceptTimeRestriction, attributes);
-            } else {
-                return RangeCriterion.of(concept, lowerBound, upperBound, unit.get("code").asText(), conceptTimeRestriction, attributes);
-            }
-        }
-        if ("concept".equals(type)) {
-            var selectedConcepts = valueFilter.get("selectedConcepts");
-            if (selectedConcepts == null || selectedConcepts.isEmpty()) {
-                throw new IllegalArgumentException("Missing or empty `selectedConcepts` key in concept criterion.");
-            }
-            return ValueSetCriterion.of(concept, StreamSupport.stream(selectedConcepts.spliterator(), false)
-                    .map(TermCode::fromJsonNode).toList(), conceptTimeRestriction, attributes);
-        }
-        throw new IllegalArgumentException("unknown valueFilter type: " + type);
+        return criterion;
     }
 
     /**

@@ -319,8 +319,8 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithAttributeFilter() {
-        var criterion = ValueSetCriterion.of(Concept.of(COVID), List.of(POSITIVE),
-                ValueSetAttributeFilter.of(STATUS, FINAL));
+        var criterion = ValueSetCriterion.of(Concept.of(COVID), POSITIVE)
+            .appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 

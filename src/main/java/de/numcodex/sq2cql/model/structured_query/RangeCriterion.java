@@ -14,6 +14,7 @@ import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.QuantityExpression;
 import de.numcodex.sq2cql.model.cql.TypeExpression;
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +25,7 @@ import java.util.Optional;
  * Examples are {@code Observation} resources representing the concept of a numeric laboratory
  * value.
  */
-public final class RangeCriterion extends AbstractCriterion {
+public final class RangeCriterion extends AbstractCriterion<RangeCriterion> {
 
   private final BigDecimal lowerBound;
   private final BigDecimal upperBound;
@@ -45,37 +46,41 @@ public final class RangeCriterion extends AbstractCriterion {
   }
 
   public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
-      String unit,
-      AttributeFilter... attributeFilters) {
-    return new RangeCriterion(concept, List.of(attributeFilters), null, requireNonNull(lowerBound),
+      String unit) {
+    return new RangeCriterion(concept, List.of(), null, requireNonNull(lowerBound),
         requireNonNull(upperBound), requireNonNull(unit));
   }
 
   public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
-      TimeRestriction timeRestriction,
-      AttributeFilter... attributeFilters) {
-    return new RangeCriterion(concept, List.of(attributeFilters), null, requireNonNull(lowerBound),
+      TimeRestriction timeRestriction) {
+    return new RangeCriterion(concept, List.of(), timeRestriction, requireNonNull(lowerBound),
         requireNonNull(upperBound), null);
   }
 
   public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
-      String unit, TimeRestriction timeRestriction,
-      AttributeFilter... attributeFilters) {
-    return new RangeCriterion(concept, List.of(attributeFilters), null, requireNonNull(lowerBound),
+      String unit, TimeRestriction timeRestriction) {
+    return new RangeCriterion(concept, List.of(), timeRestriction, requireNonNull(lowerBound),
         requireNonNull(upperBound), requireNonNull(unit));
   }
 
-    public BigDecimal getLowerBound() {
-        return lowerBound;
-    }
+  @Override
+  public RangeCriterion appendAttributeFilter(AttributeFilter attributeFilter) {
+    var attributeFilters = new LinkedList<>(this.attributeFilters);
+    attributeFilters.add(attributeFilter);
+    return new RangeCriterion(concept, attributeFilters, timeRestriction, lowerBound, upperBound, unit);
+  }
 
-    public BigDecimal getUpperBound() {
-        return upperBound;
-    }
+  public BigDecimal getLowerBound() {
+      return lowerBound;
+  }
 
-    public Optional<String> getUnit() {
-        return Optional.ofNullable(unit);
-    }
+  public BigDecimal getUpperBound() {
+      return upperBound;
+  }
+
+  public Optional<String> getUnit() {
+      return Optional.ofNullable(unit);
+  }
 
   @Override
   Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,

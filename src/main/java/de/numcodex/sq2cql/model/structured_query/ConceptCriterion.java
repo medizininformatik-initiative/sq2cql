@@ -6,6 +6,7 @@ import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ import java.util.List;
  * <p>
  * Examples are {@code Condition} resources representing the concept of a particular disease.
  */
-public final class ConceptCriterion extends AbstractCriterion {
+public final class ConceptCriterion extends AbstractCriterion<ConceptCriterion> {
 
     private ConceptCriterion(Concept concept, List<AttributeFilter> attributeFilters, TimeRestriction timeRestriction) {
         super(concept, attributeFilters, timeRestriction);
@@ -23,11 +24,10 @@ public final class ConceptCriterion extends AbstractCriterion {
      * Returns a {@code ConceptCriterion}.
      *
      * @param concept          the concept the criterion represents
-     * @param attributeFilters additional filters on particular attributes
      * @return the {@code ConceptCriterion}.
      */
-    public static ConceptCriterion of(Concept concept, AttributeFilter... attributeFilters) {
-        return new ConceptCriterion(concept, List.of(attributeFilters), null);
+    public static ConceptCriterion of(Concept concept) {
+        return new ConceptCriterion(concept, List.of(), null);
     }
 
 
@@ -36,12 +36,17 @@ public final class ConceptCriterion extends AbstractCriterion {
      *
      * @param concept          the concept the criterion represents
      * @param timeRestriction  the time restriction on the critieria
-     * @param attributeFilters additional filters on particular attributes
      * @return the {@code ConceptCriterion}.
      */
-    public static ConceptCriterion of(Concept concept,
-        TimeRestriction timeRestriction, AttributeFilter... attributeFilters) {
-        return new ConceptCriterion(concept, List.of(attributeFilters), timeRestriction);
+    public static ConceptCriterion of(Concept concept, TimeRestriction timeRestriction) {
+        return new ConceptCriterion(concept, List.of(), timeRestriction);
+    }
+
+    @Override
+    public ConceptCriterion appendAttributeFilter(AttributeFilter attributeFilter) {
+        var attributeFilters = new LinkedList<>(this.attributeFilters);
+        attributeFilters.add(attributeFilter);
+        return new ConceptCriterion(concept, attributeFilters, timeRestriction);
     }
 
     @Override

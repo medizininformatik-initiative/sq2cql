@@ -12,6 +12,7 @@ import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.MembershipExpression;
 import de.numcodex.sq2cql.model.cql.StringLiteralExpression;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ import java.util.List;
  * <p>
  * Examples are {@code Observation} resources representing the concept of a coded laboratory value.
  */
-public final class ValueSetCriterion extends AbstractCriterion {
+public final class ValueSetCriterion extends AbstractCriterion<ValueSetCriterion> {
 
   private final List<TermCode> selectedConcepts;
 
@@ -48,39 +49,29 @@ public final class ValueSetCriterion extends AbstractCriterion {
    * Returns a {@code ValueSetCriterion}.
    *
    * @param concept          the concept the criterion represents
-   * @param selectedConcepts at least one selected value concept
-   * @param attributeFilters additional filters on particular attributes
-   * @return the {@code ValueSetCriterion}
-   */
-  public static ValueSetCriterion of(Concept concept, List<TermCode> selectedConcepts,
-      AttributeFilter... attributeFilters) {
-    if (selectedConcepts == null || selectedConcepts.isEmpty()) {
-      throw new IllegalArgumentException("empty selected concepts");
-    }
-    return new ValueSetCriterion(concept, List.of(attributeFilters), null, List.copyOf(selectedConcepts));
-  }
-
-  /**
-   * Returns a {@code ValueSetCriterion}.
-   *
-   * @param concept          the concept the criterion represents
    * @param timeRestriction  the timeRestriction applied to the concept
    * @param selectedConcepts at least one selected value concept
-   * @param attributeFilters additional filters on particular attributes
    * @return the {@code ValueSetCriterion}
    */
-  public static ValueSetCriterion of(Concept concept, List<TermCode> selectedConcepts, TimeRestriction timeRestriction,
-      AttributeFilter... attributeFilters) {
+  public static ValueSetCriterion of(Concept concept, List<TermCode> selectedConcepts, TimeRestriction timeRestriction) {
     if (selectedConcepts == null || selectedConcepts.isEmpty()) {
       throw new IllegalArgumentException("empty selected concepts");
     }
-    return new ValueSetCriterion(concept, List.of(attributeFilters), timeRestriction, List.copyOf(selectedConcepts));
+    return new ValueSetCriterion(concept, List.of(), timeRestriction, List.copyOf(selectedConcepts));
+  }
+
+  @Override
+  public ValueSetCriterion appendAttributeFilter(AttributeFilter attributeFilter) {
+    var attributeFilters = new LinkedList<>(this.attributeFilters);
+    attributeFilters.add(attributeFilter);
+    return new ValueSetCriterion(concept, attributeFilters, timeRestriction, selectedConcepts);
   }
 
   public List<TermCode> getSelectedConcepts() {
     return selectedConcepts;
   }
 
+  @Override
   Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
       IdentifierExpression identifier) {
     if ("code".equals(mapping.valueType())) {
