@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Abstract criterion holding the concept, every non-static criterion has.
  */
-abstract class AbstractCriterion implements Criterion {
+abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Criterion {
 
   private static final IdentifierExpression PATIENT = IdentifierExpression.of("Patient");
 
@@ -65,7 +65,6 @@ abstract class AbstractCriterion implements Criterion {
     return IdentifierExpression.of("%s".formatted(termCode.display() + termCode.code() + "Ref"));
   }
 
-
   /**
    * Returns the retrieve expression according to the given term code.
    * <p>
@@ -87,7 +86,6 @@ abstract class AbstractCriterion implements Criterion {
         RetrieveExpression.of(mapping.resourceType(), terminology));
   }
 
-
   static Container<BooleanExpression> modifiersExpr(List<Modifier> modifiers,
       MappingContext mappingContext,
       IdentifierExpression identifier) {
@@ -99,6 +97,8 @@ abstract class AbstractCriterion implements Criterion {
   static ExistsExpression existsExpr(SourceClause sourceClause, BooleanExpression whereExpr) {
     return ExistsExpression.of(QueryExpression.of(sourceClause, WhereClause.of(whereExpr)));
   }
+
+  public abstract T appendAttributeFilter(AttributeFilter attributeFilter);
 
   public Concept getConcept() {
     return concept;

@@ -22,7 +22,7 @@ import java.util.List;
  * by that concept through a reference. Currently, ReferenceCriterion is not defined
  * within the structured query (its virtual)
  */
-public final class ReferenceCriterion extends AbstractCriterion {
+public final class ReferenceCriterion extends AbstractCriterion<ReferenceCriterion> {
 
   private final TermCode referencedTermCode;
 
@@ -33,9 +33,14 @@ public final class ReferenceCriterion extends AbstractCriterion {
 
   }
 
-  public static ReferenceCriterion of(AbstractCriterion criterion, TermCode referencedTermCode) {
+  public static ReferenceCriterion of(AbstractCriterion<?> criterion, TermCode referencedTermCode) {
     return new ReferenceCriterion(criterion.concept, criterion.attributeFilters,
         criterion.timeRestriction(), referencedTermCode);
+  }
+
+  @Override
+  public ReferenceCriterion appendAttributeFilter(AttributeFilter attributeFilter) {
+    throw new UnsupportedOperationException();
   }
 
   @Override

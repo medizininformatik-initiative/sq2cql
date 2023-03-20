@@ -289,8 +289,8 @@ class TranslatorTest {
             TermCodeNode.of(C71_1)));
     var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
     var structuredQuery = StructuredQuery.of(List.of(
-        List.of(ConceptCriterion.of(Concept.of(C71),
-            ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
+        List.of(ConceptCriterion.of(Concept.of(C71))
+            .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
         List.of(
             NumericCriterion.of(Concept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50), "g/dl")),
         List.of(ConceptCriterion.of(Concept.of(TMZ)))));
@@ -333,8 +333,8 @@ class TranslatorTest {
         conceptTree,
         CODE_SYSTEM_ALIASES);
     var structuredQuery = StructuredQuery.of(List.of(
-        List.of(ConceptCriterion.of(Concept.of(HYPERTENSION),
-            ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
+        List.of(ConceptCriterion.of(Concept.of(HYPERTENSION))
+            .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
         List.of(ConceptCriterion.of(Concept.of(SERUM)))), List.of(
         List.of(ConceptCriterion.of(Concept.of(LIPID)))));
 

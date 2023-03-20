@@ -144,8 +144,8 @@ class NumericCriterionTest {
 
     @Test
     void toCql_WithStatusAttributeFilter() {
-        var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6),
-                ValueSetAttributeFilter.of(STATUS, FINAL));
+        var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6))
+            .appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 

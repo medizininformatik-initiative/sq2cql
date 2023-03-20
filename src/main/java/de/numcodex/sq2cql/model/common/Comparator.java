@@ -34,6 +34,7 @@ public enum Comparator {
         return precedence;
     }
 
+    @Override
     public String toString() {
         return s;
     }

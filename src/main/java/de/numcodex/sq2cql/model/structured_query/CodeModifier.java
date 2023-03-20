@@ -31,6 +31,7 @@ public final class CodeModifier extends AbstractModifier {
         return new CodeModifier(path, codes == null ? List.of() : List.of(codes));
     }
 
+    @Override
     public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
         var propertyExpr = InvocationExpression.of(identifier, path);
         if (codes.size() == 1) {

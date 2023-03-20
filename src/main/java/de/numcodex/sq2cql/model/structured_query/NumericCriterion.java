@@ -15,6 +15,7 @@ import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.QuantityExpression;
 import de.numcodex.sq2cql.model.cql.TypeExpression;
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ import java.util.Optional;
  * Examples are {@code Observation} resources representing the concept of a numeric laboratory
  * value.
  */
-public final class NumericCriterion extends AbstractCriterion {
+public final class NumericCriterion extends AbstractCriterion<NumericCriterion> {
 
   private final Comparator comparator;
   private final BigDecimal value;
@@ -46,16 +47,13 @@ public final class NumericCriterion extends AbstractCriterion {
    * @param concept          the concept the criterion represents
    * @param comparator       the comparator that should be used in the value comparison
    * @param value            the value that should be used in the value comparison
-   * @param attributeFilters additional filters on particular attributes
    * @return the {@code NumericCriterion}
    */
-  public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value,
-      AttributeFilter... attributeFilters) {
-    return new NumericCriterion(concept, List.of(attributeFilters), null,
+  public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value) {
+    return new NumericCriterion(concept, List.of(), null,
         requireNonNull(comparator),
         requireNonNull(value), null);
   }
-
 
   /**
    * Returns a {@code NumericCriterion}.
@@ -73,24 +71,19 @@ public final class NumericCriterion extends AbstractCriterion {
         requireNonNull(unit));
   }
 
-
   /**
    * Returns a {@code NumericCriterion}.
    *
    * @param concept          the concept the criterion represents
    * @param comparator       the comparator that should be used in the value comparison
    * @param value            the value that should be used in the value comparison
-   * @param attributeFilters additional filters on particular attributes
    * @return the {@code NumericCriterion}
    */
   public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value,
-      TimeRestriction timeRestriction,
-      AttributeFilter... attributeFilters) {
-    return new NumericCriterion(concept, List.of(attributeFilters), timeRestriction,
-        requireNonNull(comparator),
+      TimeRestriction timeRestriction) {
+    return new NumericCriterion(concept, List.of(), timeRestriction, requireNonNull(comparator),
         requireNonNull(value), null);
   }
-
 
   /**
    * Returns a {@code NumericCriterion}.
@@ -98,18 +91,21 @@ public final class NumericCriterion extends AbstractCriterion {
    * @param concept          the concept the criterion represents
    * @param comparator       the comparator that should be used in the value comparison
    * @param value            the value that should be used in the value comparison
-   * @param attributeFilters additional filters on particular attributes
    * @param unit             the unit of the value
    * @return the {@code NumericCriterion}
    */
   public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value,
-      String unit, TimeRestriction timeRestriction,
-      AttributeFilter... attributeFilters) {
-    return new NumericCriterion(concept, List.of(attributeFilters), timeRestriction,
-        requireNonNull(comparator),
+      String unit, TimeRestriction timeRestriction) {
+    return new NumericCriterion(concept, List.of(), timeRestriction, requireNonNull(comparator),
         requireNonNull(value), requireNonNull(unit));
   }
 
+  @Override
+  public NumericCriterion appendAttributeFilter(AttributeFilter attributeFilter) {
+    var attributeFilters = new LinkedList<>(this.attributeFilters);
+    attributeFilters.add(attributeFilter);
+    return new NumericCriterion(concept, attributeFilters, timeRestriction, comparator, value, unit);
+  }
 
   public Comparator getComparator() {
     return comparator;
@@ -123,6 +119,7 @@ public final class NumericCriterion extends AbstractCriterion {
     return Optional.ofNullable(unit);
   }
 
+  @Override
   Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
       IdentifierExpression identifier) {
     if (mapping.key().equals(AgeFunctionMapping.AGE)) {

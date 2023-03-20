@@ -19,6 +19,7 @@ public record ExpressionDefinition(String identifier, Expression expression) imp
         return expression;
     }
 
+    @Override
     public String print(PrintContext printContext) {
         assert printContext.precedence() == 0;
         var newPrintContext = printContext.increase();

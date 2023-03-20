@@ -121,7 +121,7 @@ class RangeCriterionTest {
     @Test
     void toCql_WithAttributeFilter() {
         var criterion = RangeCriterion.of(Concept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30),
-                "g/dl", ValueSetAttributeFilter.of(STATUS, FINAL));
+                "g/dl").appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 

@@ -29,6 +29,7 @@ public final class TimeRestrictionModifier extends AbstractModifier {
     return new TimeRestrictionModifier(path, afterDate, beforeDate);
   }
 
+  @Override
   public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
     var invocationExpr = InvocationExpression.of(identifier, path);
     var castExp = TypeExpression.of(invocationExpr, "dateTime");
