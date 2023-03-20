@@ -35,6 +35,7 @@ class TranslatorTest {
   static final TermCode COMBINED_CONSENT = TermCode.of("mii.abide", "combined-consent", "");
   static final TermCode AGE = TermCode.of("http://snomed.info/sct", "424144002",
       "Current chronological age");
+  static final TermCode GENDER = TermCode.of("http://snomed.info/sct", "263495000", "Gender");
   static final TermCode ROOT = TermCode.of("", "", "");
   static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
       "Malignant neoplasm of brain");
@@ -657,7 +658,6 @@ class TranslatorTest {
         """, library.print());
   }
 
-
   @Test
   void test_NumericAgeTranslationInHours() throws Exception {
     var objectMapper = new ObjectMapper();
@@ -722,6 +722,74 @@ class TranslatorTest {
                 
         define InInitialPopulation:
           AgeInHours() < 5
+        """, library.print());
+  }
+
+  @Test
+  void test_PatientGender() throws Exception {
+    var objectMapper = new ObjectMapper();
+
+    var mapping = objectMapper.readValue("""
+        {
+            "fhirResourceType": "Patient",
+            "key": {
+                "code": "263495000",
+                "display": "Geschlecht",
+                "system": "http://snomed.info/sct"
+            },
+            "valueFhirPath": "gender",
+            "valueSearchParameter": "gender",
+            "valueType": "code",
+            "valueTypeFhir": "code"
+        }
+        """, Mapping.class);
+
+    var structuredQuery = objectMapper.readValue("""
+        {
+          "version": "http://to_be_decided.com/draft-1/schema#",
+          "display": "",
+          "inclusionCriteria": [
+            [
+              {
+                "termCodes": [
+                  {
+                    "code": "263495000",
+                    "display": "Geschlecht",
+                    "system": "http://snomed.info/sct"
+                  }
+                ],
+                "valueFilter": {
+                  "type": "concept",
+                  "selectedConcepts": [
+                    {
+                      "code": "female",
+                      "system": "http://hl7.org/fhir/administrative-gender",
+                      "display": "Female"
+                    }
+                  ]
+                }
+              }
+            ]
+          ]
+        }
+        """, StructuredQuery.class);
+    var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(GENDER));
+    var mappings = Map.of(GENDER, mapping);
+    var mappingContext = MappingContext.of(mappings,
+        conceptTree,
+        CODE_SYSTEM_ALIASES);
+
+    Library library = Translator.of(mappingContext).toCql(structuredQuery);
+
+    assertEquals("""
+        library Retrieve version '1.0.0'
+        using FHIR version '4.0.0'
+        include FHIRHelpers version '4.0.0'
+                
+        context Patient
+                
+        define InInitialPopulation:
+          Patient.gender = 'female'
         """, library.print());
   }
 }

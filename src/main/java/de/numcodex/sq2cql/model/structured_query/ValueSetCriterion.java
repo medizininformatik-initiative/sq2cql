@@ -1,14 +1,17 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import static de.numcodex.sq2cql.model.common.Comparator.EQUAL;
+
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
+import de.numcodex.sq2cql.model.cql.ComparatorExpression;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.MembershipExpression;
-
+import de.numcodex.sq2cql.model.cql.StringLiteralExpression;
 import java.util.List;
 
 /**
@@ -80,11 +83,19 @@ public final class ValueSetCriterion extends AbstractCriterion {
 
   Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
       IdentifierExpression identifier) {
-    var valueExpr = valuePathExpr(identifier, mapping);
-    return selectedConcepts.stream()
-        .map(concept -> codeSelector(mappingContext, concept).map(terminology ->
-            (BooleanExpression) MembershipExpression.contains(valueExpr, terminology)))
-        .reduce(Container.empty(), Container.OR);
+    if ("code".equals(mapping.valueType())) {
+      return selectedConcepts.stream()
+          .map(concept -> Container.of((BooleanExpression) ComparatorExpression.of(
+              InvocationExpression.of(identifier, mapping.valueFhirPath()), EQUAL,
+              StringLiteralExpression.of(concept.code()))))
+          .reduce(Container.empty(), Container.OR);
+    } else {
+      var valueExpr = valuePathExpr(identifier, mapping);
+      return selectedConcepts.stream()
+          .map(concept -> codeSelector(mappingContext, concept).map(terminology ->
+              (BooleanExpression) MembershipExpression.contains(valueExpr, terminology)))
+          .reduce(Container.empty(), Container.OR);
+    }
   }
 
   private InvocationExpression valuePathExpr(IdentifierExpression identifier, Mapping mapping) {

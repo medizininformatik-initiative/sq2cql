@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,7 +37,9 @@ class ValueSetCriterionTest {
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
     static final TermCode ETHNIC_GROUP = TermCode.of("http://snomed.info/sct", "372148003", "Ethnic group (ethnic group)");
-    static final TermCode MIXED = TermCode.of("http://snomed.info/sct", "26242008", "Mixed (qualifier value)");
+    static final TermCode MIXED = TermCode.of("http://snomed.info/sct", "26242008",
+        "Mixed (qualifier value)");
+    static final TermCode GENDER = TermCode.of("http://snomed.info/sct", "263495000", "Gender");
 
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
@@ -331,10 +334,11 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithFixedCriteria() {
-        var criterion = ValueSetCriterion.of(Concept.of(COVID), List.of(POSITIVE));
+        var criterion = ValueSetCriterion.of(Concept.of(COVID), POSITIVE);
         var mappingContext = MappingContext.of(Map.of(
-                COVID, Mapping.of(COVID, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
-                        List.of())
+            COVID, Mapping.of(COVID, "Observation", "value", null,
+                List.of(CodeModifier.of("status", "final")),
+                List.of())
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
@@ -349,16 +353,46 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithCodingValueTypeOnPatient() {
-        var criterion = ValueSetCriterion.of(Concept.of(ETHNIC_GROUP), List.of(MIXED));
+        var criterion = ValueSetCriterion.of(Concept.of(ETHNIC_GROUP), MIXED);
         var mappingContext = MappingContext.of(Map.of(
-                ETHNIC_GROUP, Mapping.of(ETHNIC_GROUP, "Patient", "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first()", "Coding")
+            ETHNIC_GROUP, Mapping.of(ETHNIC_GROUP, "Patient",
+                "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first()",
+                "Coding")
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
-        assertEquals("""
-                        Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first() contains Code '26242008' from snomed""",
-                PrintContext.ZERO.print(container));
+        assertEquals(
+            "Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first() contains Code '26242008' from snomed",
+            PrintContext.ZERO.print(container));
         assertEquals(Set.of(SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+    }
+
+    @Test
+    void toCql_WithPatientGender() {
+        var criterion = ValueSetCriterion.of(Concept.of(GENDER), MALE);
+        var mappingContext = MappingContext.of(Map.of(
+            GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
+        ), null, CODE_SYSTEM_ALIASES);
+
+        var container = criterion.toCql(mappingContext);
+
+        assertThat(PrintContext.ZERO.print(container)).isEqualTo("Patient.gender = 'male'");
+        assertThat(container.getCodeSystemDefinitions()).isEmpty();
+    }
+
+    @Test
+    void toCql_WithPatientGender_TwoConcepts() {
+        var criterion = ValueSetCriterion.of(Concept.of(GENDER), MALE, FEMALE);
+        var mappingContext = MappingContext.of(Map.of(
+            GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
+        ), null, CODE_SYSTEM_ALIASES);
+
+        var container = criterion.toCql(mappingContext);
+
+        assertThat(PrintContext.ZERO.print(container)).isEqualTo("""
+            Patient.gender = 'male' or
+            Patient.gender = 'female'""");
+        assertThat(container.getCodeSystemDefinitions()).isEmpty();
     }
 }
