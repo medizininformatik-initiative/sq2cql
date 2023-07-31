@@ -51,7 +51,7 @@ public class EvaluationIT {
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of("http://loinc.org", "loinc");
 
     @Container
-    private final GenericContainer<?> blaze = new GenericContainer<>(DockerImageName.parse("samply/blaze:0.19"))
+    private final GenericContainer<?> blaze = new GenericContainer<>(DockerImageName.parse("samply/blaze:0.22"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withExposedPorts(8080)
             .waitingFor(Wait.forHttp("/health").forStatusCode(200))
