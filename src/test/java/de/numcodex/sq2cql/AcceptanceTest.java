@@ -21,7 +21,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -51,6 +54,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(Lifecycle.PER_CLASS)
 public class AcceptanceTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(AcceptanceTest.class);
+
     private final Map<String, String> CODE_SYSTEM_ALIASES = Map.ofEntries(
             entry("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10"),
             entry("http://loinc.org", "loinc"),
@@ -72,9 +77,10 @@ public class AcceptanceTest {
     private final GenericContainer<?> blaze = new GenericContainer<>(
         DockerImageName.parse("samply/blaze:0.22"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
+            .withEnv("LOG_LEVEL", "debug")
             .withExposedPorts(8080)
             .waitingFor(Wait.forHttp("/health").forStatusCode(200))
-            .withStartupAttempts(3);
+            .withLogConsumer(new Slf4jLogConsumer(logger));
 
     private final FhirContext fhirContext = FhirContext.forR4();
     private IGenericClient fhirClient;
