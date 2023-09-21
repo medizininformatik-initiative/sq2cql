@@ -4,7 +4,6 @@ import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.AdditionExpressionTerm;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;
@@ -24,16 +23,16 @@ import java.util.List;
  */
 public final class ReferenceCriterion extends AbstractCriterion<ReferenceCriterion> {
 
-  private final TermCode referencedTermCode;
+  private final ContextualTermCode referencedTermCode;
 
-  private ReferenceCriterion(Concept concept, List<AttributeFilter> attributeFilters,
-      TimeRestriction timeRestriction, TermCode referencedTermCode) {
+  private ReferenceCriterion(ContextualConcept concept, List<AttributeFilter> attributeFilters,
+      TimeRestriction timeRestriction, ContextualTermCode referencedTermCode) {
     super(concept, attributeFilters, timeRestriction);
     this.referencedTermCode = referencedTermCode;
 
   }
 
-  public static ReferenceCriterion of(AbstractCriterion<?> criterion, TermCode referencedTermCode) {
+  public static ReferenceCriterion of(AbstractCriterion<?> criterion, ContextualTermCode referencedTermCode) {
     return new ReferenceCriterion(criterion.concept, criterion.attributeFilters,
         criterion.timeRestriction(), referencedTermCode);
   }
@@ -46,7 +45,7 @@ public final class ReferenceCriterion extends AbstractCriterion<ReferenceCriteri
   @Override
   Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
       IdentifierExpression identifier) {
-    var retrieveExprContainer = codeSelector(mappingContext, referencedTermCode).map(
+    var retrieveExprContainer = codeSelector(mappingContext, referencedTermCode.termCode()).map(
         terminology -> RetrieveExpression.of("Medication", terminology));
     var alias = retrieveExprContainer.getExpression().get().alias();
     var returnClause = ReturnClause.of(
@@ -57,8 +56,8 @@ public final class ReferenceCriterion extends AbstractCriterion<ReferenceCriteri
             returnClause));
     var valueExpr = InvocationExpression.of(identifier, mapping.valueFhirPath());
     var membershipExprContainer = Container.<BooleanExpression>of(
-        MembershipExpression.in(valueExpr, referenceName(referencedTermCode)));
-    return membershipExprContainer.addReferenceDefinition(referenceName(referencedTermCode).print(
+        MembershipExpression.in(valueExpr, referenceName(referencedTermCode.termCode())));
+    return membershipExprContainer.addReferenceDefinition(referenceName(referencedTermCode.termCode()).print(
             PrintContext.ZERO),
         queryExprContainer);
   }

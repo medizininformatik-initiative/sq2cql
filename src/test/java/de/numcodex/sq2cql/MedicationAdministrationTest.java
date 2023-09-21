@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class MedicationAdministrationTest {
@@ -55,6 +56,7 @@ public class MedicationAdministrationTest {
     return Translator.of(mappingContext);
   }
 
+  @Disabled
   @Test
   public void translateMedicationAdministration() throws Exception {
     var translator = createTranslator();

@@ -2,8 +2,9 @@ package de.numcodex.sq2cql.model;
 
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
-import de.numcodex.sq2cql.model.structured_query.Concept;
 
+import de.numcodex.sq2cql.model.structured_query.ContextualConcept;
+import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,11 +20,11 @@ import static java.util.Objects.requireNonNull;
  */
 public class MappingContext {
 
-    private final Map<TermCode, Mapping> mappings;
+    private final Map<ContextualTermCode, Mapping> mappings;
     private final TermCodeNode conceptTree;
     private final Map<String, CodeSystemDefinition> codeSystemDefinitions;
 
-    private MappingContext(Map<TermCode, Mapping> mappings, TermCodeNode conceptTree,
+    private MappingContext(Map<ContextualTermCode, Mapping> mappings, TermCodeNode conceptTree,
                            Map<String, CodeSystemDefinition> codeSystemDefinitions) {
         this.mappings = mappings;
         this.conceptTree = conceptTree;
@@ -47,7 +48,7 @@ public class MappingContext {
      * @param codeSystemAliases a map of code system URLs to their aliases
      * @return the mapping context
      */
-    public static MappingContext of(Map<TermCode, Mapping> mappings, TermCodeNode conceptTree,
+    public static MappingContext of(Map<ContextualTermCode, Mapping> mappings, TermCodeNode conceptTree,
                                     Map<String, String> codeSystemAliases) {
         return new MappingContext(Map.copyOf(mappings), conceptTree, codeSystemAliases.entrySet().stream()
                 .collect(Collectors.toConcurrentMap(Map.Entry::getKey,
@@ -60,7 +61,7 @@ public class MappingContext {
      * @param key the TermCode of the mapping
      * @return either the Mapping or {@code Optional#empty() nothing}
      */
-    public Optional<Mapping> findMapping(TermCode key) {
+    public Optional<Mapping> findMapping(ContextualTermCode key) {
         return Optional.ofNullable(mappings.get(requireNonNull(key)));
     }
 
@@ -70,13 +71,14 @@ public class MappingContext {
      * @param concept the concept to expand
      * @return the stream of TermCodes
      */
-    public Stream<TermCode> expandConcept(Concept concept) {
-        var expandedCodes = conceptTree == null ? List.<TermCode>of() : expandCodes(concept);
-        return (expandedCodes.isEmpty() ? concept.termCodes() : expandedCodes).stream().filter(mappings::containsKey);
+    public Stream<ContextualTermCode> expandConcept(ContextualConcept concept) {
+        List<ContextualTermCode> expandedCodes = conceptTree == null ? List.of() : expandCodes(concept);
+        List<ContextualTermCode> concepts = expandedCodes.isEmpty() ? concept.contextualTermCodes() : expandedCodes;
+        return concepts.stream().filter(mappings::containsKey);
     }
 
-    private List<TermCode> expandCodes(Concept concept) {
-        return concept.termCodes().stream().flatMap(conceptTree::expand).toList();
+    private List<ContextualTermCode> expandCodes(ContextualConcept concept) {
+        return concept.contextualTermCodes().stream().flatMap(conceptTree::expand).toList();
     }
 
     /**

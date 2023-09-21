@@ -32,13 +32,13 @@ public final class NumericCriterion extends AbstractCriterion<NumericCriterion> 
   private final BigDecimal value;
   private final String unit;
 
-  private NumericCriterion(Concept concept, List<AttributeFilter> attributeFilters,
+  private NumericCriterion(ContextualConcept concept, List<AttributeFilter> attributeFilters,
       TimeRestriction timeRestriction, Comparator comparator,
       BigDecimal value, String unit) {
     super(concept, attributeFilters, timeRestriction);
     this.value = value;
     this.comparator = comparator;
-    this.unit = unit;
+    this.unit = unit != null ? unit.replace("'", "\\'") : null;
   }
 
   /**
@@ -49,7 +49,7 @@ public final class NumericCriterion extends AbstractCriterion<NumericCriterion> 
    * @param value            the value that should be used in the value comparison
    * @return the {@code NumericCriterion}
    */
-  public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value) {
+  public static NumericCriterion of(ContextualConcept concept, Comparator comparator, BigDecimal value) {
     return new NumericCriterion(concept, List.of(), null,
         requireNonNull(comparator),
         requireNonNull(value), null);
@@ -64,7 +64,7 @@ public final class NumericCriterion extends AbstractCriterion<NumericCriterion> 
    * @param unit       the unit of the value
    * @return the {@code NumericCriterion}
    */
-  public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value,
+  public static NumericCriterion of(ContextualConcept concept, Comparator comparator, BigDecimal value,
       String unit) {
     return new NumericCriterion(concept, List.of(), null, requireNonNull(comparator),
         requireNonNull(value),
@@ -79,7 +79,7 @@ public final class NumericCriterion extends AbstractCriterion<NumericCriterion> 
    * @param value            the value that should be used in the value comparison
    * @return the {@code NumericCriterion}
    */
-  public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value,
+  public static NumericCriterion of(ContextualConcept concept, Comparator comparator, BigDecimal value,
       TimeRestriction timeRestriction) {
     return new NumericCriterion(concept, List.of(), timeRestriction, requireNonNull(comparator),
         requireNonNull(value), null);
@@ -94,7 +94,7 @@ public final class NumericCriterion extends AbstractCriterion<NumericCriterion> 
    * @param unit             the unit of the value
    * @return the {@code NumericCriterion}
    */
-  public static NumericCriterion of(Concept concept, Comparator comparator, BigDecimal value,
+  public static NumericCriterion of(ContextualConcept concept, Comparator comparator, BigDecimal value,
       String unit, TimeRestriction timeRestriction) {
     return new NumericCriterion(concept, List.of(), timeRestriction, requireNonNull(comparator),
         requireNonNull(value), requireNonNull(unit));
@@ -122,7 +122,7 @@ public final class NumericCriterion extends AbstractCriterion<NumericCriterion> 
   @Override
   Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
       IdentifierExpression identifier) {
-    if (mapping.key().equals(AgeFunctionMapping.AGE)) {
+    if (mapping.key().termCode().equals(AgeFunctionMapping.AGE)) {
       return ageExpr();
     }
     var castExpr = TypeExpression.of(InvocationExpression.of(identifier, mapping.valueFhirPath()),

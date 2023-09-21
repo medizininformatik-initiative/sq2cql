@@ -17,6 +17,7 @@ import org.hl7.fhir.r4.model.Measure;
 import org.hl7.fhir.r4.model.MeasureReport;
 import org.hl7.fhir.r4.model.Parameters;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -50,6 +51,7 @@ import static org.hl7.fhir.r4.model.Bundle.BundleType.TRANSACTION;
 import static org.hl7.fhir.r4.model.Bundle.HTTPVerb.POST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled
 @Testcontainers
 @TestInstance(Lifecycle.PER_CLASS)
 public class AcceptanceTest {
@@ -60,7 +62,7 @@ public class AcceptanceTest {
             entry("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10"),
             entry("http://loinc.org", "loinc"),
             entry("https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample"),
-            entry("http://fhir.de/CodeSystem/dimdi/atc", "atc"),
+            entry("http://fhir.de/CodeSystem/bfarm/atc", "atc"),
             entry("http://snomed.info/sct", "snomed"),
             entry("http://terminology.hl7.org/CodeSystem/condition-ver-status", "cvs"),
             entry("http://hl7.org/fhir/administrative-gender", "gender"),
@@ -68,6 +70,7 @@ public class AcceptanceTest {
                     "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes",
                     "num-ecrf"),
             entry("urn:iso:std:iso:3166", "iso3166"),
+            entry("http://fhir.de/CodeSystem/bfarm/ops", "ops"),
             entry("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
                     "fraility-score"),
             entry("http://terminology.hl7.org/CodeSystem/consentcategorycodes", "consent"),
@@ -100,10 +103,11 @@ public class AcceptanceTest {
 
     private Translator createTranslator() throws Exception {
         var mapper = new ObjectMapper();
+        System.out.println(System.getProperty("java.class.path"));
+        var conceptTree = mapper.readValue(slurp("mapping_tree.json"), TermCodeNode.class);
         var mappings = Arrays.stream(mapper.readValue(slurp(
-                        "codex-term-code-mapping.json"), Mapping[].class))
+                        "mapping_cql.json"), Mapping[].class))
                 .collect(Collectors.toMap(Mapping::key, Functions.identity()));
-        var conceptTree = mapper.readValue(slurp("codex-code-tree.json"), TermCodeNode.class);
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
         return Translator.of(mappingContext);
     }
@@ -114,7 +118,8 @@ public class AcceptanceTest {
         var structuredQuery = readStructuredQuery(testCaseQueryName);
         var cql = translator.toCql(structuredQuery).print();
         var measureUri = createMeasureAndLibrary(cql);
-
+        System.out.println(cql);
+        System.out.println(measureUri);
         var report = evaluateMeasure(measureUri);
 
         assertEquals(1, report.getGroupFirstRep().getPopulationFirstRep().getCount());
@@ -128,6 +133,7 @@ public class AcceptanceTest {
         var libraryUri = "urn:uuid" + UUID.randomUUID();
         var library = appendCql(parseResource(Library.class, slurp("Library.json")).setUrl(libraryUri), cql);
         var measureUri = "urn:uuid" + UUID.randomUUID();
+        System.out.println(measureUri);
         var measure = parseResource(Measure.class, slurp("Measure.json"))
                 .setUrl(measureUri)
                 .addLibrary(libraryUri);

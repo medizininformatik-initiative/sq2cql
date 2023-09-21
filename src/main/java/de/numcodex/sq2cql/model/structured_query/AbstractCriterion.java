@@ -30,11 +30,11 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
 
   private static final IdentifierExpression PATIENT = IdentifierExpression.of("Patient");
 
-  final Concept concept;
+  final ContextualConcept concept;
   final List<AttributeFilter> attributeFilters;
   final TimeRestriction timeRestriction;
 
-  AbstractCriterion(Concept concept, List<AttributeFilter> attributeFilters,
+  AbstractCriterion(ContextualConcept concept, List<AttributeFilter> attributeFilters,
       TimeRestriction timeRestriction) {
     this.concept = requireNonNull(concept);
     this.attributeFilters = List.copyOf(attributeFilters);
@@ -78,7 +78,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
    * @throws TranslationException if the {@link RetrieveExpression} can't be build
    */
   static Container<RetrieveExpression> retrieveExpr(MappingContext mappingContext,
-      TermCode termCode) {
+      ContextualTermCode termCode) {
     var mapping = mappingContext.findMapping(termCode)
         .orElseThrow(() -> new MappingNotFoundException(termCode));
     // TODO if no primary code retrieve all resources
@@ -100,7 +100,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
 
   public abstract T appendAttributeFilter(AttributeFilter attributeFilter);
 
-  public Concept getConcept() {
+  public ContextualConcept getConcept() {
     return concept;
   }
 
@@ -123,7 +123,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
         .reduce(Container.empty(), Container.OR);
   }
 
-  private Container<BooleanExpression> expr(MappingContext mappingContext, TermCode termCode) {
+  private Container<BooleanExpression> expr(MappingContext mappingContext, ContextualTermCode termCode) {
     var mapping = mappingContext.findMapping(termCode)
         .orElseThrow(() -> new MappingNotFoundException(termCode));
     if ("Patient".equals(mapping.resourceType())) {
@@ -177,7 +177,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
     return attributeFilters.stream().map(attributeFilter -> {
       var key = attributeFilter.attributeCode();
       var mapping = Optional.ofNullable(attributeMappings.get(key)).orElseThrow(() ->
-          new MappingNotFoundException(key));
+          new AttributeMappingNotFoundException(key));
       return attributeFilter.toModifier(mapping);
     }).toList();
   }

@@ -24,22 +24,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ValueSetCriterionTest {
 
-    static final TermCode COVID = TermCode.of("http://loinc.org", "94500-6", "COVID");
-    static final TermCode SEX = TermCode.of("http://loinc.org", "76689-9", "Sex assigned at birth");
+    static final TermCode CONTEXT = TermCode.of("context", "context", "context");
+    static final ContextualTermCode COVID = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "94500-6", "COVID"));
+    static final ContextualTermCode SEX = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "76689-9", "Sex assigned at birth"));
     static final TermCode POSITIVE = TermCode.of("http://snomed.info/sct", "positive", "positive");
     static final TermCode MALE = TermCode.of("http://hl7.org/fhir/administrative-gender", "male", "Male");
     static final TermCode FEMALE = TermCode.of("http://hl7.org/fhir/administrative-gender", "female", "Female");
-    static final TermCode FINDING = TermCode.of("http://snomed.info/sct", "404684003", "Clinical finding (finding)");
+    static final ContextualTermCode FINDING = ContextualTermCode.of(CONTEXT, TermCode.of("http://snomed.info/sct", "404684003", "Clinical finding (finding)"));
     static final TermCode SEVERE = TermCode.of("http://snomed.info/sct", "24484000", "Severe (severity modifier)");
-    static final TermCode TNM_C = TermCode.of("http://loinc.org", "21908-9", "Stage group.clinical Cancer");
-    static final TermCode TNM_P = TermCode.of("http://loinc.org", "21902-2", "Stage group.pathology Cancer");
+    static final TermCode TNM_C_TC = TermCode.of("http://loinc.org", "21908-9", "Tumor size.clinical Cancer");
+    static final TermCode TNM_P_TC = TermCode.of("http://loinc.org", "21902-2", "Tumor size.pathology Cancer");
+    static final ContextualTermCode TNM_C = ContextualTermCode.of(CONTEXT, TNM_C_TC);
+    static final ContextualTermCode TNM_P = ContextualTermCode.of(CONTEXT, TNM_P_TC);
     static final TermCode LA3649_6 = TermCode.of("http://loinc.org", "LA3649-6", "Stage IVB");
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
-    static final TermCode ETHNIC_GROUP = TermCode.of("http://snomed.info/sct", "372148003", "Ethnic group (ethnic group)");
+    static final ContextualTermCode ETHNIC_GROUP = ContextualTermCode.of(CONTEXT, TermCode.of("http://snomed.info/sct", "372148003", "Ethnic group (ethnic group)"));
     static final TermCode MIXED = TermCode.of("http://snomed.info/sct", "26242008",
         "Mixed (qualifier value)");
-    static final TermCode GENDER = TermCode.of("http://snomed.info/sct", "263495000", "Gender");
+    static final ContextualTermCode GENDER = ContextualTermCode.of(CONTEXT, TermCode.of("http://snomed.info/sct", "263495000", "Gender"));
 
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
@@ -68,6 +71,11 @@ class ValueSetCriterionTest {
 
         var criterion = (ValueSetCriterion) mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "76689-9",
@@ -91,7 +99,7 @@ class ValueSetCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(Concept.of(SEX), criterion.getConcept());
+        assertEquals(ContextualConcept.of(SEX), criterion.getConcept());
         assertEquals(List.of(MALE, FEMALE), criterion.getSelectedConcepts());
     }
 
@@ -101,6 +109,11 @@ class ValueSetCriterionTest {
 
         var error = assertThrows(JsonMappingException.class, () -> mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "76689-9",
@@ -121,6 +134,11 @@ class ValueSetCriterionTest {
 
         var error = assertThrows(JsonMappingException.class, () -> mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "76689-9",
@@ -142,6 +160,11 @@ class ValueSetCriterionTest {
 
         var criterion = (ValueSetCriterion) mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "76689-9",
@@ -177,7 +200,7 @@ class ValueSetCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(Concept.of(SEX), criterion.getConcept());
+        assertEquals(ContextualConcept.of(SEX), criterion.getConcept());
         assertEquals(List.of(MALE), criterion.getSelectedConcepts());
         assertEquals(List.of(ValueSetAttributeFilter.of(STATUS, FINAL)), criterion.attributeFilters);
     }
@@ -188,6 +211,11 @@ class ValueSetCriterionTest {
 
         var criterion = (ValueSetCriterion) mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "76689-9",
@@ -225,6 +253,11 @@ class ValueSetCriterionTest {
 
         var criterion = (ValueSetCriterion) mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "76689-9",
@@ -259,12 +292,12 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithNoConcept() {
-        assertThrows(IllegalArgumentException.class, () -> ValueSetCriterion.of(Concept.of(COVID)));
+        assertThrows(IllegalArgumentException.class, () -> ValueSetCriterion.of(ContextualConcept.of(COVID)));
     }
 
     @Test
     void toCql_WithOneConcept() {
-        var criterion = ValueSetCriterion.of(Concept.of(COVID), POSITIVE);
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(COVID), POSITIVE);
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -277,7 +310,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithOneConceptAndMultipleTermCodes() {
-        var criterion = ValueSetCriterion.of(Concept.of(TNM_C, TNM_P), LA3649_6);
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(CONTEXT, Concept.of(TNM_C_TC, TNM_P_TC)), LA3649_6);
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -292,7 +325,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithTwoConcepts() {
-        var criterion = ValueSetCriterion.of(Concept.of(SEX), MALE, FEMALE);
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(SEX), MALE, FEMALE);
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -306,7 +339,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithConditionSeverity() {
-        var criterion = ValueSetCriterion.of(Concept.of(FINDING), SEVERE);
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(FINDING), SEVERE);
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -319,7 +352,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithAttributeFilter() {
-        var criterion = ValueSetCriterion.of(Concept.of(COVID), POSITIVE)
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(COVID), POSITIVE)
             .appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
@@ -334,7 +367,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithFixedCriteria() {
-        var criterion = ValueSetCriterion.of(Concept.of(COVID), POSITIVE);
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(COVID), POSITIVE);
         var mappingContext = MappingContext.of(Map.of(
             COVID, Mapping.of(COVID, "Observation", "value", null,
                 List.of(CodeModifier.of("status", "final")),
@@ -353,7 +386,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithCodingValueTypeOnPatient() {
-        var criterion = ValueSetCriterion.of(Concept.of(ETHNIC_GROUP), MIXED);
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(ETHNIC_GROUP), MIXED);
         var mappingContext = MappingContext.of(Map.of(
             ETHNIC_GROUP, Mapping.of(ETHNIC_GROUP, "Patient",
                 "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first()",
@@ -370,7 +403,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithPatientGender() {
-        var criterion = ValueSetCriterion.of(Concept.of(GENDER), MALE);
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(GENDER), MALE);
         var mappingContext = MappingContext.of(Map.of(
             GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
         ), null, CODE_SYSTEM_ALIASES);
@@ -383,7 +416,7 @@ class ValueSetCriterionTest {
 
     @Test
     void toCql_WithPatientGender_TwoConcepts() {
-        var criterion = ValueSetCriterion.of(Concept.of(GENDER), MALE, FEMALE);
+        var criterion = ValueSetCriterion.of(ContextualConcept.of(GENDER), MALE, FEMALE);
         var mappingContext = MappingContext.of(Map.of(
             GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
         ), null, CODE_SYSTEM_ALIASES);

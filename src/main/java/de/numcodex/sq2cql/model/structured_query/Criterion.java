@@ -36,11 +36,13 @@ public interface Criterion {
     Criterion FALSE = mappingContext -> Container.of(BooleanExpression.FALSE);
 
     @JsonCreator
-    static Criterion create(@JsonProperty("termCodes") List<TermCode> termCodes,
+    static Criterion create(@JsonProperty("context") TermCode context,
+                            @JsonProperty("termCodes") List<TermCode> termCodes,
                             @JsonProperty("valueFilter") ObjectNode valueFilter,
                             @JsonProperty("timeRestriction") TimeRestriction conceptTimeRestriction,
                             @JsonProperty("attributeFilters") List<ObjectNode> attributeFilters) {
-        var concept = Concept.of(requireNonNull(termCodes, "missing JSON property: termCodes"));
+      var concept = ContextualConcept.of(requireNonNull(context, "missing JSON property: context"),
+          Concept.of(requireNonNull(termCodes, "missing JSON property: termCodes")));
 
         AbstractCriterion<?> criterion;
 
