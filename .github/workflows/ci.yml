@@ -52,7 +52,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Release
-      uses: qcastel/github-actions-maven-release@v1.12.27
+      uses: qcastel/github-actions-maven-release@v1.12.41
       with:
         release-branch-name: "main"
         access-token: ${{ secrets.GITHUB_TOKEN }}
@@ -73,7 +73,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Release
-      uses: qcastel/github-actions-maven-release@v1.12.27
+      uses: qcastel/github-actions-maven-release@v1.12.41
       with:
         release-branch-name: "v2"
         version-patch: false
