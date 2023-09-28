@@ -62,3 +62,25 @@ jobs:
         maven-repo-server-password: ${{ secrets.GITHUB_TOKEN }}
       env:
         JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
+
+  release-v2:
+    needs: build
+    if: github.ref == 'refs/heads/v2'
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Check out Git repository
+      uses: actions/checkout@v3
+
+    - name: Release
+      uses: qcastel/github-actions-maven-release@v1.12.27
+      with:
+        release-branch-name: "v2"
+        version-patch: false
+        access-token: ${{ secrets.GITHUB_TOKEN }}
+        maven-args: "-DskipTests -DskipITs"
+        maven-repo-server-id: github
+        maven-repo-server-username: ${{ github.actor }}
+        maven-repo-server-password: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
