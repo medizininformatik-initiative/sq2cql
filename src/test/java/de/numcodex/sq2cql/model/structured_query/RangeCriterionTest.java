@@ -22,8 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class RangeCriterionTest {
 
-    static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
-    static final TermCode OTHER_VALUE_PATH = TermCode.of("foo", "other-value-path", "");
+    static final TermCode CONTEXT = TermCode.of("context", "context", "context");
+    static final ContextualTermCode PLATELETS = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "26515-7", "Platelets"));
+    static final ContextualTermCode OTHER_VALUE_PATH = ContextualTermCode.of(CONTEXT, TermCode.of("foo", "other-value-path", ""));
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
 
@@ -46,6 +47,11 @@ class RangeCriterionTest {
 
         var criterion = (RangeCriterion) mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "26515-7",
@@ -62,7 +68,7 @@ class RangeCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(Concept.of(PLATELETS), criterion.getConcept());
+        assertEquals(ContextualConcept.of(PLATELETS), criterion.getConcept());
         assertEquals(BigDecimal.valueOf(20), criterion.getLowerBound());
         assertEquals(BigDecimal.valueOf(30), criterion.getUpperBound());
         assertEquals(Optional.of("g/dl"), criterion.getUnit());
@@ -74,6 +80,11 @@ class RangeCriterionTest {
 
         var criterion = (RangeCriterion) mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "system-140946",
                     "code": "code-140950",
@@ -94,7 +105,7 @@ class RangeCriterionTest {
 
     @Test
     void toCql() {
-        var criterion = RangeCriterion.of(Concept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30), "g/dl");
+        var criterion = RangeCriterion.of(ContextualConcept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30), "g/dl");
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -107,7 +118,7 @@ class RangeCriterionTest {
 
     @Test
     void toCql_WithOtherFhirValuePath() {
-        var criterion = RangeCriterion.of(Concept.of(OTHER_VALUE_PATH), BigDecimal.valueOf(1), BigDecimal.valueOf(2));
+        var criterion = RangeCriterion.of(ContextualConcept.of(OTHER_VALUE_PATH), BigDecimal.valueOf(1), BigDecimal.valueOf(2));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -120,7 +131,7 @@ class RangeCriterionTest {
 
     @Test
     void toCql_WithAttributeFilter() {
-        var criterion = RangeCriterion.of(Concept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30),
+        var criterion = RangeCriterion.of(ContextualConcept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30),
                 "g/dl").appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
@@ -135,7 +146,7 @@ class RangeCriterionTest {
 
     @Test
     void toCql_WithFixedCriteria() {
-        var criterion = RangeCriterion.of(Concept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30), "g/dl");
+        var criterion = RangeCriterion.of(ContextualConcept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30), "g/dl");
         var mappingContext = MappingContext.of(Map.of(
                 PLATELETS, Mapping.of(PLATELETS, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
                         List.of())

@@ -1,21 +1,20 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.model.common.TermCode;
-
 /**
  * @author Alexander Kiel
  */
 public class MappingNotFoundException extends TranslationException {
 
-    private final TermCode termCode;
+    private final ContextualTermCode contextualTermCode;
 
-    public MappingNotFoundException(TermCode termCode) {
-        super("Mapping for concept with system `%s`, code `%s` and display `%s` not found."
-                .formatted(termCode.system(), termCode.code(), termCode.display()));
-        this.termCode = termCode;
+    public MappingNotFoundException(ContextualTermCode contextualTermCode) {
+        super("Mapping for concept with system `%s`, code `%s` and display `%s` and context with system `%s`, code `%s` and display `%s` not found".formatted(
+            contextualTermCode.termCode().system(), contextualTermCode.termCode().code(), contextualTermCode.termCode().display(),
+            contextualTermCode.context().system(), contextualTermCode.context().code(), contextualTermCode.context().display()));
+        this.contextualTermCode = contextualTermCode;
     }
 
-    public TermCode getTermCode() {
-        return termCode;
+    public ContextualTermCode getTermCode() {
+        return contextualTermCode;
     }
 }

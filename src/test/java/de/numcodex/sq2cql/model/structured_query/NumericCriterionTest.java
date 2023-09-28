@@ -26,12 +26,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class NumericCriterionTest {
 
-    static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
-    static final TermCode SOFA_SCORE = TermCode.of("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "06", "SOFA-Score");
-    static final TermCode OTHER_VALUE_PATH = TermCode.of("foo", "other-value-path", "");
+    static final TermCode CONTEXT = TermCode.of("context", "context", "context");
+    static final ContextualTermCode PLATELETS = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "26515-7", "Platelets"));
+    static final ContextualTermCode SOFA_SCORE = ContextualTermCode.of(CONTEXT, TermCode.of("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "06", "SOFA-Score"));
+    static final ContextualTermCode OTHER_VALUE_PATH = ContextualTermCode.of(CONTEXT, TermCode.of("foo", "other-value-path", ""));
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
-    static final TermCode AGE = TermCode.of("http://snomed.info/sct", "424144002", "Current chronological age (observable entity)");
+    static final ContextualTermCode AGE = ContextualTermCode.of(CONTEXT, TermCode.of("http://snomed.info/sct", "424144002", "Current chronological age (observable entity)"));
 
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
@@ -56,6 +57,11 @@ class NumericCriterionTest {
 
         var criterion = (NumericCriterion) mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "http://loinc.org",
                     "code": "26515-7",
@@ -72,7 +78,7 @@ class NumericCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(Concept.of(PLATELETS), criterion.getConcept());
+        assertEquals(ContextualConcept.of(PLATELETS), criterion.getConcept());
         assertEquals(GREATER_THAN, criterion.getComparator());
         assertEquals(BigDecimal.valueOf(50), criterion.getValue());
         assertEquals(Optional.of("g/dl"), criterion.getUnit());
@@ -84,6 +90,11 @@ class NumericCriterionTest {
 
         var criterion = (NumericCriterion) mapper.readValue("""
                 {
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "termCodes": [{
                     "system": "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes",
                     "code": "06",
@@ -97,7 +108,7 @@ class NumericCriterionTest {
                 }
                 """, Criterion.class);
 
-        assertEquals(Concept.of(SOFA_SCORE), criterion.getConcept());
+        assertEquals(ContextualConcept.of(SOFA_SCORE), criterion.getConcept());
         assertEquals(EQUAL, criterion.getComparator());
         assertEquals(BigDecimal.valueOf(6), criterion.getValue());
         assertEquals(Optional.empty(), criterion.getUnit());
@@ -105,7 +116,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql() {
-        var criterion = NumericCriterion.of(Concept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50), "g/dl");
+        var criterion = NumericCriterion.of(ContextualConcept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50), "g/dl");
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -118,7 +129,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql_WithoutUnit() {
-        var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
+        var criterion = NumericCriterion.of(ContextualConcept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -131,7 +142,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql_WithOtherFhirValuePath() {
-        var criterion = NumericCriterion.of(Concept.of(OTHER_VALUE_PATH), EQUAL, BigDecimal.valueOf(1));
+        var criterion = NumericCriterion.of(ContextualConcept.of(OTHER_VALUE_PATH), EQUAL, BigDecimal.valueOf(1));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
@@ -144,7 +155,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql_WithStatusAttributeFilter() {
-        var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6))
+        var criterion = NumericCriterion.of(ContextualConcept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6))
             .appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
@@ -159,7 +170,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql_WithFixedCriteria() {
-        var criterion = NumericCriterion.of(Concept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
+        var criterion = NumericCriterion.of(ContextualConcept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
         var mappingContext = MappingContext.of(Map.of(
                 SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
                         List.of())
@@ -177,7 +188,7 @@ class NumericCriterionTest {
 
     @Test
     void toCql_WithValueOnPatient() {
-        var criterion = NumericCriterion.of(Concept.of(AGE), EQUAL, BigDecimal.valueOf(16), "a");
+        var criterion = NumericCriterion.of(ContextualConcept.of(AGE), EQUAL, BigDecimal.valueOf(16), "a");
         var mappingContext = MappingContext.of(Map.of(
                 AGE, Mapping.of(AGE, "Patient", "birthDate")
         ), null, CODE_SYSTEM_ALIASES);

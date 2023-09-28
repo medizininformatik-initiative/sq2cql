@@ -8,7 +8,8 @@ import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.structured_query.Concept;
+import de.numcodex.sq2cql.model.structured_query.ContextualConcept;
+import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
 import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -43,9 +44,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Testcontainers
 public class EvaluationIT {
 
-    static final TermCode ROOT = TermCode.of("", "", "");
-    static final TermCode BLOOD_PRESSURE = TermCode.of("http://loinc.org", "85354-9",
-            "Blood pressure panel with all children optional");
+    static final TermCode CONTEXT = TermCode.of("context", "context", "context");
+    static final ContextualTermCode ROOT = ContextualTermCode.of(CONTEXT, TermCode.of("", "", ""));
+    static final ContextualTermCode BLOOD_PRESSURE = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "85354-9",
+            "Blood pressure panel with all children optional"));
     static final TermCode DIASTOLIC_BLOOD_PRESSURE = TermCode.of("http://loinc.org", "8462-4",
             "Diastolic blood pressure");
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of("http://loinc.org", "loinc");
@@ -95,7 +97,7 @@ public class EvaluationIT {
         var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(BLOOD_PRESSURE));
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
         var translator = Translator.of(mappingContext);
-        var criterion = NumericCriterion.of(Concept.of(BLOOD_PRESSURE), LESS_THAN, BigDecimal.valueOf(80), "mm[Hg]");
+        var criterion = NumericCriterion.of(ContextualConcept.of(BLOOD_PRESSURE), LESS_THAN, BigDecimal.valueOf(80), "mm[Hg]");
         var structuredQuery = StructuredQuery.of(List.of(List.of(criterion)));
         var cql = translator.toCql(structuredQuery).print();
         var libraryUri = "urn:uuid" + UUID.randomUUID();

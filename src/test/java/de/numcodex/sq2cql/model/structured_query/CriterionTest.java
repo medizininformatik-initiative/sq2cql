@@ -20,7 +20,7 @@ class CriterionTest {
             mapper.readValue("{}", Criterion.class);
             fail();
         } catch (JsonProcessingException e) {
-            assertEquals("missing JSON property: termCodes", e.getCause().getMessage());
+            assertEquals("missing JSON property: context", e.getCause().getMessage());
         }
     }
 
@@ -31,6 +31,11 @@ class CriterionTest {
         try {
             mapper.readValue("""
                     {
+                      "context": {
+                        "system": "context",
+                        "code": "context",
+                        "display": "context"
+                      },
                       "termCodes": [],
                       "valueFilter": {
                         "type": "foo"

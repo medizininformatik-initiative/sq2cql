@@ -25,7 +25,7 @@ public final class ValueSetCriterion extends AbstractCriterion<ValueSetCriterion
 
   private final List<TermCode> selectedConcepts;
 
-  private ValueSetCriterion(Concept concept, List<AttributeFilter> attributeFilters,
+  private ValueSetCriterion(ContextualConcept concept, List<AttributeFilter> attributeFilters,
       TimeRestriction timeRestriction, List<TermCode> selectedConcepts) {
     super(concept, attributeFilters, timeRestriction);
     this.selectedConcepts = selectedConcepts;
@@ -38,7 +38,7 @@ public final class ValueSetCriterion extends AbstractCriterion<ValueSetCriterion
    * @param selectedConcepts at least one selected value concept
    * @return the {@code ValueSetCriterion}
    */
-  public static ValueSetCriterion of(Concept concept, TermCode... selectedConcepts) {
+  public static ValueSetCriterion of(ContextualConcept concept, TermCode... selectedConcepts) {
     if (selectedConcepts == null || selectedConcepts.length == 0) {
       throw new IllegalArgumentException("empty selected concepts");
     }
@@ -53,7 +53,7 @@ public final class ValueSetCriterion extends AbstractCriterion<ValueSetCriterion
    * @param selectedConcepts at least one selected value concept
    * @return the {@code ValueSetCriterion}
    */
-  public static ValueSetCriterion of(Concept concept, List<TermCode> selectedConcepts, TimeRestriction timeRestriction) {
+  public static ValueSetCriterion of(ContextualConcept concept, List<TermCode> selectedConcepts, TimeRestriction timeRestriction) {
     if (selectedConcepts == null || selectedConcepts.isEmpty()) {
       throw new IllegalArgumentException("empty selected concepts");
     }

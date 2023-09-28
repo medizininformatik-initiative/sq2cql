@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.CodeModifier;
 import de.numcodex.sq2cql.model.structured_query.CodingModifier;
+import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -16,7 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class MappingTest {
 
-    static final TermCode TC_1 = TermCode.of("http://loinc.org", "72166-2", "tabacco smoking status");
+    static final TermCode CONTEXT = TermCode.of("context", "context", "context");
+    static final ContextualTermCode TC_1 = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "72166-2", "tabacco smoking status"));
     static final TermCode CONFIRMED = TermCode.of("http://terminology.hl7.org/CodeSystem/condition-ver-status",
             "confirmed", "Confirmed");
     private static final TermCode TNM_T = TermCode.of("http://loinc.org", "21899-0", "Primary tumor.pathology Cancer");
@@ -27,12 +29,18 @@ class MappingTest {
 
         var mapping = mapper.readValue("""
                 {
-                  "fhirResourceType": "Observation",
+                  "resource_type": "Observation",
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
                     "display": "tobacco smoking status"
-                  }
+                  },
+                  "valueFhirPath": "value"
                 }
                 """, Mapping.class);
 
@@ -48,12 +56,18 @@ class MappingTest {
         var mapping = mapper.readValue("""
                 {
                   "foo-153729": "bar-153733",
-                  "fhirResourceType": "Observation",
+                  "resource_type": "Observation",
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
                     "display": "tobacco smoking status"
-                  }
+                  },
+                  "valueFhirPath": "value"
                 }
                 """, Mapping.class);
 
@@ -68,7 +82,12 @@ class MappingTest {
 
         var mapping = mapper.readValue(String.format("""
                 {
-                  "fhirResourceType": "Observation",
+                  "resource_type": "Observation",
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
@@ -89,7 +108,12 @@ class MappingTest {
 
         var mapping = mapper.readValue("""
                 {
-                  "fhirResourceType": "Observation",
+                  "resource_type": "Observation",
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
@@ -127,7 +151,12 @@ class MappingTest {
 
         var mapping = mapper.readValue("""
                 {
-                  "fhirResourceType": "Observation",
+                  "resource_type": "Observation",
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "key": {
                     "system": "http://loinc.org",
                     "code": "72166-2",
@@ -161,7 +190,12 @@ class MappingTest {
 
         var mapping = mapper.readValue("""
                 {
-                  "fhirResourceType": "Observation",
+                  "resource_type": "Observation",
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "key": {
                     "system": "http://loinc.org",
                     "code": "21908-9",
@@ -191,13 +225,19 @@ class MappingTest {
 
         var mapping = mapper.readValue("""
                 {
-                  "fhirResourceType": "Observation",
+                  "resource_type": "Observation",
+                  "context": {
+                    "system": "context",
+                    "code": "context",
+                    "display": "context"
+                  },
                   "key": {
                     "system": "http://loinc.org",
                     "code": "21908-9",
                     "display": "Stage group.clinical Cancer"
                   },
-                  "timeRestrictionPath": "effective"
+                  "timeRestrictionPath": "effective",
+                  "valueFhirPath": "value"
                 }
                 """, Mapping.class);
 

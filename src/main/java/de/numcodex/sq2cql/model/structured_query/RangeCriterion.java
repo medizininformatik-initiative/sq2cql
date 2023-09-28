@@ -31,7 +31,7 @@ public final class RangeCriterion extends AbstractCriterion<RangeCriterion> {
   private final BigDecimal upperBound;
   private final String unit;
 
-  private RangeCriterion(Concept concept, List<AttributeFilter> attributeFilters,
+  private RangeCriterion(ContextualConcept concept, List<AttributeFilter> attributeFilters,
       TimeRestriction timeRestriction, BigDecimal lowerBound,
       BigDecimal upperBound, String unit) {
     super(concept, attributeFilters, timeRestriction);
@@ -40,24 +40,24 @@ public final class RangeCriterion extends AbstractCriterion<RangeCriterion> {
     this.unit = unit;
   }
 
-  public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound) {
+  public static RangeCriterion of(ContextualConcept concept, BigDecimal lowerBound, BigDecimal upperBound) {
     return new RangeCriterion(concept, List.of(), null, requireNonNull(lowerBound),
         requireNonNull(upperBound), null);
   }
 
-  public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
+  public static RangeCriterion of(ContextualConcept concept, BigDecimal lowerBound, BigDecimal upperBound,
       String unit) {
     return new RangeCriterion(concept, List.of(), null, requireNonNull(lowerBound),
         requireNonNull(upperBound), requireNonNull(unit));
   }
 
-  public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
+  public static RangeCriterion of(ContextualConcept concept, BigDecimal lowerBound, BigDecimal upperBound,
       TimeRestriction timeRestriction) {
     return new RangeCriterion(concept, List.of(), timeRestriction, requireNonNull(lowerBound),
         requireNonNull(upperBound), null);
   }
 
-  public static RangeCriterion of(Concept concept, BigDecimal lowerBound, BigDecimal upperBound,
+  public static RangeCriterion of(ContextualConcept concept, BigDecimal lowerBound, BigDecimal upperBound,
       String unit, TimeRestriction timeRestriction) {
     return new RangeCriterion(concept, List.of(), timeRestriction, requireNonNull(lowerBound),
         requireNonNull(upperBound), requireNonNull(unit));
@@ -85,7 +85,7 @@ public final class RangeCriterion extends AbstractCriterion<RangeCriterion> {
   @Override
   Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
       IdentifierExpression identifier) {
-    if (mapping.key().equals(AgeFunctionMapping.AGE)) {
+    if (mapping.key().termCode().equals(AgeFunctionMapping.AGE)) {
       return ageExpr();
     }
     var castExpr = TypeExpression.of(InvocationExpression.of(identifier, mapping.valueFhirPath()),

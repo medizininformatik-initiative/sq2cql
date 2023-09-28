@@ -13,8 +13,9 @@ import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.Library;
 import de.numcodex.sq2cql.model.structured_query.CodingModifier;
-import de.numcodex.sq2cql.model.structured_query.Concept;
 import de.numcodex.sq2cql.model.structured_query.ConceptCriterion;
+import de.numcodex.sq2cql.model.structured_query.ContextualConcept;
+import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
 import de.numcodex.sq2cql.model.structured_query.Criterion;
 import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
@@ -32,77 +33,79 @@ import org.junit.jupiter.api.Test;
  */
 class TranslatorTest {
 
-  static final TermCode COMBINED_CONSENT = TermCode.of("mii.abide", "combined-consent", "");
-  static final TermCode AGE = TermCode.of("http://snomed.info/sct", "424144002",
-      "Current chronological age");
-  static final TermCode GENDER = TermCode.of("http://snomed.info/sct", "263495000", "Gender");
-  static final TermCode ROOT = TermCode.of("", "", "");
-  static final TermCode C71 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
-      "Malignant neoplasm of brain");
-  static final TermCode C71_0 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.0",
-      "");
-  static final TermCode C71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-      "");
-  static final TermCode PLATELETS = TermCode.of("http://loinc.org", "26515-7", "Platelets");
-  static final TermCode FRAILTY_SCORE = TermCode.of("http://snomed.info/sct", "713636003",
-      "Canadian Study of Health and Aging Clinical Frailty Scale score");
+  static final TermCode CONTEXT = TermCode.of("context", "context", "context");
+  static final ContextualTermCode COMBINED_CONSENT = ContextualTermCode.of(CONTEXT,
+      TermCode.of("mii.abide", "combined-consent", ""));
+  static final ContextualTermCode AGE = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://snomed.info/sct", "424144002", "Current chronological age"));
+  static final ContextualTermCode GENDER = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://snomed.info/sct", "263495000", "Gender"));
+  static final ContextualTermCode ROOT = ContextualTermCode.of(CONTEXT, TermCode.of("", "", ""));
+  static final ContextualTermCode C71 = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
+          "Malignant neoplasm of brain"));
+  static final ContextualTermCode C71_0 = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.0",
+          "Malignant neoplasm of frontal lobe"));
+  static final ContextualTermCode C71_1 = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+          "Malignant neoplasm of temporal lobe"));
+  static final ContextualTermCode PLATELETS = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://loinc.org", "26515-7", "Platelets"));
+  static final ContextualTermCode FRAILTY_SCORE = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://snomed.info/sct",
+          "713636003", "Canadian Study of Health and Aging Clinical Frailty Scale score"));
   static final TermCode VERY_FIT = TermCode.of(
       "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "1",
       "Very Fit");
   static final TermCode WELL = TermCode.of(
       "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "2", "Well");
-  static final TermCode COPD = TermCode.of("http://snomed.info/sct", "13645005",
-      "Chronic obstructive lung disease (disorder)");
-  static final TermCode G47_31 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "G47.31",
-      "Obstruktives Schlafapnoe-Syndrom");
-  static final TermCode TOBACCO_SMOKING_STATUS = TermCode.of("http://loinc.org", "72166-2",
-      "Tobacco smoking status");
+  static final ContextualTermCode COPD = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://snomed.info/sct", "13645005",
+          "Chronic obstructive lung disease (disorder)"));
+  static final ContextualTermCode G47_31 = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "G47.31",
+          "Obstruktives Schlafapnoe-Syndrom"));
+  static final ContextualTermCode TOBACCO_SMOKING_STATUS = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://loinc.org", "72166-2", "Tobacco smoking status"));
   static final TermCode CURRENT_EVERY_DAY_SMOKER = TermCode.of("http://loinc.org", "LA18976-3",
       "Current every day smoker");
-  static final TermCode HYPERTENSION = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm",
-      "I10",
-      "Essential (Primary) Hypertension");
-  static final TermCode SERUM = TermCode.of("https://fhir.bbmri.de/CodeSystem/SampleMaterialType",
-      "Serum",
-      "Serum");
-  static final TermCode TMZ = TermCode.of("http://fhir.de/CodeSystem/dimdi/atc", "L01AX03",
-      "Temozolomide");
-  static final TermCode LIPID = TermCode.of("http://fhir.de/CodeSystem/dimdi/atc", "C10AA",
-      "lipid lowering drugs");
+  static final ContextualTermCode HYPERTENSION = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "I10",
+          "Essential (Primary) Hypertension"));
+  static final ContextualTermCode SERUM = ContextualTermCode.of(CONTEXT,
+      TermCode.of("https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "Serum", "Serum"));
+  static final ContextualTermCode TMZ = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://fhir.de/CodeSystem/dimdi/atc", "L01AX03", "Temozolomide"));
+  static final ContextualTermCode LIPID = ContextualTermCode.of(CONTEXT,
+      TermCode.of("http://fhir.de/CodeSystem/dimdi/atc", "C10AA", "lipid lowering drugs"));
   static final TermCode CONFIRMED = TermCode.of(
-      "http://terminology.hl7.org/CodeSystem/condition-ver-status",
-      "confirmed", "Confirmed");
+      "http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed", "Confirmed");
   static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
-      "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10",
-      "http://loinc.org", "loinc",
+      "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10", "http://loinc.org", "loinc",
       "https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample",
-      "http://fhir.de/CodeSystem/dimdi/atc", "atc",
-      "http://snomed.info/sct", "snomed",
+      "http://fhir.de/CodeSystem/dimdi/atc", "atc", "http://snomed.info/sct", "snomed",
       "http://hl7.org/fhir/administrative-gender", "gender",
       "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status",
-      "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
-      "frailty-score",
-      "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3", "consent"
-  );
+      "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "frailty-score",
+      "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3", "consent");
   static final TermCode VERIFICATION_STATUS = TermCode.of("hl7.org", "verificationStatus",
       "verificationStatus");
-  static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING =
-      AttributeMapping.of("coding", VERIFICATION_STATUS, "verificationStatus");
+  static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING = AttributeMapping.of("coding",
+      VERIFICATION_STATUS, "verificationStatus");
 
   @Test
   void toCQL_Inclusion_OneDisjunctionWithOneCriterion() {
-    Library library = Translator.of().toCql(StructuredQuery.of(
-        List.of(List.of(Criterion.TRUE))));
+    Library library = Translator.of().toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE))));
 
-    assertEquals("true",
-        library.contexts().get(0).expressionDefinitions().get(0).getExpression()
-            .print(PrintContext.ZERO));
+    assertEquals("true", library.contexts().get(0).expressionDefinitions().get(0).getExpression()
+        .print(PrintContext.ZERO));
   }
 
   @Test
   void toCQL_Inclusion_OneDisjunctionWithTwoCriteria() {
-    Library library = Translator.of().toCql(StructuredQuery.of(
-        List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
+    Library library = Translator.of()
+        .toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
     assertEquals("true or\nfalse",
         library.contexts().get(0).expressionDefinitions().get(0).getExpression()
@@ -111,8 +114,8 @@ class TranslatorTest {
 
   @Test
   void toCQL_Inclusion_TwoDisjunctionsWithOneCriterionEach() {
-    Library library = Translator.of().toCql(StructuredQuery.of(
-        List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
+    Library library = Translator.of()
+        .toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
     assertEquals("true and\nfalse",
         library.contexts().get(0).expressionDefinitions().get(0).getExpression()
@@ -126,15 +129,14 @@ class TranslatorTest {
             List.of(Criterion.FALSE, Criterion.FALSE))));
 
     assertEquals("(true or\ntrue) and\n(false or\nfalse)",
-        library.contexts().get(0).expressionDefinitions().get(0)
-            .getExpression().print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(0).getExpression()
+            .print(PrintContext.ZERO));
   }
 
   @Test
   void toCQL_Inclusion_And_Exclusion_OneConjunctionWithOneCriterion() {
-    Library library = Translator.of().toCql(StructuredQuery.of(
-        List.of(List.of(Criterion.TRUE)),
-        List.of(List.of(Criterion.FALSE))));
+    Library library = Translator.of().toCql(
+        StructuredQuery.of(List.of(List.of(Criterion.TRUE)), List.of(List.of(Criterion.FALSE))));
 
     assertEquals("define Inclusion:\n  true",
         library.contexts().get(0).expressionDefinitions().get(0).print(PrintContext.ZERO));
@@ -144,19 +146,16 @@ class TranslatorTest {
 
   @Test
   void toCQL_Inclusion_And_Exclusion_OneConjunctionWithTwoCriteria() {
-    Library library = Translator.of().toCql(StructuredQuery.of(
-        List.of(List.of(Criterion.TRUE)),
+    Library library = Translator.of().toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
 
     assertEquals("define Exclusion:\n  true and\n  false",
-        library.contexts().get(0).expressionDefinitions().get(1)
-            .print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(1).print(PrintContext.ZERO));
   }
 
   @Test
   void toCQL_Inclusion_And_Exclusion_TwoConjunctionsWithOneCriterionEach() {
-    Library library = Translator.of().toCql(StructuredQuery.of(
-        List.of(List.of(Criterion.TRUE)),
+    Library library = Translator.of().toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
 
     assertEquals("true or\nfalse",
@@ -166,24 +165,23 @@ class TranslatorTest {
 
   @Test
   void toCQL_Inclusion_And_Exclusion_TwoConjunctionsWithTwoCriterionEach() {
-    Library library = Translator.of().toCql(StructuredQuery.of(
-        List.of(List.of(Criterion.TRUE)),
+    Library library = Translator.of().toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
         List.of(List.of(Criterion.TRUE, Criterion.TRUE),
             List.of(Criterion.FALSE, Criterion.FALSE))));
 
     assertEquals("true and\ntrue or\nfalse and\nfalse",
-        library.contexts().get(0).expressionDefinitions().get(1)
-            .getExpression().print(PrintContext.ZERO));
+        library.contexts().get(0).expressionDefinitions().get(1).getExpression()
+            .print(PrintContext.ZERO));
   }
 
   @Test
   void toCQL_NonExpandableConcept() {
-    var message = assertThrows(TranslationException.class,
-        () -> Translator.of().toCql(StructuredQuery.of(
-            List.of(List.of(ConceptCriterion.of(Concept.of(C71))))))).getMessage();
+    var message = assertThrows(TranslationException.class, () -> Translator.of().toCql(
+        StructuredQuery.of(
+            List.of(List.of(ConceptCriterion.of(ContextualConcept.of(C71))))))).getMessage();
 
     assertEquals(
-        "Failed to expand the concept (system: http://fhir.de/CodeSystem/bfarm/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
+        "Failed to expand the concept ContextualConcept[context=TermCode[system=context, code=context, display=context], concept=Concept[termCodes=[TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71, display=Malignant neoplasm of brain]]]].",
         message);
   }
 
@@ -192,26 +190,27 @@ class TranslatorTest {
     var conceptTree = TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1));
     var mappingContext = MappingContext.of(Map.of(), conceptTree, CODE_SYSTEM_ALIASES);
 
-    var message = assertThrows(TranslationException.class,
-        () -> Translator.of(mappingContext).toCql(StructuredQuery.of(
-            List.of(List.of(ConceptCriterion.of(Concept.of(C71))))))).getMessage();
+    var message = assertThrows(TranslationException.class, () -> Translator.of(mappingContext)
+        .toCql(StructuredQuery.of(
+            List.of(List.of(ConceptCriterion.of(ContextualConcept.of(C71))))))).getMessage();
 
     assertEquals(
-        "Failed to expand the concept (system: http://fhir.de/CodeSystem/bfarm/icd-10-gm, code: C71, display: Malignant neoplasm of brain).",
+        "Failed to expand the concept ContextualConcept[context=TermCode[system=context, code=context, display=context], concept=Concept[termCodes=[TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71, display=Malignant neoplasm of brain]]]].",
         message);
   }
 
   @Test
   void toCQL_Usage_Documentation() {
-    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-        "Malignant neoplasm of brain");
+    var c71_1 = ContextualTermCode.of(CONTEXT,
+        TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+            "Malignant neoplasm of brain"));
     var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
     var conceptTree = TermCodeNode.of(c71_1);
     var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
     var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
-    Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
-        List.of(ConceptCriterion.of(Concept.of(c71_1))))));
+    Library library = Translator.of(mappingContext).toCql(
+        StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1))))));
 
     assertEquals("""
         library Retrieve version '1.0.0'
@@ -229,16 +228,17 @@ class TranslatorTest {
 
   @Test
   void toCQL_TimeRestriction() {
-    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-        "Malignant neoplasm of brain");
+    var c71_1 = ContextualTermCode.of(CONTEXT,
+        TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+            "Malignant neoplasm of brain"));
     var mappings = Map.of(c71_1,
         Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), "onset"));
     var conceptTree = TermCodeNode.of(c71_1);
     var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
     var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
-    Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(
-        List.of(ConceptCriterion.of(Concept.of(c71_1),
+    Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(List.of(
+        ConceptCriterion.of(ContextualConcept.of(c71_1),
             TimeRestriction.of("2020-01-01T", "2020-01-02T"))))));
 
     assertEquals("""
@@ -259,41 +259,39 @@ class TranslatorTest {
 
   @Test
   void toCQL_TimeRestriction_missingPathInMapping() {
-    var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-        "Malignant neoplasm of brain");
+    var c71_1 = ContextualTermCode.of(CONTEXT,
+        TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+            "Malignant neoplasm of brain"));
     var mappings = Map.of(c71_1,
         Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), null));
     var conceptTree = TermCodeNode.of(c71_1);
     var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
     var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
-    var query = StructuredQuery.of(List.of(
-        List.of(ConceptCriterion.of(Concept.of(c71_1),
-            TimeRestriction.of("2020-01-01T", "2020-01-02T")))));
+    var query = StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1),
+        TimeRestriction.of("2020-01-01T", "2020-01-02T")))));
     var translator = Translator.of(mappingContext);
 
-    assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query))
-        .withMessage(
-            "Missing timeRestrictionPath in mapping with key TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain].");
+    assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query)).withMessage(
+        "Missing timeRestrictionPath in mapping with key ContextualTermCode[context=TermCode[system=context, code=context, display=context], termCode=TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain]].");
   }
 
   @Test
   void toCQL_Test_Task1() {
-    var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-        C71_0, Mapping.of(C71_0, "Condition", null, null, List.of(),
-            List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
-        C71_1, Mapping.of(C71_1, "Condition", null, null, List.of(),
-            List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
-        TMZ, Mapping.of(TMZ, "MedicationStatement"));
+    var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"), C71_0,
+        Mapping.of(C71_0, "Condition", null, null, List.of(),
+            List.of(VERIFICATION_STATUS_ATTR_MAPPING)), C71_1,
+        Mapping.of(C71_1, "Condition", null, null, List.of(),
+            List.of(VERIFICATION_STATUS_ATTR_MAPPING)), TMZ,
+        Mapping.of(TMZ, "MedicationStatement"));
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(TMZ),
-        TermCodeNode.of(C71, TermCodeNode.of(C71_0),
-            TermCodeNode.of(C71_1)));
+        TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1)));
     var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
-    var structuredQuery = StructuredQuery.of(List.of(
-        List.of(ConceptCriterion.of(Concept.of(C71))
-            .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
+    var structuredQuery = StructuredQuery.of(List.of(List.of(
+            ConceptCriterion.of(ContextualConcept.of(C71))
+                .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
         List.of(
-            NumericCriterion.of(Concept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50), "g/dl")),
-        List.of(ConceptCriterion.of(Concept.of(TMZ)))));
+            NumericCriterion.of(ContextualConcept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50),
+                "g/dl")), List.of(ConceptCriterion.of(ContextualConcept.of(TMZ)))));
 
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -322,21 +320,18 @@ class TranslatorTest {
 
   @Test
   void toCQL_Test_Task2() {
-    var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-        HYPERTENSION, Mapping.of(HYPERTENSION, "Condition", null, null, List.of(),
-            List.of(VERIFICATION_STATUS_ATTR_MAPPING)),
-        SERUM, Mapping.of(SERUM, "Specimen"),
-        LIPID, Mapping.of(LIPID, "MedicationStatement"));
+    var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"), HYPERTENSION,
+        Mapping.of(HYPERTENSION, "Condition", null, null, List.of(),
+            List.of(VERIFICATION_STATUS_ATTR_MAPPING)), SERUM, Mapping.of(SERUM, "Specimen"), LIPID,
+        Mapping.of(LIPID, "MedicationStatement"));
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(HYPERTENSION), TermCodeNode.of(SERUM),
         TermCodeNode.of(LIPID));
-    var mappingContext = MappingContext.of(mappings,
-        conceptTree,
-        CODE_SYSTEM_ALIASES);
-    var structuredQuery = StructuredQuery.of(List.of(
-        List.of(ConceptCriterion.of(Concept.of(HYPERTENSION))
-            .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
-        List.of(ConceptCriterion.of(Concept.of(SERUM)))), List.of(
-        List.of(ConceptCriterion.of(Concept.of(LIPID)))));
+    var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+    var structuredQuery = StructuredQuery.of(List.of(List.of(
+                ConceptCriterion.of(ContextualConcept.of(HYPERTENSION))
+                    .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
+            List.of(ConceptCriterion.of(ContextualConcept.of(SERUM)))),
+        List.of(List.of(ConceptCriterion.of(ContextualConcept.of(LIPID)))));
 
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -368,21 +363,20 @@ class TranslatorTest {
 
   @Test
   void toCQL_GeccoTask2() {
-    var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", "value"),
-        COPD, Mapping.of(COPD, "Condition", null, null,
-            List.of(CodingModifier.of("verificationStatus", CONFIRMED)),
-            List.of()),
-        G47_31, Mapping.of(G47_31, "Condition", null, null,
-            List.of(CodingModifier.of("verificationStatus", CONFIRMED)),
-            List.of()),
+    var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", "value"), COPD,
+        Mapping.of(COPD, "Condition", null, null,
+            List.of(CodingModifier.of("verificationStatus", CONFIRMED)), List.of()), G47_31,
+        Mapping.of(G47_31, "Condition", null, null,
+            List.of(CodingModifier.of("verificationStatus", CONFIRMED)), List.of()),
         TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COPD), TermCodeNode.of(G47_31));
     var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
-    var structuredQuery = StructuredQuery.of(List.of(
-        List.of(ValueSetCriterion.of(Concept.of(FRAILTY_SCORE), VERY_FIT, WELL))), List.of(
-        List.of(ConceptCriterion.of(Concept.of(COPD)), ConceptCriterion.of(Concept.of(G47_31))),
-        List.of(
-            ValueSetCriterion.of(Concept.of(TOBACCO_SMOKING_STATUS), CURRENT_EVERY_DAY_SMOKER))));
+    var structuredQuery = StructuredQuery.of(
+        List.of(List.of(ValueSetCriterion.of(ContextualConcept.of(FRAILTY_SCORE), VERY_FIT, WELL))),
+        List.of(List.of(ConceptCriterion.of(ContextualConcept.of(COPD)),
+            ConceptCriterion.of(ContextualConcept.of(G47_31))), List.of(
+            ValueSetCriterion.of(ContextualConcept.of(TOBACCO_SMOKING_STATUS),
+                CURRENT_EVERY_DAY_SMOKER))));
 
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -425,7 +419,7 @@ class TranslatorTest {
 
     var mapping = mapper.readValue("""
             {
-                "fhirResourceType": "Consent",
+                "resource_type": "Consent",
                 "fixedCriteria": [
                     {
                         "fhirPath": "status",
@@ -464,6 +458,11 @@ class TranslatorTest {
                         ]
                     }
                 ],
+                "context": {
+                    "code": "context",
+                    "display": "context",
+                    "system": "context"
+                },
                 "key": {
                     "code": "combined-consent",
                     "display": "Einwilligung f\\u00fcr die zentrale Datenanalyse",
@@ -485,6 +484,11 @@ class TranslatorTest {
           "inclusionCriteria": [
             [
               {
+                "context": {
+                    "code": "context",
+                    "display": "context",
+                    "system": "context"
+                },
                 "termCodes": [
                   {
                     "code": "combined-consent",
@@ -500,9 +504,7 @@ class TranslatorTest {
 
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COMBINED_CONSENT));
     var mappings = Map.of(COMBINED_CONSENT, mapping);
-    var mappingContext = MappingContext.of(mappings,
-        conceptTree,
-        CODE_SYSTEM_ALIASES);
+    var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -530,7 +532,12 @@ class TranslatorTest {
 
     var mapping = objectMapper.readValue("""
         {
-            "fhirResourceType": "Patient",
+            "resource_type": "Patient",
+            "context": {
+                "code": "context",
+                "display": "context",
+                "system": "context"
+            },
             "key": {
                 "code": "424144002",
                 "display": "Current chronological age",
@@ -549,6 +556,11 @@ class TranslatorTest {
           "inclusionCriteria": [
             [
               {
+                "context": {
+                    "code": "context",
+                    "display": "context",
+                    "system": "context"
+                },
                 "termCodes": [
                   {
                     "code": "424144002",
@@ -573,9 +585,7 @@ class TranslatorTest {
         """, StructuredQuery.class);
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
     var mappings = Map.of(AGE, mapping);
-    var mappingContext = MappingContext.of(mappings,
-        conceptTree,
-        CODE_SYSTEM_ALIASES);
+    var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -597,7 +607,12 @@ class TranslatorTest {
 
     var mapping = objectMapper.readValue("""
         {
-            "fhirResourceType": "Patient",
+            "resource_type": "Patient",
+            "context": {
+                "code": "context",
+                "display": "context",
+                "system": "context"
+            },
             "key": {
                 "code": "424144002",
                 "display": "Current chronological age",
@@ -616,6 +631,11 @@ class TranslatorTest {
           "inclusionCriteria": [
             [
               {
+                "context": {
+                    "code": "context",
+                    "display": "context",
+                    "system": "context"
+                },
                 "termCodes": [
                   {
                     "code": "424144002",
@@ -640,9 +660,7 @@ class TranslatorTest {
         """, StructuredQuery.class);
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
     var mappings = Map.of(AGE, mapping);
-    var mappingContext = MappingContext.of(mappings,
-        conceptTree,
-        CODE_SYSTEM_ALIASES);
+    var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -664,7 +682,12 @@ class TranslatorTest {
 
     var mapping = objectMapper.readValue("""
         {
-            "fhirResourceType": "Patient",
+            "resource_type": "Patient",
+            "context": {
+                "code": "context",
+                "display": "context",
+                "system": "context"
+            },
             "key": {
                 "code": "424144002",
                 "display": "Current chronological age",
@@ -683,6 +706,11 @@ class TranslatorTest {
           "inclusionCriteria": [
             [
               {
+                "context": {
+                    "code": "context",
+                    "display": "context",
+                    "system": "context"
+                },
                 "termCodes": [
                   {
                     "code": "424144002",
@@ -707,9 +735,7 @@ class TranslatorTest {
         """, StructuredQuery.class);
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
     var mappings = Map.of(AGE, mapping);
-    var mappingContext = MappingContext.of(mappings,
-        conceptTree,
-        CODE_SYSTEM_ALIASES);
+    var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
@@ -731,7 +757,12 @@ class TranslatorTest {
 
     var mapping = objectMapper.readValue("""
         {
-            "fhirResourceType": "Patient",
+            "resource_type": "Patient",
+            "context": {
+                "code": "context",
+                "display": "context",
+                "system": "context"
+            },
             "key": {
                 "code": "263495000",
                 "display": "Geschlecht",
@@ -751,6 +782,11 @@ class TranslatorTest {
           "inclusionCriteria": [
             [
               {
+                "context": {
+                    "code": "context",
+                    "display": "context",
+                    "system": "context"
+                },
                 "termCodes": [
                   {
                     "code": "263495000",
@@ -775,9 +811,7 @@ class TranslatorTest {
         """, StructuredQuery.class);
     var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(GENDER));
     var mappings = Map.of(GENDER, mapping);
-    var mappingContext = MappingContext.of(mappings,
-        conceptTree,
-        CODE_SYSTEM_ALIASES);
+    var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
     Library library = Translator.of(mappingContext).toCql(structuredQuery);
 
