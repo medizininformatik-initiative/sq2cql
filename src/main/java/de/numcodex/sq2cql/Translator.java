@@ -60,7 +60,7 @@ public class Translator {
   private static Library inclusionOnlyLibrary(Container<BooleanExpression> inclusionExpr) {
     assert inclusionExpr.getExpression().isPresent();
     var unfilteredContext = Context.of("Unfiltered",
-        List.copyOf(inclusionExpr.getReferencedDefinitions()));
+        List.copyOf(inclusionExpr.getUnfilteredDefinitions()));
     var PatientContext = Context.of("Patient", List.of(
         ExpressionDefinition.of("InInitialPopulation", inclusionExpr.getExpression().get())));
     return Library.of(inclusionExpr.getCodeSystemDefinitions(),
@@ -72,8 +72,8 @@ public class Translator {
       Container<BooleanExpression> exclusionExpr) {
     assert inclusionExpr.getExpression().isPresent();
     assert exclusionExpr.getExpression().isPresent();
-    var definitions = Stream.concat(exclusionExpr.getReferencedDefinitions().stream(),
-        inclusionExpr.getReferencedDefinitions().stream()).toList();
+    var definitions = Stream.concat(exclusionExpr.getUnfilteredDefinitions().stream(),
+        inclusionExpr.getUnfilteredDefinitions().stream()).toList();
     var unfilteredContext = Context.of("Unfiltered", definitions);
     var PatientContext = Context.of("Patient",
         List.of(ExpressionDefinition.of("Inclusion", inclusionExpr.getExpression().get()),

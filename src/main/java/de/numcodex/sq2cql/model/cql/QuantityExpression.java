@@ -22,6 +22,6 @@ public record QuantityExpression(BigDecimal value, String unit) implements Expre
 
     @Override
     public String print(PrintContext printContext) {
-        return unit == null ? value.toString() : "%s '%s'".formatted(value, unit);
+        return unit == null ? value.toString() : "%s '%s'".formatted(value, unit.replace("'", "\\'"));
     }
 }

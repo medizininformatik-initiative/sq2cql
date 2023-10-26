@@ -81,9 +81,15 @@ public final class Mapping {
                              @JsonProperty("primaryCode") TermCode primaryCode,
                              @JsonProperty("termCodeFhirPath") String termCodeFhirPath) {
         var contextualTermCode = ContextualTermCode.of(context, key);
-        return new Mapping(contextualTermCode, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
+        return new Mapping(contextualTermCode,
+                requireNonNull(resourceType, "missing JSON property: fhirResourceType"),
+                valueFhirPath == null ? "value" : valueFhirPath,
+                valueType,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
-                attributeMappings, timeRestrictionPath, primaryCode, termCodeFhirPath);
+                attributeMappings,
+                timeRestrictionPath,
+                primaryCode,
+                termCodeFhirPath);
     }
 
     public ContextualTermCode key() {

@@ -2,9 +2,13 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
+import java.util.regex.Pattern;
+
 import static java.util.Objects.requireNonNull;
 
 public record IdentifierExpression(String identifier) implements BooleanExpression {
+
+  public static final Pattern SAFE_CHARS_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 
   public IdentifierExpression {
     requireNonNull(identifier);
@@ -16,7 +20,6 @@ public record IdentifierExpression(String identifier) implements BooleanExpressi
 
   @Override
   public String print(PrintContext printContext) {
-    return identifier.matches("([A-Za-z]|_)([A-Za-z0-9]|_)*") ? identifier
-        : "\"%s\"".formatted(identifier);
+    return SAFE_CHARS_PATTERN.matcher(identifier).matches() ? identifier : "\"%s\"".formatted(identifier);
   }
 }

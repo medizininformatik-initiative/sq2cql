@@ -5,19 +5,10 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Functions;
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Library;
-import org.hl7.fhir.r4.model.Measure;
-import org.hl7.fhir.r4.model.MeasureReport;
-import org.hl7.fhir.r4.model.Parameters;
+import org.hl7.fhir.r4.model.*;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,49 +27,27 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.zip.ZipFile;
 
+import static de.numcodex.sq2cql.Util.createTranslator;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Map.entry;
 import static org.hl7.fhir.r4.model.Bundle.BundleType.TRANSACTION;
 import static org.hl7.fhir.r4.model.Bundle.HTTPVerb.POST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 @Testcontainers
 @TestInstance(Lifecycle.PER_CLASS)
 public class AcceptanceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(AcceptanceTest.class);
 
-    private final Map<String, String> CODE_SYSTEM_ALIASES = Map.ofEntries(
-            entry("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10"),
-            entry("http://loinc.org", "loinc"),
-            entry("https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample"),
-            entry("http://fhir.de/CodeSystem/bfarm/atc", "atc"),
-            entry("http://snomed.info/sct", "snomed"),
-            entry("http://terminology.hl7.org/CodeSystem/condition-ver-status", "cvs"),
-            entry("http://hl7.org/fhir/administrative-gender", "gender"),
-            entry(
-                    "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes",
-                    "num-ecrf"),
-            entry("urn:iso:std:iso:3166", "iso3166"),
-            entry("http://fhir.de/CodeSystem/bfarm/ops", "ops"),
-            entry("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
-                    "fraility-score"),
-            entry("http://terminology.hl7.org/CodeSystem/consentcategorycodes", "consent"),
-            entry("urn:oid:2.16.840.1.113883.3.1937.777.24.5.1", "mide-1"),
-            entry("http://hl7.org/fhir/consent-provision-type", "provision-type"));
-
     private final GenericContainer<?> blaze = new GenericContainer<>(
-        DockerImageName.parse("samply/blaze:0.22"))
+            DockerImageName.parse("samply/blaze:0.22"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv("LOG_LEVEL", "debug")
             .withExposedPorts(8080)
@@ -88,6 +57,61 @@ public class AcceptanceTest {
     private final FhirContext fhirContext = FhirContext.forR4();
     private IGenericClient fhirClient;
     private Translator translator;
+
+    private static Path resourcePath(String name) throws URISyntaxException {
+        return Paths.get(Objects.requireNonNull(AcceptanceTest.class.getResource(name), "resource `%s` is missing".formatted(name)).toURI());
+    }
+
+    private static String slurp(String name) throws Exception {
+        return Files.readString(resourcePath(name));
+    }
+
+    private static Bundle createBundle(Library library, Measure measure) {
+        var bundle = new Bundle();
+        bundle.setType(TRANSACTION);
+        bundle.addEntry().setResource(library).getRequest().setMethod(POST).setUrl("Library");
+        bundle.addEntry().setResource(measure).getRequest().setMethod(POST).setUrl("Measure");
+        return bundle;
+    }
+
+    public static List<StructuredQuery> getTestQueriesReturningOnePatient() throws URISyntaxException, IOException {
+        var exclusions = Set.of("new_testdata/1-age.json",
+                // Blaze can't parse the unit [arb'U]/mL https://github.com/samply/blaze/issues/1234
+                "new_testdata/ObservationLab-38dfe76b-ae35-8290-6d80-ab08c963d148",
+                "new_testdata/ObservationLab-16408169-a38d-8afc-fdd2-ed7af97ccc57",
+                "new_testdata/ObservationLab-0fa07a3f-2e29-5065-6fa2-31e959acdd98",
+                "new_testdata/ObservationLab-43eb280e-7901-7990-64e3-22cfa51de78b",
+                "new_testdata/ObservationLab-09c67417-306a-a871-feef-71cbc915d113",
+                "new_testdata/ObservationLab-26184c80-edf6-b1e0-ee8f-0e0999755cb9",
+                "new_testdata/ObservationLab-9d44c93e-7799-a8e2-b368-c5539c30ceaa",
+                "new_testdata/ObservationLab-755a3ac1-32ae-2a20-1ac9-02ee25777cf0",
+                "new_testdata/ObservationLab-8ec9ea98-6581-f934-9bcf-b1c4f87e3560",
+                "new_testdata/ObservationLab-315e8080-7425-f4e9-3891-aef5ebe0572c",
+                "new_testdata/ObservationLab-44c8fd00-1a0f-f218-9eb8-83257add8fed",
+                "new_testdata/ObservationLab-7a2be049-40d2-d16f-3db6-12f46df2fc82",
+                "new_testdata/ObservationLab-78c5a976-1786-72e8-006b-8fd6af157ed9",
+                "new_testdata/ObservationLab-254bf7ae-1d0a-b994-f20b-575d4e28e674",
+                "new_testdata/ObservationLab-4bf41e10-1c62-2f82-d081-3d923aca43f2",
+                // Blaze can't parse the unit /[HPF]
+                "new_testdata/ObservationLab-bf7b68ae-1f89-41b6-e6a1-a40bf031f4b9",
+                "new_testdata/ObservationLab-b080e003-5e7f-503c-4b13-47f601d6d903",
+                "new_testdata/ObservationLab-3dd0c866-0649-def5-0fb2-de1ea0b976c2",
+                "new_testdata/ObservationLab-98b33c6e-0a14-b90a-7795-e98680ee526e",
+                // Blaze can't parse the unit /100{WBCs}
+                "new_testdata/ObservationLab-d2d07223-0b20-ee0f-8505-0a17d2e1ed4d"
+        );
+        try (var zipFile = new ZipFile(resourcePath("returningOnePatient.zip").toString())) {
+            return zipFile.stream()
+                    .filter(entry -> !exclusions.contains(entry.toString()))
+                    .map(entry -> {
+                        try {
+                            return new ObjectMapper().readValue(zipFile.getInputStream(entry), StructuredQuery.class);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).toList();
+        }
+    }
 
     @BeforeAll
     public void setUp() throws Exception {
@@ -101,39 +125,20 @@ public class AcceptanceTest {
         translator = createTranslator();
     }
 
-    private Translator createTranslator() throws Exception {
-        var mapper = new ObjectMapper();
-        System.out.println(System.getProperty("java.class.path"));
-        var conceptTree = mapper.readValue(slurp("mapping_tree.json"), TermCodeNode.class);
-        var mappings = Arrays.stream(mapper.readValue(slurp(
-                        "mapping_cql.json"), Mapping[].class))
-                .collect(Collectors.toMap(Mapping::key, Functions.identity()));
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
-        return Translator.of(mappingContext);
-    }
-
     @ParameterizedTest
-    @MethodSource("de.numcodex.sq2cql.AcceptanceTest#getSqFileNames")
-    public void runTestCase(String testCaseQueryName) throws Exception {
-        var structuredQuery = readStructuredQuery(testCaseQueryName);
+    @MethodSource("de.numcodex.sq2cql.AcceptanceTest#getTestQueriesReturningOnePatient")
+    public void runTestCase(StructuredQuery structuredQuery) throws Exception {
         var cql = translator.toCql(structuredQuery).print();
         var measureUri = createMeasureAndLibrary(cql);
-        System.out.println(cql);
-        System.out.println(measureUri);
         var report = evaluateMeasure(measureUri);
 
         assertEquals(1, report.getGroupFirstRep().getPopulationFirstRep().getCount());
-    }
-
-    private StructuredQuery readStructuredQuery(String testCaseQueryName) throws Exception {
-        return new ObjectMapper().readValue(slurp("testCases/" + testCaseQueryName), StructuredQuery.class);
     }
 
     private String createMeasureAndLibrary(String cql) throws Exception {
         var libraryUri = "urn:uuid" + UUID.randomUUID();
         var library = appendCql(parseResource(Library.class, slurp("Library.json")).setUrl(libraryUri), cql);
         var measureUri = "urn:uuid" + UUID.randomUUID();
-        System.out.println(measureUri);
         var measure = parseResource(Measure.class, slurp("Measure.json"))
                 .setUrl(measureUri)
                 .addLibrary(libraryUri);
@@ -156,32 +161,6 @@ public class AcceptanceTest {
                 .execute();
     }
 
-    public List<String> getSqFileNames() throws Exception {
-        var disabledTests = readLines(resourcePath("disabled_test_cases"));
-        try (Stream<Path> stream = Files.walk(resourcePath("testCases"))) {
-            return stream
-                    .filter(Files::isRegularFile)
-                    .map(Path::getFileName)
-                    .map(Path::toString)
-                    .filter(filePath -> !disabledTests.contains(filePath))
-                    .toList();
-        }
-    }
-
-    private java.util.Set<String> readLines(Path path) throws IOException {
-        try (var stream = Files.lines(path)) {
-            return stream.collect(Collectors.toSet());
-        }
-    }
-
-    private static Path resourcePath(String name) throws URISyntaxException {
-        return Paths.get(Objects.requireNonNull(AcceptanceTest.class.getResource(name)).toURI());
-    }
-
-    private static String slurp(String name) throws Exception {
-        return Files.readString(resourcePath(name));
-    }
-
     private <T extends IBaseResource> T parseResource(Class<T> type, String s) {
         var parser = fhirContext.newJsonParser();
         return type.cast(parser.parseResource(s));
@@ -191,13 +170,5 @@ public class AcceptanceTest {
         library.getContentFirstRep().setContentType("text/cql");
         library.getContentFirstRep().setData(cql.getBytes(UTF_8));
         return library;
-    }
-
-    private static Bundle createBundle(Library library, Measure measure) {
-        var bundle = new Bundle();
-        bundle.setType(TRANSACTION);
-        bundle.addEntry().setResource(library).getRequest().setMethod(POST).setUrl("Library");
-        bundle.addEntry().setResource(measure).getRequest().setMethod(POST).setUrl("Measure");
-        return bundle;
     }
 }

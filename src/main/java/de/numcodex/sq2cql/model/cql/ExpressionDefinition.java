@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record ExpressionDefinition(String identifier, Expression expression) implements Statement {
+public record ExpressionDefinition(IdentifierExpression identifier, Expression expression) implements Statement {
 
     public ExpressionDefinition {
         requireNonNull(identifier);
@@ -12,7 +12,7 @@ public record ExpressionDefinition(String identifier, Expression expression) imp
     }
 
     public static ExpressionDefinition of(String identifier, Expression expression) {
-        return new ExpressionDefinition(identifier, expression);
+        return new ExpressionDefinition(IdentifierExpression.of(identifier), expression);
     }
 
     public Expression getExpression() {
@@ -23,7 +23,7 @@ public record ExpressionDefinition(String identifier, Expression expression) imp
     public String print(PrintContext printContext) {
         assert printContext.precedence() == 0;
         var newPrintContext = printContext.increase();
-        return "define %s:\n%s%s".formatted(identifier, newPrintContext.getIndent(),
+        return "define %s:\n%s%s".formatted(identifier.print(printContext), newPrintContext.getIndent(),
                 expression.print(newPrintContext));
     }
 }

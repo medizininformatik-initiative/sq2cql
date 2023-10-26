@@ -9,12 +9,12 @@ class ExpressionDefinitionTest {
 
     @Test
     void print_query() {
-        var expr = ExpressionDefinition.of("foo", QueryExpressionTest.query());
+        var expr = ExpressionDefinition.of("foo-bar", QueryExpressionTest.query());
 
         var s = expr.print(PrintContext.ZERO);
 
         assertEquals("""
-                define foo:
+                define "foo-bar":
                   from [Observation: Code '85354-9' from loinc] O
                     where true""", s);
     }

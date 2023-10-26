@@ -39,15 +39,15 @@ public interface Criterion {
     static Criterion create(@JsonProperty("context") TermCode context,
                             @JsonProperty("termCodes") List<TermCode> termCodes,
                             @JsonProperty("valueFilter") ObjectNode valueFilter,
-                            @JsonProperty("timeRestriction") TimeRestriction conceptTimeRestriction,
+                            @JsonProperty("timeRestriction") TimeRestriction timeRestriction,
                             @JsonProperty("attributeFilters") List<ObjectNode> attributeFilters) {
-      var concept = ContextualConcept.of(requireNonNull(context, "missing JSON property: context"),
-          Concept.of(requireNonNull(termCodes, "missing JSON property: termCodes")));
+        var concept = ContextualConcept.of(requireNonNull(context, "missing JSON property: context"),
+                Concept.of(requireNonNull(termCodes, "missing JSON property: termCodes")));
 
         AbstractCriterion<?> criterion;
 
         if (valueFilter == null) {
-            criterion = ConceptCriterion.of(concept, conceptTimeRestriction);
+            criterion = ConceptCriterion.of(concept, timeRestriction);
         } else {
             var type = valueFilter.get("type").asText();
             switch (type) {
@@ -56,38 +56,38 @@ public interface Criterion {
                     var value = valueFilter.get("value").decimalValue();
                     var unit = valueFilter.get("unit");
                     criterion = unit == null
-                        ? NumericCriterion.of(concept, comparator, value, conceptTimeRestriction)
-                        : NumericCriterion.of(concept, comparator, value, unit.get("code").asText(),
-                            conceptTimeRestriction);
+                            ? NumericCriterion.of(concept, comparator, value, timeRestriction)
+                            : NumericCriterion.of(concept, comparator, value, unit.get("code").asText(),
+                            timeRestriction);
                 }
                 case "quantity-range" -> {
                     var lowerBound = valueFilter.get("minValue").decimalValue();
                     var upperBound = valueFilter.get("maxValue").decimalValue();
                     var unit = valueFilter.get("unit");
                     criterion = unit == null
-                        ? RangeCriterion.of(concept, lowerBound, upperBound, conceptTimeRestriction)
-                        : RangeCriterion.of(concept, lowerBound, upperBound,
+                            ? RangeCriterion.of(concept, lowerBound, upperBound, timeRestriction)
+                            : RangeCriterion.of(concept, lowerBound, upperBound,
                             unit.get("code").asText(),
-                            conceptTimeRestriction);
+                            timeRestriction);
                 }
                 case "concept" -> {
                     var selectedConcepts = valueFilter.get("selectedConcepts");
                     if (selectedConcepts == null || selectedConcepts.isEmpty()) {
                         throw new IllegalArgumentException(
-                            "Missing or empty `selectedConcepts` key in concept criterion.");
+                                "Missing or empty `selectedConcepts` key in concept criterion.");
                     }
                     criterion = ValueSetCriterion.of(concept,
-                        StreamSupport.stream(selectedConcepts.spliterator(), false)
-                            .map(TermCode::fromJsonNode).toList(), conceptTimeRestriction);
+                            StreamSupport.stream(selectedConcepts.spliterator(), false)
+                                    .map(TermCode::fromJsonNode).toList(), timeRestriction);
                 }
                 default -> throw new IllegalArgumentException("unknown valueFilter type: " + type);
             }
         }
 
         var attributes = (attributeFilters == null ? List.<ObjectNode>of() : attributeFilters).stream()
-            .map(AttributeFilter::fromJsonNode)
-            .flatMap(Optional::stream)
-            .toList();
+                .map(AttributeFilter::fromJsonNode)
+                .flatMap(Optional::stream)
+                .toList();
         for (var filter : attributes) {
             criterion = criterion.appendAttributeFilter(filter);
         }
