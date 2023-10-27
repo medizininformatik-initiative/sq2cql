@@ -1,20 +1,22 @@
 package de.numcodex.sq2cql.model.cql;
 
-import static java.util.Objects.requireNonNull;
-
 import de.numcodex.sq2cql.PrintContext;
 
-public record ReturnClause(Expression expression) {
+import static java.util.Objects.requireNonNull;
 
-  public ReturnClause {
-    requireNonNull(expression);
-  }
+public record ReturnClause(Expression expression) implements Clause {
 
-  public static ReturnClause of(Expression expression) {
-    return new ReturnClause(expression);
-  }
+    public ReturnClause {
+        requireNonNull(expression);
+    }
 
-  public String print(PrintContext printContext) {
-    return "return " + expression.print(printContext.resetPrecedence().increase());
-  }
+    public static ReturnClause of(Expression expression) {
+        return new ReturnClause(expression);
+    }
+
+    @Override
+    public String print(PrintContext printContext) {
+        assert printContext.precedence() == 0;
+        return "return " + expression.print(printContext.resetPrecedence().increase());
+    }
 }

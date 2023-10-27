@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql;
 
+import de.numcodex.sq2cql.model.cql.Clause;
 import de.numcodex.sq2cql.model.cql.Expression;
 
 /**
@@ -40,6 +41,10 @@ public record PrintContext(int indent, int precedence) {
 
     public String print(Expression expression) {
         return expression.print(this);
+    }
+
+    public String print(Clause clause) {
+        return clause.print(this);
     }
 
     public String print(Container<? extends Expression> container) {

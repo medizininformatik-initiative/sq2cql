@@ -4,19 +4,19 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record SourceClause(Expression querySource, IdentifierExpression alias) {
+public record SourceClause(AliasedQuerySource source) implements Clause {
 
     public SourceClause {
-        requireNonNull(querySource);
-        requireNonNull(alias);
+        requireNonNull(source);
     }
 
-    public static SourceClause of(Expression querySource, IdentifierExpression alias) {
-        return new SourceClause(querySource, alias);
+    public static SourceClause of(AliasedQuerySource source) {
+        return new SourceClause(source);
     }
 
+    @Override
     public String print(PrintContext printContext) {
         assert printContext.precedence() == 0;
-        return "from %s %s".formatted(querySource.print(printContext.increase()), alias.print(printContext));
+        return "from %s".formatted(source.print(printContext.increase()));
     }
 }

@@ -3,6 +3,7 @@ package de.numcodex.sq2cql.model.structured_query;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -10,9 +11,11 @@ import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
+import de.numcodex.sq2cql.model.cql.Expression;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
 import static java.util.Objects.requireNonNull;
@@ -28,12 +31,54 @@ public interface Criterion {
     /**
      * A criterion that always evaluates to {@code true}.
      */
-    Criterion TRUE = mappingContext -> Container.of(BooleanExpression.TRUE);
+    Criterion TRUE = new Criterion() {
+
+        @Override
+        public ContextualConcept getConcept() {
+            return null;
+        }
+
+        @Override
+        public Container<BooleanExpression> toCql(MappingContext mappingContext) {
+            return Container.of(BooleanExpression.TRUE);
+        }
+
+        @Override
+        public Container<Expression> toReferencesCql(MappingContext mappingContext) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TimeRestriction timeRestriction() {
+            return null;
+        }
+    };
 
     /**
      * A criterion that always evaluates to {@code false}.
      */
-    Criterion FALSE = mappingContext -> Container.of(BooleanExpression.FALSE);
+    Criterion FALSE = new Criterion() {
+
+        @Override
+        public ContextualConcept getConcept() {
+            return null;
+        }
+
+        @Override
+        public Container<BooleanExpression> toCql(MappingContext mappingContext) {
+            return Container.of(BooleanExpression.FALSE);
+        }
+
+        @Override
+        public Container<Expression> toReferencesCql(MappingContext mappingContext) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TimeRestriction timeRestriction() {
+            return null;
+        }
+    };
 
     @JsonCreator
     static Criterion create(@JsonProperty("context") TermCode context,
@@ -94,6 +139,28 @@ public interface Criterion {
         return criterion;
     }
 
+    static Criterion fromJsonNode(JsonNode node) {
+        return Criterion.create(TermCode.fromJsonNode(node.get("context")),
+                getAndMap(node, "termCodes", termCodesNode -> StreamSupport.stream(termCodesNode.spliterator(), false)
+                        .map(TermCode::fromJsonNode).toList()),
+                asObjectNode(node.get("valueFilter")),
+                getAndMap(node, "timeRestriction", TimeRestriction::fromJsonNode),
+                getAndMap(node, "attributeFilters", filtersNode ->
+                        StreamSupport.stream(filtersNode.spliterator(), false)
+                                .map(filterNode -> filterNode.isObject() ? (ObjectNode) filterNode : null).toList()));
+    }
+
+    private static ObjectNode asObjectNode(JsonNode node) {
+        return node == null ? null : node.isObject() ? (ObjectNode) node : null;
+    }
+
+    private static <T> T getAndMap(JsonNode node, String name, Function<JsonNode, T> mapper) {
+        var child = node.get(name);
+        return child == null ? null : mapper.apply(child);
+    }
+
+    ContextualConcept getConcept();
+
     /**
      * Translates this criterion into a CQL expression.
      *
@@ -102,4 +169,8 @@ public interface Criterion {
      * CodeSystemDefinitions}
      */
     Container<BooleanExpression> toCql(MappingContext mappingContext);
+
+    Container<Expression> toReferencesCql(MappingContext mappingContext);
+
+    TimeRestriction timeRestriction();
 }

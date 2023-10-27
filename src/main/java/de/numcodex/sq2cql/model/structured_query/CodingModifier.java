@@ -9,20 +9,18 @@ import de.numcodex.sq2cql.model.cql.InvocationExpression;
 import de.numcodex.sq2cql.model.cql.MembershipExpression;
 
 import java.util.List;
-import java.util.Objects;
 
 import static de.numcodex.sq2cql.model.structured_query.AbstractCriterion.codeSelector;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author Alexander Kiel
  */
-public final class CodingModifier extends AbstractModifier {
+public record CodingModifier(String path, List<TermCode> concepts) implements SimpleModifier {
 
-    private final List<TermCode> concepts;
-
-    private CodingModifier(String path, List<TermCode> concepts) {
-        super(path);
-        this.concepts = concepts;
+    public CodingModifier {
+        requireNonNull(path);
+        concepts = List.copyOf(concepts);
     }
 
     public static CodingModifier of(String path, TermCode... concepts) {
@@ -30,24 +28,11 @@ public final class CodingModifier extends AbstractModifier {
     }
 
     @Override
-    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
-        var codingExpr = InvocationExpression.of(InvocationExpression.of(identifier, path), "coding");
+    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
+        var codingExpr = InvocationExpression.of(InvocationExpression.of(sourceAlias, path), "coding");
         return concepts.stream()
                 .map(concept -> codeSelector(mappingContext, concept).map(terminology ->
                         (BooleanExpression) MembershipExpression.contains(codingExpr, terminology)))
                 .reduce(Container.empty(), Container.OR);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CodingModifier that = (CodingModifier) o;
-        return path.equals(that.path) && concepts.equals(that.concepts);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(path, concepts);
     }
 }

@@ -32,7 +32,7 @@ public final class Mapping {
     private final String termCodeFhirPath;
 
     public Mapping(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria,
-        List<AttributeMapping> attributeMappings, String timeRestrictionPath, TermCode primaryCode, String termCodeFhirPath) {
+                   List<AttributeMapping> attributeMappings, String timeRestrictionPath, TermCode primaryCode, String termCodeFhirPath) {
         this.key = requireNonNull(key);
         this.resourceType = requireNonNull(resourceType);
         this.valueFhirPath = valueFhirPath;
@@ -57,32 +57,32 @@ public final class Mapping {
         return new Mapping(key, resourceType, valueFhirPath, valueType, List.of(), List.of(), null, null, null);
     }
 
-    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria,List<AttributeMapping> attributeMappings) {
+    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings) {
         return new Mapping(key, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
-            fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
-            attributeMappings, null, null, null);
+                fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
+                attributeMappings, null, null, null);
     }
 
     public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings, String timeRestrictionPath) {
         return new Mapping(key, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
-            fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
-            attributeMappings, timeRestrictionPath, null, null);
+                fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
+                attributeMappings, timeRestrictionPath, null, null);
     }
 
     @JsonCreator
     public static Mapping of(@JsonProperty("context") TermCode context,
                              @JsonProperty("key") TermCode key,
-                             @JsonProperty("resource_type") String resourceType,
+                             @JsonProperty("resourceType") String resourceType,
                              @JsonProperty("valueFhirPath") String valueFhirPath,
                              @JsonProperty("valueType") String valueType,
                              @JsonProperty("fixedCriteria") List<Modifier> fixedCriteria,
-                             @JsonProperty("attributeSearchParameters") List<AttributeMapping> attributeMappings,
+                             @JsonProperty("attributeFhirPaths") List<AttributeMapping> attributeMappings,
                              @JsonProperty("timeRestrictionPath") String timeRestrictionPath,
                              @JsonProperty("primaryCode") TermCode primaryCode,
                              @JsonProperty("termCodeFhirPath") String termCodeFhirPath) {
         var contextualTermCode = ContextualTermCode.of(context, key);
         return new Mapping(contextualTermCode,
-                requireNonNull(resourceType, "missing JSON property: fhirResourceType"),
+                requireNonNull(resourceType, "missing JSON property: resourceType"),
                 valueFhirPath == null ? "value" : valueFhirPath,
                 valueType,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
@@ -112,10 +112,6 @@ public final class Mapping {
         return fixedCriteria;
     }
 
-    public String termCodeFhirPath() {
-        return termCodeFhirPath;
-    }
-
     public Map<TermCode, AttributeMapping> attributeMappings() {
         return attributeMappings;
     }
@@ -132,7 +128,7 @@ public final class Mapping {
      * @return the primary code of this mapping or the key if no primary code is defined
      */
     public TermCode primaryCode() {
-      // TODO: decouple key and primary code. The key should only be used for the mapping lookup.
-      return primaryCode == null ? key.termCode() : primaryCode;
+        // TODO: decouple key and primary code. The key should only be used for the mapping lookup.
+        return primaryCode == null ? key.termCode() : primaryCode;
     }
 }

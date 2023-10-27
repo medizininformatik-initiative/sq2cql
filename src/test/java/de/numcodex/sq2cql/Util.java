@@ -31,6 +31,7 @@ public interface Util {
                     "fraility-score"),
             entry("http://terminology.hl7.org/CodeSystem/consentcategorycodes", "consent"),
             entry("urn:oid:2.16.840.1.113883.3.1937.777.24.5.1", "mide-1"),
+            entry("urn:oid:2.16.840.1.113883.6.43.1", "icd-o-3"),
             entry("http://hl7.org/fhir/consent-provision-type", "provision-type"),
             entry("http://fhir.de/CodeSystem/bfarm/ops", "oops"));
 

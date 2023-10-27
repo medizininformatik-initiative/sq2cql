@@ -7,8 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.BooleanExpression;
-import de.numcodex.sq2cql.model.cql.IdentifierExpression;
+import de.numcodex.sq2cql.model.cql.QueryExpression;
 
 import java.util.stream.Stream;
 
@@ -39,5 +38,5 @@ public interface Modifier {
         throw new IllegalArgumentException("unknown type: " + type);
     }
 
-    Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier);
+    Container<QueryExpression> updateQuery(MappingContext mappingContext, Container<QueryExpression> queryContainer);
 }

@@ -16,7 +16,7 @@ public record ValueSetAttributeFilter(TermCode attributeCode, List<TermCode> sel
     }
 
     /**
-     * Returns a {@code ValueSetCriterion}.
+     * Returns a {@code ValueSetAttributeFilter}.
      *
      * @param attributeCode    the code identifying the attribute
      * @param selectedConcepts at least one selected value concept
@@ -34,9 +34,11 @@ public record ValueSetAttributeFilter(TermCode attributeCode, List<TermCode> sel
     @Override
     public Modifier toModifier(AttributeMapping attributeMapping) {
         return switch (attributeMapping.type()) {
-            case "code" -> CodeModifier.of(attributeMapping.path(), selectedConcepts.stream().map(TermCode::code).toArray(String[]::new));
-            case "coding" -> CodingModifier.of(attributeMapping.path(), selectedConcepts.toArray(TermCode[]::new));
-            default -> throw new IllegalStateException("unknown attribute mapping type: %s".formatted(attributeMapping.type()));
+            case "code" ->
+                    CodeModifier.of(attributeMapping.path(), selectedConcepts.stream().map(TermCode::code).toArray(String[]::new));
+            case "Coding" -> CodingModifier.of(attributeMapping.path(), selectedConcepts.toArray(TermCode[]::new));
+            default ->
+                    throw new IllegalStateException("unknown attribute mapping type: %s".formatted(attributeMapping.type()));
         };
     }
 }

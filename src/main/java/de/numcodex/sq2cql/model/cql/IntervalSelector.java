@@ -6,18 +6,18 @@ import static java.util.Objects.requireNonNull;
 
 public record IntervalSelector(Expression intervalStart, Expression intervalEnd) implements ExpressionTerm {
 
-  public IntervalSelector {
-    requireNonNull(intervalStart);
-    requireNonNull(intervalEnd);
-  }
+    public IntervalSelector {
+        requireNonNull(intervalStart);
+        requireNonNull(intervalEnd);
+    }
 
-  public static IntervalSelector of(Expression intervalStart, Expression intervalEnd) {
-    return new IntervalSelector(intervalStart, intervalEnd);
-  }
+    public static IntervalSelector of(Expression intervalStart, Expression intervalEnd) {
+        return new IntervalSelector(intervalStart, intervalEnd);
+    }
 
-  @Override
-  public String print(PrintContext printContext) {
-    return "Interval[%s, %s]".formatted(intervalStart.print(printContext), intervalEnd.print(printContext));
-  }
+    @Override
+    public String print(PrintContext printContext) {
+        return "Interval[%s, %s]".formatted(intervalStart.print(printContext), intervalEnd.print(printContext));
+    }
 
 }

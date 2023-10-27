@@ -58,7 +58,18 @@ public interface AttributeFilter {
                                 .map(TermCode::fromJsonNode).toArray(TermCode[]::new)));
             }
         }
-        throw new IllegalArgumentException("unknown valueFilter type: " + type);
+        if ("reference".equals(type)) {
+            var criteria = node.get("criteria");
+            if (criteria == null || criteria.isEmpty()) {
+                logger.warn("Skip attribute filter with code `{}` because of empty criteria.", attributeCode.code());
+                return Optional.empty();
+            } else {
+                return Optional.of(ReferenceAttributeFilter.of(attributeCode,
+                        StreamSupport.stream(criteria.spliterator(), false)
+                                .map(Criterion::fromJsonNode).toArray(Criterion[]::new)));
+            }
+        }
+        throw new IllegalArgumentException("unknown attribute filter type: " + type);
     }
 
     TermCode attributeCode();
