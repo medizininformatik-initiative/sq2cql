@@ -12,7 +12,7 @@ import static java.util.Objects.requireNonNull;
  * @author Lorenz Rosenau
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record AttributeMapping(String type, TermCode key, String path) {
+public record AttributeMapping(String type, TermCode key, String path, String referenceTargetType) {
 
     public AttributeMapping {
         requireNonNull(type);
@@ -23,12 +23,16 @@ public record AttributeMapping(String type, TermCode key, String path) {
     @JsonCreator
     public static AttributeMapping of(@JsonProperty("attributeType") String type,
                                       @JsonProperty("attributeKey") JsonNode key,
-                                      @JsonProperty("attributeFhirPath") String path) {
-        return new AttributeMapping(type, TermCode.fromJsonNode(key), path);
+                                      @JsonProperty("attributePath") String path,
+                                      @JsonProperty("attributeReferenceTargetType") String referenceTargetType) {
+        return new AttributeMapping(type, TermCode.fromJsonNode(key), path, referenceTargetType);
     }
 
     public static AttributeMapping of(String type, TermCode key, String path) {
-        return new AttributeMapping(type, key, path);
+        return new AttributeMapping(type, key, path, null);
     }
 
+    public static AttributeMapping of(String type, TermCode key, String path, String referenceTargetType) {
+        return new AttributeMapping(type, key, path, referenceTargetType);
+    }
 }

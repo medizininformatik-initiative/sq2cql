@@ -245,7 +245,7 @@ class ConceptCriterionTest {
     var criterion = ConceptCriterion.of(ContextualConcept.of(C71))
         .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED));
     var mapping = Mapping.of(C71, "Condition", null, null, List.of(),
-        List.of(AttributeMapping.of("coding", VERIFICATION_STATUS, "verificationStatus")));
+        List.of(AttributeMapping.of("Coding", VERIFICATION_STATUS, "verificationStatus")));
     var mappingContext = MappingContext.of(Map.of(C71, mapping), TermCodeNode.of(C71),
         CODE_SYSTEM_ALIASES);
 
@@ -264,9 +264,9 @@ class ConceptCriterionTest {
     var criterion = ConceptCriterion.of(ContextualConcept.of(C71))
         .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED));
     var mapping1 = Mapping.of(C71_1, "Condition", null, null, List.of(),
-        List.of(AttributeMapping.of("coding", VERIFICATION_STATUS, "verificationStatus")));
+        List.of(AttributeMapping.of("Coding", VERIFICATION_STATUS, "verificationStatus")));
     var mapping2 = Mapping.of(C71_2, "Condition", null, null, List.of(),
-        List.of(AttributeMapping.of("coding", VERIFICATION_STATUS, "verificationStatus")));
+        List.of(AttributeMapping.of("Coding", VERIFICATION_STATUS, "verificationStatus")));
     var mappingContext = MappingContext.of(Map.of(C71_1, mapping1, C71_2, mapping2),
         TermCodeNode.of(C71, TermCodeNode.of(C71_1), TermCodeNode.of(C71_2)), CODE_SYSTEM_ALIASES);
 

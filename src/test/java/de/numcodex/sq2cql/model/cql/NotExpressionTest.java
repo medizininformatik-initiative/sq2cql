@@ -3,7 +3,6 @@ package de.numcodex.sq2cql.model.cql;
 import de.numcodex.sq2cql.PrintContext;
 import org.junit.jupiter.api.Test;
 
-import static de.numcodex.sq2cql.model.cql.BooleanExpression.FALSE;
 import static de.numcodex.sq2cql.model.cql.BooleanExpression.TRUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -21,8 +20,10 @@ class NotExpressionTest {
 
     @Test
     void print_LowerPrecedenceChild() {
-        var cql = NotExpression.of(AndExpression.of(TRUE, FALSE)).print(PrintContext.ZERO);
+        var expr = NotExpression.of(AndExpression.of(IdentifierExpression.of("a"), IdentifierExpression.of("b")));
 
-        assertEquals("not (true and\nfalse)", cql);
+        var cql = expr.print(PrintContext.ZERO);
+
+        assertEquals("not (a and\nb)", cql);
     }
 }

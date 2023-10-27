@@ -115,11 +115,11 @@ public final class NumericCriterion extends AbstractCriterion<NumericCriterion> 
 
     @Override
     Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
-                                           IdentifierExpression identifier) {
+                                           IdentifierExpression sourceAlias) {
         if (mapping.key().termCode().equals(AgeFunctionMapping.AGE)) {
             return ageExpr();
         }
-        var castExpr = TypeExpression.of(InvocationExpression.of(identifier, mapping.valueFhirPath()),
+        var castExpr = TypeExpression.of(InvocationExpression.of(sourceAlias, mapping.valueFhirPath()),
                 "Quantity");
         return Container.of(
                 ComparatorExpression.of(castExpr, comparator, quantityExpression(value, unit)));

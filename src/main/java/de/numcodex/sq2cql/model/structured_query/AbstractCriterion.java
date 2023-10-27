@@ -1,7 +1,6 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
-import de.numcodex.sq2cql.Lists;
 import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -10,7 +9,6 @@ import de.numcodex.sq2cql.model.cql.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -71,14 +69,6 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                 RetrieveExpression.of(mapping.resourceType(), terminology));
     }
 
-    static Container<BooleanExpression> modifiersExpr(List<Modifier> modifiers,
-                                                      MappingContext mappingContext,
-                                                      IdentifierExpression identifier) {
-        return modifiers.stream()
-                .map(m -> m.expression(mappingContext, identifier))
-                .reduce(Container.empty(), Container.AND);
-    }
-
     static ExistsExpression existsExpr(SourceClause sourceClause, BooleanExpression whereExpr) {
         return ExistsExpression.of(QueryExpression.of(sourceClause, WhereClause.of(whereExpr)));
     }
@@ -89,6 +79,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
 
     public abstract T appendAttributeFilter(AttributeFilter attributeFilter);
 
+    @Override
     public ContextualConcept getConcept() {
         return concept;
     }
@@ -100,6 +91,13 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
             throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
         }
         return expr;
+    }
+
+    @Override
+    public Container<Expression> toReferencesCql(MappingContext mappingContext) {
+        return mappingContext.expandConcept(concept)
+                .map(termCode -> refExpr(mappingContext, termCode))
+                .reduce(Container.empty(), Container.UNION);
     }
 
     /**
@@ -117,7 +115,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                 .orElseThrow(() -> new MappingNotFoundException(termCode));
         switch (mapping.resourceType()) {
             case "Patient" -> {
-                return valueAndModifierExpr(mappingContext, mapping, PATIENT);
+                return valueExpr(mappingContext, mapping, PATIENT);
             }
             case "MedicationAdministration" -> {
                 return medicationReferencesExpr(mappingContext, termCode.termCode())
@@ -125,7 +123,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                         .map(medicationReferencesExpr -> {
                             var retrieveExpr = RetrieveExpression.of("MedicationAdministration");
                             var alias = retrieveExpr.alias();
-                            var sourceClause = SourceClause.of(retrieveExpr, alias);
+                            var sourceClause = SourceClause.of(AliasedQuerySource.of(retrieveExpr, alias));
                             var referenceExpression = InvocationExpression.of(alias, "medication.reference");
                             return existsExpr(sourceClause, MembershipExpression.in(referenceExpression, medicationReferencesExpr));
                         });
@@ -133,39 +131,53 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
             default -> {
                 return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
                     var alias = retrieveExpr.alias();
-                    var sourceClause = SourceClause.of(retrieveExpr, alias);
-                    var valueAndModifierExpr = valueAndModifierExpr(mappingContext, mapping, alias);
-                    if (valueAndModifierExpr.isEmpty()) {
-                        return Container.of(ExistsExpression.of(retrieveExpr));
-                    } else {
-                        return valueAndModifierExpr.map(expr -> existsExpr(sourceClause, expr));
-                    }
+                    var sourceClause = SourceClause.of(AliasedQuerySource.of(retrieveExpr, alias));
+                    var query = valueExpr(mappingContext, mapping, alias)
+                            .map(valueExpr -> QueryExpression.of(sourceClause, WhereClause.of(valueExpr)))
+                            .or(() -> QueryExpression.of(sourceClause));
+                    return appendModifier(mappingContext, mapping, query).map(ExistsExpression::of);
                 });
             }
         }
     }
 
-    protected Container<BooleanExpression> valueAndModifierExpr(MappingContext mappingContext,
-                                                                Mapping mapping,
-                                                                IdentifierExpression identifier) {
-        var valueExpr = valueExpr(mappingContext, mapping, identifier);
-        var modifiers = Lists.concat(mapping.fixedCriteria(),
-                resolveAttributeModifiers(mapping.attributeMappings()));
-        if (Objects.nonNull(timeRestriction)) {
-            modifiers = Lists.concat(modifiers, List.of(timeRestriction.toModifier(mapping)));
-        }
-        if (modifiers.isEmpty()) {
-            return valueExpr;
-        } else {
-            return Container.AND.apply(valueExpr, modifiersExpr(modifiers, mappingContext, identifier));
-        }
+    private Container<Expression> refExpr(MappingContext mappingContext, ContextualTermCode termCode) {
+        var mapping = mappingContext.findMapping(termCode)
+                .orElseThrow(() -> new MappingNotFoundException(termCode));
+        return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
+            var alias = retrieveExpr.alias();
+            var sourceClause = SourceClause.of(AliasedQuerySource.of(retrieveExpr, alias));
+            var query = valueExpr(mappingContext, mapping, alias)
+                    .map(valueExpr -> QueryExpression.of(sourceClause, WhereClause.of(valueExpr)))
+                    .or(() -> QueryExpression.of(sourceClause));
+            return appendModifier(mappingContext, mapping, query);
+        });
     }
 
+    /*
+     * Creates an expression from value criteria that will end up in the where clause.
+     */
     abstract Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
-                                                    IdentifierExpression identifier);
+                                                    IdentifierExpression sourceAlias);
 
-    private List<Modifier> resolveAttributeModifiers(
-            Map<TermCode, AttributeMapping> attributeMappings) {
+    /*
+     * Appends expressions from modifier criteria to the query.
+     */
+    private Container<QueryExpression> appendModifier(MappingContext mappingContext, Mapping mapping,
+                                                      Container<QueryExpression> queryContainer) {
+        for (var criterion : mapping.fixedCriteria()) {
+            queryContainer = criterion.updateQuery(mappingContext, queryContainer);
+        }
+        for (var modifier : resolveAttributeModifiers(mapping.attributeMappings())) {
+            queryContainer = modifier.updateQuery(mappingContext, queryContainer);
+        }
+        if (timeRestriction != null) {
+            queryContainer = timeRestriction.toModifier(mapping).updateQuery(mappingContext, queryContainer);
+        }
+        return queryContainer;
+    }
+
+    private List<Modifier> resolveAttributeModifiers(Map<TermCode, AttributeMapping> attributeMappings) {
         return attributeFilters.stream().map(attributeFilter -> {
             var key = attributeFilter.attributeCode();
             var mapping = Optional.ofNullable(attributeMappings.get(key)).orElseThrow(() ->
@@ -174,10 +186,10 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
         }).toList();
     }
 
+    @Override
     public TimeRestriction timeRestriction() {
         return timeRestriction;
     }
-
 
     /**
      * Returns a query expression that returns all references of Medication with {@code code}.
@@ -189,7 +201,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                 .map(terminology -> RetrieveExpression.of("Medication", terminology))
                 .map(retrieveExpr -> {
                     var alias = retrieveExpr.alias();
-                    var sourceClause = SourceClause.of(retrieveExpr, alias);
+                    var sourceClause = SourceClause.of(AliasedQuerySource.of(retrieveExpr, alias));
                     var returnClause = ReturnClause.of(AdditionExpressionTerm.of(
                             StringLiteralExpression.of("Medication/"), InvocationExpression.of(alias, "id")));
                     return QueryExpression.of(sourceClause, returnClause);

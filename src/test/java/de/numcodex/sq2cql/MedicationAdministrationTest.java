@@ -52,6 +52,6 @@ public class MedicationAdministrationTest {
     }
 
     private StructuredQuery readStructuredQuery() throws Exception {
-        return new ObjectMapper().readValue(slurp("MedicationAdministration.json"), StructuredQuery.class);
+        return new ObjectMapper().readValue(slurp("MedicationAdministrationSQ.json"), StructuredQuery.class);
     }
 }

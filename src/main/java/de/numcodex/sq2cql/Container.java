@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -22,19 +24,23 @@ import static java.util.Objects.requireNonNull;
  */
 public final class Container<T extends Expression> {
 
-    private static final Container<?> EMPTY = new Container<>(null, Set.of(), Set.of());
+    private static final Container<?> EMPTY = new Container<>(null, Set.of(), Set.of(), Set.of());
     public static final BinaryOperator<Container<BooleanExpression>> AND = combiner(AndExpression::of);
     public static final BinaryOperator<Container<BooleanExpression>> OR = combiner(OrExpression::of);
+    public static final BinaryOperator<Container<Expression>> UNION = combiner(UnionExpression::of);
 
     private final T expression;
     private final Set<CodeSystemDefinition> codeSystemDefinitions;
     private final Set<ExpressionDefinition> unfilteredDefinitions;
+    private final Set<ExpressionDefinition> patientDefinitions;
 
     private Container(T expression, Set<CodeSystemDefinition> codeSystemDefinitions,
-                      Set<ExpressionDefinition> unfilteredDefinitions) {
+                      Set<ExpressionDefinition> unfilteredDefinitions,
+                      Set<ExpressionDefinition> patientDefinitions) {
         this.expression = expression;
         this.codeSystemDefinitions = codeSystemDefinitions;
         this.unfilteredDefinitions = unfilteredDefinitions;
+        this.patientDefinitions = patientDefinitions;
     }
 
     /**
@@ -62,7 +68,7 @@ public final class Container<T extends Expression> {
      */
     public static <T extends Expression> Container<T> of(T expression,
                                                          CodeSystemDefinition... codeSystemDefinitions) {
-        return new Container<>(requireNonNull(expression), Set.of(codeSystemDefinitions), Set.of());
+        return new Container<>(requireNonNull(expression), Set.of(codeSystemDefinitions), Set.of(), Set.of());
     }
 
     /**
@@ -83,7 +89,8 @@ public final class Container<T extends Expression> {
         return (a, b) -> a == EMPTY
                 ? b : b == EMPTY ? a : new Container<>(combiner.apply(a.expression, b.expression),
                 Sets.union(a.codeSystemDefinitions, b.codeSystemDefinitions),
-                Sets.union(a.unfilteredDefinitions, b.unfilteredDefinitions));
+                Sets.union(a.unfilteredDefinitions, b.unfilteredDefinitions),
+                Sets.union(a.patientDefinitions, b.patientDefinitions));
     }
 
     /**
@@ -114,6 +121,23 @@ public final class Container<T extends Expression> {
         return unfilteredDefinitions;
     }
 
+    Stream<ExpressionDefinition> concatUnfilteredDefinitions(Container<?> otherContainer) {
+        return Stream.concat(unfilteredDefinitions.stream(), otherContainer.unfilteredDefinitions.stream());
+    }
+    
+    /**
+     * Returns the definitions that have to be placed into the Patient context.
+     *
+     * @return the definitions that have to be placed into the Patient context
+     */
+    public Set<ExpressionDefinition> getPatientDefinitions() {
+        return patientDefinitions;
+    }
+
+    Stream<ExpressionDefinition> concatPatientDefinitions(Container<?> otherContainer) {
+        return Stream.concat(patientDefinitions.stream(), otherContainer.patientDefinitions.stream());
+    }
+
     /**
      * Moves the expression of this container into the unfiltered context and returns a Container with an
      * {@link IdentifierExpression} holding {@code name}.
@@ -126,8 +150,25 @@ public final class Container<T extends Expression> {
             return empty();
         }
 
-        return new Container<>(IdentifierExpression.of(name), this.codeSystemDefinitions,
-                Sets.union(this.unfilteredDefinitions, Set.of(ExpressionDefinition.of(name, expression))));
+        return new Container<>(IdentifierExpression.of(name), codeSystemDefinitions,
+                Sets.union(unfilteredDefinitions, Set.of(ExpressionDefinition.of(name, expression))),
+                patientDefinitions);
+    }
+
+    /**
+     * Moves the expression of this container into the patient context and returns a Container with an
+     * {@link IdentifierExpression} holding {@code name}.
+     *
+     * @param name the name of the expression definition in the Patient context
+     * @return a Container with an {@link IdentifierExpression} holding {@code name}
+     */
+    public Container<IdentifierExpression> moveToPatientContext(String name) {
+        if (isEmpty()) {
+            return empty();
+        }
+
+        return new Container<>(IdentifierExpression.of(name), codeSystemDefinitions, unfilteredDefinitions,
+                Sets.union(patientDefinitions, Set.of(ExpressionDefinition.of(name, expression))));
     }
 
     /**
@@ -141,7 +182,7 @@ public final class Container<T extends Expression> {
 
     public <U extends Expression> Container<U> map(Function<? super T, ? extends U> mapper) {
         return isEmpty() ? empty() : new Container<>(requireNonNull(mapper.apply(expression)),
-                codeSystemDefinitions, unfilteredDefinitions);
+                codeSystemDefinitions, unfilteredDefinitions, patientDefinitions);
     }
 
     public <U extends Expression> Container<U> flatMap(
@@ -156,6 +197,11 @@ public final class Container<T extends Expression> {
         assert container.getExpression().isPresent();
         return new Container<>(requireNonNull(container.getExpression().get()),
                 Sets.union(codeSystemDefinitions, container.getCodeSystemDefinitions()),
-                Sets.union(unfilteredDefinitions, container.getUnfilteredDefinitions()));
+                Sets.union(unfilteredDefinitions, container.getUnfilteredDefinitions()),
+                Sets.union(patientDefinitions, container.getPatientDefinitions()));
+    }
+
+    public Container<T> or(Supplier<T> expressionSupplier) {
+        return isEmpty() ? of(expressionSupplier.get()) : this;
     }
 }

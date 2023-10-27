@@ -9,13 +9,13 @@ class ExpressionDefinitionTest {
 
     @Test
     void print_query() {
-        var expr = ExpressionDefinition.of("foo-bar", QueryExpressionTest.query());
+        var sourceClause = SourceClause.of(AliasedQuerySource.of(RetrieveExpression.of("Observation"), IdentifierExpression.of("O")));
+        var expr = ExpressionDefinition.of("foo-bar", QueryExpression.of(sourceClause, WhereClause.of(BooleanExpression.TRUE)));
 
         var s = expr.print(PrintContext.ZERO);
 
         assertEquals("""
                 define "foo-bar":
-                  from [Observation: Code '85354-9' from loinc] O
-                    where true""", s);
+                  [Observation]""", s);
     }
 }

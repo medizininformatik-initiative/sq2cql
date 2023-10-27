@@ -2,41 +2,32 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.cql.BooleanExpression;
-import de.numcodex.sq2cql.model.cql.DateTimeExpression;
-import de.numcodex.sq2cql.model.cql.FunctionInvocation;
-import de.numcodex.sq2cql.model.cql.IdentifierExpression;
-import de.numcodex.sq2cql.model.cql.IntervalSelector;
-import de.numcodex.sq2cql.model.cql.InvocationExpression;
-import de.numcodex.sq2cql.model.cql.MembershipExpression;
-import de.numcodex.sq2cql.model.cql.OrExpression;
-import de.numcodex.sq2cql.model.cql.OverlapsIntervalOperatorPhrase;
-import de.numcodex.sq2cql.model.cql.TypeExpression;
+import de.numcodex.sq2cql.model.cql.*;
+
 import java.util.List;
 
-public final class TimeRestrictionModifier extends AbstractModifier {
+import static java.util.Objects.requireNonNull;
 
-  private final String beforeDate;
-  private final String afterDate;
+public record TimeRestrictionModifier(String path, String afterDate, String beforeDate) implements SimpleModifier {
 
-  private TimeRestrictionModifier(String path, String afterDate, String beforeDate) {
-    super(path);
-    this.afterDate = afterDate == null ? "1900-01-01T" : afterDate;
-    this.beforeDate = beforeDate == null ? "2040-01-01T" : beforeDate;
-  }
+    public TimeRestrictionModifier {
+        requireNonNull(path);
+        afterDate = afterDate == null ? "1900-01-01T" : afterDate;
+        beforeDate = beforeDate == null ? "2040-01-01T" : beforeDate;
+    }
 
-  public static TimeRestrictionModifier of(String path, String afterDate, String beforeDate) {
-    return new TimeRestrictionModifier(path, afterDate, beforeDate);
-  }
+    public static TimeRestrictionModifier of(String path, String afterDate, String beforeDate) {
+        return new TimeRestrictionModifier(path, afterDate, beforeDate);
+    }
 
-  @Override
-  public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression identifier) {
-    var invocationExpr = InvocationExpression.of(identifier, path);
-    var castExp = TypeExpression.of(invocationExpr, "dateTime");
-    var toDateFunction = FunctionInvocation.of("ToDate", List.of(castExp));
-    var intervalSelector = IntervalSelector.of(DateTimeExpression.of(afterDate), DateTimeExpression.of(beforeDate));
-    var dateTimeInExpr = MembershipExpression.in(toDateFunction, intervalSelector);
-    var intervalOverlapExpr = OverlapsIntervalOperatorPhrase.of(invocationExpr, intervalSelector);
-    return Container.of(OrExpression.of(dateTimeInExpr, intervalOverlapExpr));
-  }
+    @Override
+    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
+        var invocationExpr = InvocationExpression.of(sourceAlias, path);
+        var castExp = TypeExpression.of(invocationExpr, "dateTime");
+        var toDateFunction = FunctionInvocation.of("ToDate", List.of(castExp));
+        var intervalSelector = IntervalSelector.of(DateTimeExpression.of(afterDate), DateTimeExpression.of(beforeDate));
+        var dateTimeInExpr = MembershipExpression.in(toDateFunction, intervalSelector);
+        var intervalOverlapExpr = OverlapsIntervalOperatorPhrase.of(invocationExpr, intervalSelector);
+        return Container.of(OrExpression.of(dateTimeInExpr, intervalOverlapExpr));
+    }
 }

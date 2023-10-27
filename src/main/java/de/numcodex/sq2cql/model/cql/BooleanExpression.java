@@ -14,4 +14,8 @@ public interface BooleanExpression extends Expression {
      * An expression that always evaluates to {@code false}.
      */
     BooleanExpression FALSE = printContext -> "false";
+
+    default BooleanExpression and(BooleanExpression expr) {
+        return AndExpression.of(this, expr);
+    }
 }

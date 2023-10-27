@@ -49,8 +49,7 @@ class StructuredQueryTest {
         }]]}
         """, StructuredQuery.class);
 
-    assertEquals(ContextualConcept.of(TC_1),
-        ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
+    assertEquals(ContextualConcept.of(TC_1), structuredQuery.inclusionCriteria().get(0).get(0).getConcept());
   }
 
   @Test
@@ -73,8 +72,7 @@ class StructuredQueryTest {
         }]]}
         """, StructuredQuery.class);
 
-    assertEquals(ContextualConcept.of(TC_1),
-        ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
+    assertEquals(ContextualConcept.of(TC_1), structuredQuery.inclusionCriteria().get(0).get(0).getConcept());
   }
 
   @Test
@@ -107,10 +105,8 @@ class StructuredQueryTest {
         }]]}
         """, StructuredQuery.class);
 
-    assertEquals(ContextualConcept.of(TC_1),
-        ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
-    assertEquals(ContextualConcept.of(TC_2),
-        ((ConceptCriterion) structuredQuery.inclusionCriteria().get(1).get(0)).getConcept());
+    assertEquals(ContextualConcept.of(TC_1), structuredQuery.inclusionCriteria().get(0).get(0).getConcept());
+    assertEquals(ContextualConcept.of(TC_2), structuredQuery.inclusionCriteria().get(1).get(0).getConcept());
   }
 
   @Test
@@ -143,10 +139,8 @@ class StructuredQueryTest {
         }]]}
         """, StructuredQuery.class);
 
-    assertEquals(ContextualConcept.of(TC_1),
-        ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
-    assertEquals(ContextualConcept.of(TC_2),
-        ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(1)).getConcept());
+    assertEquals(ContextualConcept.of(TC_1), structuredQuery.inclusionCriteria().get(0).get(0).getConcept());
+    assertEquals(ContextualConcept.of(TC_2), structuredQuery.inclusionCriteria().get(0).get(1).getConcept());
   }
 
   @Test
@@ -179,10 +173,8 @@ class StructuredQueryTest {
         }]]}
         """, StructuredQuery.class);
 
-    assertEquals(ContextualConcept.of(TC_1),
-        ((ConceptCriterion) structuredQuery.inclusionCriteria().get(0).get(0)).getConcept());
-    assertEquals(ContextualConcept.of(TC_2),
-        ((ConceptCriterion) structuredQuery.exclusionCriteria().get(0).get(0)).getConcept());
+    assertEquals(ContextualConcept.of(TC_1), structuredQuery.inclusionCriteria().get(0).get(0).getConcept());
+    assertEquals(ContextualConcept.of(TC_2), structuredQuery.exclusionCriteria().get(0).get(0).getConcept());
   }
 
   @Test
@@ -191,7 +183,7 @@ class StructuredQueryTest {
 
     var structuredQuery = mapper.readValue("""
         {
-          "version": "http://to_be_decided.com/draft-1/schema#",
+          "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
           "display": "",
           "inclusionCriteria": [
             [
@@ -217,8 +209,6 @@ class StructuredQueryTest {
         }
         """, StructuredQuery.class);
 
-    AbstractCriterion criterion = (AbstractCriterion) structuredQuery.inclusionCriteria().get(0)
-        .get(0);
-    assertThat(criterion.timeRestriction()).isNull();
+    assertThat(structuredQuery.inclusionCriteria().get(0).get(0).timeRestriction()).isNull();
   }
 }

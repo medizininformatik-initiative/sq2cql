@@ -2,9 +2,9 @@ package de.numcodex.sq2cql.model;
 
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
-
 import de.numcodex.sq2cql.model.structured_query.ContextualConcept;
 import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

@@ -19,8 +19,12 @@ public record AndExpression(List<BooleanExpression> expressions) implements Bool
         expressions = List.copyOf(expressions);
     }
 
-    public static AndExpression of(BooleanExpression e1, BooleanExpression e2) {
-        if (e1 instanceof AndExpression) {
+    public static BooleanExpression of(BooleanExpression e1, BooleanExpression e2) {
+        if (e1 == BooleanExpression.TRUE) {
+            return e2;
+        } else if (e2 == BooleanExpression.TRUE) {
+            return e1;
+        } else if (e1 instanceof AndExpression) {
             return new AndExpression(Stream.concat(((AndExpression) e1).expressions.stream(),
                     Stream.of(requireNonNull(e2))).toList());
         } else {

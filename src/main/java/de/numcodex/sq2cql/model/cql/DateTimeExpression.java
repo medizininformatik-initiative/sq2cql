@@ -6,16 +6,16 @@ import static java.util.Objects.requireNonNull;
 
 public record DateTimeExpression(String dateTime) implements Expression {
 
-  public DateTimeExpression {
-    requireNonNull(dateTime);
-  }
+    public DateTimeExpression {
+        requireNonNull(dateTime);
+    }
 
-  public static DateTimeExpression of(String dateTime) {
-    return new DateTimeExpression(dateTime);
-  }
+    public static DateTimeExpression of(String dateTime) {
+        return new DateTimeExpression(dateTime);
+    }
 
-  @Override
-  public String print(PrintContext printContext) {
-    return "@%s".formatted(dateTime);
-  }
+    @Override
+    public String print(PrintContext printContext) {
+        return "@%s".formatted(dateTime);
+    }
 }

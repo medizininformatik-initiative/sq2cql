@@ -17,6 +17,10 @@ public record ComparatorExpression(Expression a, Comparator comparator, Expressi
         return new ComparatorExpression(a, comparator, b);
     }
 
+    public static ComparatorExpression equal(Expression a, Expression b) {
+        return new ComparatorExpression(a, Comparator.EQUAL, b);
+    }
+
     @Override
     public String print(PrintContext printContext) {
         var precedence = comparator.getPrecedence();
