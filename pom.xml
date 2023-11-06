@@ -29,7 +29,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
-        <hapi-fhir.version>6.6.2</hapi-fhir.version>
+        <hapi-fhir.version>6.8.5</hapi-fhir.version>
         <testcontainers.version>1.18.3</testcontainers.version>
         <slf4j.version>2.0.9</slf4j.version>
         <ontology.version>2.1.18-RC</ontology.version>
