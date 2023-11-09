@@ -29,7 +29,7 @@ public record CodingModifier(String path, List<TermCode> concepts) implements Si
 
     @Override
     public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
-        var codingExpr = InvocationExpression.of(InvocationExpression.of(sourceAlias, path), "coding");
+        var codingExpr = InvocationExpression.of(sourceAlias, path);
         return concepts.stream()
                 .map(concept -> codeSelector(mappingContext, concept).map(terminology ->
                         (BooleanExpression) MembershipExpression.contains(codingExpr, terminology)))

@@ -32,7 +32,7 @@ public interface Modifier {
         if ("code".equals(type)) {
             return CodeModifier.of(path, Stream.of(values).map(TermCode::fromJsonNode).map(TermCode::code).toArray(String[]::new));
         }
-        if ("coding".equals(type)) {
+        if ("Coding".equals(type)) {
             return CodingModifier.of(path, Stream.of(values).map(TermCode::fromJsonNode).toArray(TermCode[]::new));
         }
         throw new IllegalArgumentException("unknown type: " + type);

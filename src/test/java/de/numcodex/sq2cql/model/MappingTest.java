@@ -123,13 +123,13 @@ class MappingTest {
                       },
                       "resourceType": "Observation",
                       "valueFhirPath": "value",
-                      "timeRestrictionPath": "effective"
+                      "timeRestrictionFhirPath": "effective"
                     }
                     """);
 
             assertThat(mapping.key()).isEqualTo(TC_2);
             assertThat(mapping.resourceType()).isEqualTo("Observation");
-            assertThat(mapping.timeRestrictionPath()).contains("effective");
+            assertThat(mapping.timeRestrictionFhirPath()).contains("effective");
         }
 
         @Nested
@@ -267,7 +267,7 @@ class MappingTest {
                           "resourceType": "Observation",
                           "fixedCriteria": [
                             {
-                              "type": "coding",
+                              "type": "Coding",
                               "searchParameter": "verification-status",
                               "fhirPath": "verificationStatus",
                               "value": [
