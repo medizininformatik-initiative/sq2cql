@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -47,7 +48,7 @@ public class AcceptanceTest {
     private static final Logger logger = LoggerFactory.getLogger(AcceptanceTest.class);
 
     private final GenericContainer<?> blaze = new GenericContainer<>(
-            DockerImageName.parse("samply/blaze:develop"))
+            DockerImageName.parse("samply/blaze:0.23"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv("LOG_LEVEL", "debug")
             .withExposedPorts(8080)
@@ -133,6 +134,16 @@ public class AcceptanceTest {
         var report = evaluateMeasure(measureUri);
 
         assertEquals(1, report.getGroupFirstRep().getPopulationFirstRep().getCount());
+    }
+
+    @Test
+    public void allCriteriaTime() throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp("example-all-crits-time.json"), StructuredQuery.class);
+        var cql = translator.toCql(structuredQuery).print();
+        var measureUri = createMeasureAndLibrary(cql);
+        var report = evaluateMeasure(measureUri);
+
+        assertEquals(0, report.getGroupFirstRep().getPopulationFirstRep().getCount());
     }
 
     private String createMeasureAndLibrary(String cql) throws Exception {

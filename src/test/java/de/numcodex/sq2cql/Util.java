@@ -26,13 +26,15 @@ public interface Util {
             entry("http://terminology.hl7.org/CodeSystem/condition-ver-status", "cvs"),
             entry("http://hl7.org/fhir/administrative-gender", "gender"),
             entry("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes",
-                    "num-ecrf"), entry("urn:iso:std:iso:3166", "iso3166"),
+                    "num_ecrf"), entry("urn:iso:std:iso:3166", "iso3166"),
             entry("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score",
-                    "fraility-score"),
+                    "fraility_score"),
             entry("http://terminology.hl7.org/CodeSystem/consentcategorycodes", "consent"),
-            entry("urn:oid:2.16.840.1.113883.3.1937.777.24.5.1", "mide-1"),
-            entry("urn:oid:2.16.840.1.113883.6.43.1", "icd-o-3"),
-            entry("http://hl7.org/fhir/consent-provision-type", "provision-type"),
+            entry("urn:oid:2.16.840.1.113883.3.1937.777.24.5.1", "mide_1"),
+            entry("urn:oid:2.16.840.1.113883.3.1937.777.24.5.3", "consent_policy"),
+            entry("urn:oid:2.16.840.1.113883.6.43.1", "icd_o_3"),
+            entry("http://hl7.org/fhir/sid/icd-o-3", "icd_o_3_fhir"),
+            entry("http://hl7.org/fhir/consent-provision-type", "provision_type"),
             entry("http://fhir.de/CodeSystem/bfarm/ops", "oops"));
 
     private static Map<ContextualTermCode, Mapping> readMappings(ZipFile zipFile) throws IOException {
