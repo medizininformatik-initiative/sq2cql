@@ -27,12 +27,12 @@ public final class Mapping {
     private final String valueType;
     private final List<Modifier> fixedCriteria;
     private final Map<TermCode, AttributeMapping> attributeMappings;
-    private final String timeRestrictionPath;
+    private final String timeRestrictionFhirPath;
     private final TermCode primaryCode;
     private final String termCodeFhirPath;
 
     public Mapping(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria,
-                   List<AttributeMapping> attributeMappings, String timeRestrictionPath, TermCode primaryCode, String termCodeFhirPath) {
+                   List<AttributeMapping> attributeMappings, String timeRestrictionFhirPath, TermCode primaryCode, String termCodeFhirPath) {
         this.key = requireNonNull(key);
         this.resourceType = requireNonNull(resourceType);
         this.valueFhirPath = valueFhirPath;
@@ -40,7 +40,7 @@ public final class Mapping {
         this.fixedCriteria = List.copyOf(fixedCriteria);
         this.attributeMappings = (attributeMappings == null ? Map.of() : attributeMappings.stream()
                 .collect(Collectors.toMap(AttributeMapping::key, Function.identity())));
-        this.timeRestrictionPath = timeRestrictionPath;
+        this.timeRestrictionFhirPath = timeRestrictionFhirPath;
         this.primaryCode = primaryCode;
         this.termCodeFhirPath = termCodeFhirPath;
     }
@@ -63,10 +63,10 @@ public final class Mapping {
                 attributeMappings, null, null, null);
     }
 
-    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings, String timeRestrictionPath) {
+    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings, String timeRestrictionFhirPath) {
         return new Mapping(key, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
-                attributeMappings, timeRestrictionPath, null, null);
+                attributeMappings, timeRestrictionFhirPath, null, null);
     }
 
     @JsonCreator
@@ -77,7 +77,7 @@ public final class Mapping {
                              @JsonProperty("valueType") String valueType,
                              @JsonProperty("fixedCriteria") List<Modifier> fixedCriteria,
                              @JsonProperty("attributeFhirPaths") List<AttributeMapping> attributeMappings,
-                             @JsonProperty("timeRestrictionPath") String timeRestrictionPath,
+                             @JsonProperty("timeRestrictionFhirPath") String timeRestrictionFhirPath,
                              @JsonProperty("primaryCode") TermCode primaryCode,
                              @JsonProperty("termCodeFhirPath") String termCodeFhirPath) {
         var contextualTermCode = ContextualTermCode.of(context, key);
@@ -87,7 +87,7 @@ public final class Mapping {
                 valueType,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
                 attributeMappings,
-                timeRestrictionPath,
+                timeRestrictionFhirPath,
                 primaryCode,
                 termCodeFhirPath);
     }
@@ -116,8 +116,8 @@ public final class Mapping {
         return attributeMappings;
     }
 
-    public Optional<String> timeRestrictionPath() {
-        return Optional.ofNullable(timeRestrictionPath);
+    public Optional<String> timeRestrictionFhirPath() {
+        return Optional.ofNullable(timeRestrictionFhirPath);
     }
 
     /**

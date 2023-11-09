@@ -83,7 +83,7 @@ class TranslatorTest {
     static final TermCode VERIFICATION_STATUS = TermCode.of("hl7.org", "verificationStatus",
             "verificationStatus");
     static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING = AttributeMapping.of("Coding",
-            VERIFICATION_STATUS, "verificationStatus");
+            VERIFICATION_STATUS, "verificationStatus.coding");
 
     @Test
     void toCQL_Inclusion_OneDisjunctionWithOneCriterion() {
@@ -263,7 +263,7 @@ class TranslatorTest {
         var translator = Translator.of(mappingContext);
 
         assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query)).withMessage(
-                "Missing timeRestrictionPath in mapping with key ContextualTermCode[context=TermCode[system=context, code=context, display=context], termCode=TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain]].");
+                "Missing timeRestrictionFhirPath in mapping with key ContextualTermCode[context=TermCode[system=context, code=context, display=context], termCode=TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain]].");
     }
 
     @Test
@@ -356,9 +356,9 @@ class TranslatorTest {
     void toCQL_GeccoTask2() {
         var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", "value"), COPD,
                 Mapping.of(COPD, "Condition", null, null,
-                        List.of(CodingModifier.of("verificationStatus", CONFIRMED)), List.of()), G47_31,
+                        List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()), G47_31,
                 Mapping.of(G47_31, "Condition", null, null,
-                        List.of(CodingModifier.of("verificationStatus", CONFIRMED)), List.of()),
+                        List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()),
                 TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
         var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COPD), TermCodeNode.of(G47_31));
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
@@ -425,9 +425,9 @@ class TranslatorTest {
                                 ]
                             },
                             {
-                                "fhirPath": "provision.provision.code",
+                                "fhirPath": "provision.provision.code.coding",
                                 "searchParameter": "mii-provision-provision-code",
-                                "type": "coding",
+                                "type": "Coding",
                                 "value": [
                                     {
                                         "code": "2.16.840.1.113883.3.1937.777.24.5.3.5",
@@ -437,9 +437,9 @@ class TranslatorTest {
                                 ]
                             },
                             {
-                                "fhirPath": "provision.provision.code",
+                                "fhirPath": "provision.provision.code.coding",
                                 "searchParameter": "mii-provision-provision-code",
-                                "type": "coding",
+                                "type": "Coding",
                                 "value": [
                                     {
                                         "code": "2.16.840.1.113883.3.1937.777.24.5.3.2",
@@ -465,7 +465,7 @@ class TranslatorTest {
                             "system": "http://loinc.org"
                         },
                         "timeRestrictionParameter": "date",
-                        "timeRestrictionPath": "dateTime"
+                        "timeRestrictionFhirPath": "dateTime"
                     }
                 """, Mapping.class);
         var structuredQuery = mapper.readValue("""

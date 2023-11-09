@@ -176,7 +176,7 @@ public class SpecimenTest {
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
                       such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
-                    where S.collection.bodySite.coding.coding contains Code 'C44.6' from icd-o-3)
+                    where S.collection.bodySite.coding contains Code 'C44.6' from icd-o-3)
                     """, cql);
     }
 

@@ -25,7 +25,7 @@ class CodingModifierTest {
 
     @Test
     void expression() {
-        var modifier = CodingModifier.of("verificationStatus", CONFIRMED);
+        var modifier = CodingModifier.of("verificationStatus.coding", CONFIRMED);
 
         var expression = modifier.expression(MAPPING_CONTEXT, IdentifierExpression.of("C"));
 
