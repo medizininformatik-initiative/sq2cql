@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record TypeExpression(Expression expression, String typeSpecifier) implements Expression {
+public record TypeExpression(Expression<?> expression, String typeSpecifier) implements DefaultExpression {
 
     public static final int PRECEDENCE = 12;
 
@@ -13,7 +13,7 @@ public record TypeExpression(Expression expression, String typeSpecifier) implem
         requireNonNull(typeSpecifier);
     }
 
-    public static TypeExpression of(Expression expression, String typeSpecifier) {
+    public static TypeExpression of(Expression<?> expression, String typeSpecifier) {
         return new TypeExpression(expression, typeSpecifier);
     }
 

@@ -1,8 +1,8 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.cql.BooleanExpression;
+import de.numcodex.sq2cql.model.cql.Container;
+import de.numcodex.sq2cql.model.cql.DefaultExpression;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
 
@@ -13,7 +13,7 @@ import de.numcodex.sq2cql.model.cql.QueryExpression;
  */
 public interface SimpleModifier extends Modifier {
 
-    Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias);
+    Container<DefaultExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias);
 
     @Override
     default Container<QueryExpression> updateQuery(MappingContext mappingContext,

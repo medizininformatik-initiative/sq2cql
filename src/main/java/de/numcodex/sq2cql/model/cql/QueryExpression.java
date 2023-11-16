@@ -4,6 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -11,7 +12,8 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
 public record QueryExpression(SourceClause sourceClause, List<QueryInclusionClause> queryInclusionClauses,
-                              WhereClause whereClause, ReturnClause returnClause) implements Expression {
+                              WhereClause whereClause,
+                              ReturnClause returnClause) implements Expression<QueryExpression> {
 
     public QueryExpression {
         requireNonNull(sourceClause);
@@ -20,19 +22,15 @@ public record QueryExpression(SourceClause sourceClause, List<QueryInclusionClau
     }
 
     public static QueryExpression of(SourceClause sourceClause) {
-        return new QueryExpression(sourceClause, List.of(), WhereClause.of(BooleanExpression.TRUE), null);
+        return new QueryExpression(sourceClause, List.of(), WhereClause.of(Expression.TRUE), null);
     }
 
     public static QueryExpression of(SourceClause sourceClause, WhereClause whereClause) {
         return new QueryExpression(sourceClause, List.of(), whereClause, null);
     }
 
-    public static QueryExpression of(SourceClause sourceClause, WhereClause whereClause, ReturnClause returnClause) {
-        return new QueryExpression(sourceClause, List.of(), whereClause, returnClause);
-    }
-
     public static QueryExpression of(SourceClause sourceClause, ReturnClause returnClause) {
-        return new QueryExpression(sourceClause, List.of(), WhereClause.of(BooleanExpression.TRUE), returnClause);
+        return new QueryExpression(sourceClause, List.of(), WhereClause.of(Expression.TRUE), returnClause);
     }
 
     public QueryExpression appendQueryInclusionClause(QueryInclusionClause clause) {
@@ -41,7 +39,7 @@ public record QueryExpression(SourceClause sourceClause, List<QueryInclusionClau
         return new QueryExpression(sourceClause, clauses, whereClause, returnClause);
     }
 
-    public QueryExpression updateWhereClauseExpr(Function<BooleanExpression, BooleanExpression> mapper) {
+    public QueryExpression updateWhereClauseExpr(Function<DefaultExpression, DefaultExpression> mapper) {
         return new QueryExpression(sourceClause, queryInclusionClauses, whereClause.map(mapper), returnClause);
     }
 
@@ -58,11 +56,17 @@ public record QueryExpression(SourceClause sourceClause, List<QueryInclusionClau
                 : printContext.parenthesizeZero(clauses.stream().map(context::print).collect(joining("\n" + context.getIndent())));
     }
 
+    @Override
+    public QueryExpression withIncrementedSuffixes(Map<String, Integer> increments) {
+        //TODO: decent into clauses
+        return this;
+    }
+
     private List<Clause> clauses() {
         var builder = Stream.<Clause>builder();
         builder.add(sourceClause);
         queryInclusionClauses.forEach(builder);
-        if (whereClause.expression() != BooleanExpression.TRUE) builder.add(whereClause);
+        if (whereClause.expression() != Expression.TRUE) builder.add(whereClause);
         if (returnClause != null) builder.add(returnClause);
         return builder.build().toList();
     }

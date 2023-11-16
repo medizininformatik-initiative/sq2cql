@@ -1,6 +1,5 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.*;
 
@@ -23,13 +22,13 @@ public record RangeModifier(String path, BigDecimal lowerBound, BigDecimal upper
     }
 
     @Override
-    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
+    public Container<DefaultExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
         var castExpr = TypeExpression.of(InvocationExpression.of(sourceAlias, path), "Quantity");
         return Container.of(BetweenExpression.of(castExpr, quantityExpression(lowerBound, unit),
                 quantityExpression(upperBound, unit)));
     }
 
-    private Expression quantityExpression(BigDecimal value, String unit) {
+    private DefaultExpression quantityExpression(BigDecimal value, String unit) {
         return unit == null ? QuantityExpression.of(value) : QuantityExpression.of(value, unit);
     }
 }

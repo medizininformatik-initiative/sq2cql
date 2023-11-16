@@ -12,7 +12,7 @@ class QueryExpressionTest {
     class Print {
 
         private final SourceClause sourceClause = SourceClause.of(AliasedQuerySource.of(
-                RetrieveExpression.of("Observation"), IdentifierExpression.of("O")));
+                RetrieveExpression.of("Observation"), StandardIdentifierExpression.of("O")));
 
         @Test
         void sourceOnly() {
@@ -25,7 +25,7 @@ class QueryExpressionTest {
 
         @Test
         void withWhereClause() {
-            var expr = QueryExpression.of(sourceClause, WhereClause.of(BooleanExpression.FALSE));
+            var expr = QueryExpression.of(sourceClause, WhereClause.of(Expression.FALSE));
 
             var s = expr.print(PrintContext.ZERO);
 
@@ -36,7 +36,7 @@ class QueryExpressionTest {
 
         @Test
         void withReturnClause() {
-            var expr = QueryExpression.of(sourceClause, ReturnClause.of(BooleanExpression.TRUE));
+            var expr = QueryExpression.of(sourceClause, ReturnClause.of(Expression.TRUE));
 
             var s = expr.print(PrintContext.ZERO);
 
@@ -47,9 +47,9 @@ class QueryExpressionTest {
 
         @Test
         void withWithClause() {
-            var withSource = AliasedQuerySource.of(RetrieveExpression.of("Condition"), IdentifierExpression.of("C"));
-            var withClause = WithClause.of(withSource, BooleanExpression.TRUE);
-            var expr = QueryExpression.of(sourceClause, WhereClause.of(BooleanExpression.FALSE)).appendQueryInclusionClause(withClause);
+            var withSource = AliasedQuerySource.of(RetrieveExpression.of("Condition"), StandardIdentifierExpression.of("C"));
+            var withClause = WithClause.of(withSource, Expression.TRUE);
+            var expr = QueryExpression.of(sourceClause, WhereClause.of(Expression.FALSE)).appendQueryInclusionClause(withClause);
 
             var s = expr.print(PrintContext.ZERO);
 
@@ -62,7 +62,7 @@ class QueryExpressionTest {
 
         @Test
         void insideExists() {
-            var expr = ExistsExpression.of(QueryExpression.of(sourceClause, WhereClause.of(BooleanExpression.FALSE)));
+            var expr = ExistsExpression.of(QueryExpression.of(sourceClause, WhereClause.of(Expression.FALSE)));
 
             var s = expr.print(PrintContext.ZERO);
 

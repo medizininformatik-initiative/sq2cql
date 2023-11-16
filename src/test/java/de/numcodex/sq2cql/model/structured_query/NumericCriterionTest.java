@@ -1,25 +1,20 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
-import static de.numcodex.sq2cql.model.common.Comparator.EQUAL;
-import static de.numcodex.sq2cql.model.common.Comparator.GREATER_THAN;
-import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
+import static de.numcodex.sq2cql.Assertions.assertThat;
+import static de.numcodex.sq2cql.model.common.Comparator.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Alexander Kiel
@@ -30,26 +25,24 @@ class NumericCriterionTest {
     static final ContextualTermCode PLATELETS = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "26515-7", "Platelets"));
     static final ContextualTermCode SOFA_SCORE = ContextualTermCode.of(CONTEXT, TermCode.of("https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "06", "SOFA-Score"));
     static final ContextualTermCode OTHER_VALUE_PATH = ContextualTermCode.of(CONTEXT, TermCode.of("foo", "other-value-path", ""));
-    static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
-    static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
-    static final ContextualTermCode AGE = ContextualTermCode.of(CONTEXT, TermCode.of("http://snomed.info/sct", "424144002", "Current chronological age (observable entity)"));
-
+    static final MappingContext MAPPING_CONTEXT;
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
             "http://snomed.info/sct", "snomed",
             "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes", "ecrf",
             "foo", "foo");
+    static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
+    static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
+    static final ContextualTermCode AGE = ContextualTermCode.of(CONTEXT, TermCode.of("http://snomed.info/sct", "424144002", "Current chronological age (observable entity)"));
 
-    static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
-            PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-            SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(),
-                    List.of(AttributeMapping.of("code", STATUS, "status"))),
-            OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
-    ), null, CODE_SYSTEM_ALIASES);
-
-    static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
-    static final CodeSystemDefinition ECRF_CODE_SYSTEM_DEF = CodeSystemDefinition.of("ecrf", "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes");
-    static final CodeSystemDefinition FOO_CODE_SYSTEM_DEF = CodeSystemDefinition.of("foo", "foo");
+    static {
+        MAPPING_CONTEXT = MappingContext.of(Map.of(
+                PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
+                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(),
+                        List.of(AttributeMapping.of("code", STATUS, "status"))),
+                OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
+        ), null, CODE_SYSTEM_ALIASES);
+    }
 
     @Test
     void fromJson() throws Exception {
@@ -120,11 +113,19 @@ class NumericCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '26515-7' from loinc] O
-                          where O.value as Quantity < 50 'g/dl')""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                codesystem loinc: 'http://loinc.org'
+                  
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '26515-7' from loinc] O
+                    where O.value as Quantity < 50 'g/dl')
+                """);
     }
 
     @Test
@@ -133,11 +134,19 @@ class NumericCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '06' from ecrf] O
-                          where O.value as Quantity = 6)""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                codesystem ecrf: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes'
+                  
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '06' from ecrf] O
+                    where O.value as Quantity = 6)
+                """);
     }
 
     @Test
@@ -146,26 +155,42 @@ class NumericCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code 'other-value-path' from foo] O
-                          where O.other as Quantity = 1)""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(FOO_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                codesystem foo: 'foo'
+                  
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code 'other-value-path' from foo] O
+                    where O.other as Quantity = 1)
+                """);
     }
 
     @Test
     void toCql_WithStatusAttributeFilter() {
         var criterion = NumericCriterion.of(ContextualConcept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6))
-            .appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
+                .appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '06' from ecrf] O
-                          where O.value as Quantity = 6 and
-                            O.status = 'final')""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                codesystem ecrf: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes'
+                  
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '06' from ecrf] O
+                    where O.value as Quantity = 6 and
+                      O.status = 'final')
+                """);
     }
 
     @Test
@@ -178,12 +203,20 @@ class NumericCriterionTest {
 
         var container = criterion.toCql(mappingContext);
 
-        assertEquals("""
-                        exists (from [Observation: Code '06' from ecrf] O
-                          where O.value as Quantity = 6 and
-                            O.status = 'final')""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(ECRF_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                codesystem ecrf: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes'
+                  
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '06' from ecrf] O
+                    where O.value as Quantity = 6 and
+                      O.status = 'final')
+                """);
     }
 
     @Test
@@ -195,9 +228,15 @@ class NumericCriterionTest {
 
         var container = criterion.toCql(mappingContext);
 
-        assertEquals("""
-                        AgeInYears() = 16""",
-                PrintContext.ZERO.print(container));
-        assertTrue(container.getCodeSystemDefinitions().isEmpty());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  AgeInYears() = 16
+                """);
     }
 }

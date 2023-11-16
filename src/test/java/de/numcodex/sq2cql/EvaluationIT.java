@@ -13,11 +13,7 @@ import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
 import de.numcodex.sq2cql.model.structured_query.NumericCriterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Library;
-import org.hl7.fhir.r4.model.Measure;
-import org.hl7.fhir.r4.model.MeasureReport;
-import org.hl7.fhir.r4.model.Parameters;
+import org.hl7.fhir.r4.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -53,7 +49,7 @@ public class EvaluationIT {
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of("http://loinc.org", "loinc");
 
     @Container
-    private final GenericContainer<?> blaze = new GenericContainer<>(DockerImageName.parse("samply/blaze:0.23"))
+    private final GenericContainer<?> blaze = new GenericContainer<>(DockerImageName.parse("samply/blaze:pr-1270"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withExposedPorts(8080)
             .waitingFor(Wait.forHttp("/health").forStatusCode(200))

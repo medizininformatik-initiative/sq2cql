@@ -1,11 +1,10 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.cql.IdentifierExpression;
+import de.numcodex.sq2cql.model.cql.StandardIdentifierExpression;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static de.numcodex.sq2cql.Assertions.assertThat;
 
 class CodeModifierTest {
 
@@ -13,17 +12,35 @@ class CodeModifierTest {
     void expression_OneCode() {
         var modifier = CodeModifier.of("status", "final");
 
-        var expression = modifier.expression(MappingContext.of(), IdentifierExpression.of("O"));
+        var expression = modifier.expression(MappingContext.of(), StandardIdentifierExpression.of("O"));
 
-        assertEquals("O.status = 'final'", PrintContext.ZERO.print(expression));
+        assertThat(expression.moveToPatientContext("Criterion")).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  O.status = 'final'
+                """);
     }
 
     @Test
     void expression_TwoCodes() {
         var modifier = CodeModifier.of("status", "completed", "in-progress");
 
-        var expression = modifier.expression(MappingContext.of(), IdentifierExpression.of("P"));
+        var expression = modifier.expression(MappingContext.of(), StandardIdentifierExpression.of("P"));
 
-        assertEquals("P.status in { 'completed', 'in-progress' }", PrintContext.ZERO.print(expression));
+        assertThat(expression.moveToPatientContext("Criterion")).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  P.status in { 'completed', 'in-progress' }
+                """);
     }
 }

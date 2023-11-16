@@ -1,6 +1,5 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.*;
@@ -77,8 +76,7 @@ public final class RangeCriterion extends AbstractCriterion<RangeCriterion> {
     }
 
     @Override
-    Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
-                                           IdentifierExpression sourceAlias) {
+    Container<DefaultExpression> valueExpr(MappingContext mappingContext, Mapping mapping, IdentifierExpression sourceAlias) {
         if (mapping.key().termCode().equals(AgeFunctionMapping.AGE)) {
             return ageExpr();
         }
@@ -88,7 +86,7 @@ public final class RangeCriterion extends AbstractCriterion<RangeCriterion> {
                 quantityExpression(upperBound, unit)));
     }
 
-    private Container<BooleanExpression> ageExpr() {
+    private Container<DefaultExpression> ageExpr() {
         var ageFunc = AgeFunctionMapping.getAgeFunction(unit);
         var lower = QuantityExpression.of(lowerBound);
         var upper = QuantityExpression.of(upperBound);
@@ -97,7 +95,7 @@ public final class RangeCriterion extends AbstractCriterion<RangeCriterion> {
     }
 
 
-    private Expression quantityExpression(BigDecimal value, String unit) {
+    private DefaultExpression quantityExpression(BigDecimal value, String unit) {
         return unit == null ? QuantityExpression.of(value) : QuantityExpression.of(value, unit);
     }
 }

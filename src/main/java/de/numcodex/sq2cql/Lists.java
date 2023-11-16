@@ -1,8 +1,8 @@
 package de.numcodex.sq2cql;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * List utils.
@@ -11,7 +11,15 @@ import java.util.stream.Stream;
  */
 public interface Lists {
 
+    static <T> List<T> append(Collection<T> a, T b) {
+        var newList = new ArrayList<>(a);
+        newList.add(b);
+        return List.copyOf(newList);
+    }
+
     static <T> List<T> concat(Collection<T> a, Collection<T> b) {
-        return Stream.concat(a.stream(), b.stream()).toList();
+        var newList = new ArrayList<>(a);
+        newList.addAll(b);
+        return List.copyOf(newList);
     }
 }

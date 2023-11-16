@@ -1,20 +1,18 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
+import static de.numcodex.sq2cql.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -25,21 +23,20 @@ class RangeCriterionTest {
     static final TermCode CONTEXT = TermCode.of("context", "context", "context");
     static final ContextualTermCode PLATELETS = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "26515-7", "Platelets"));
     static final ContextualTermCode OTHER_VALUE_PATH = ContextualTermCode.of(CONTEXT, TermCode.of("foo", "other-value-path", ""));
+    static final MappingContext MAPPING_CONTEXT;
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
-
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
             "foo", "foo");
 
-    static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
-            PLATELETS, Mapping.of(PLATELETS, "Observation", "value", null, List.of(),
-                    List.of(AttributeMapping.of("code", STATUS, "status"))),
-            OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
-    ), null, CODE_SYSTEM_ALIASES);
-
-    static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc", "http://loinc.org");
-    static final CodeSystemDefinition FOO_CODE_SYSTEM_DEF = CodeSystemDefinition.of("foo", "foo");
+    static {
+        MAPPING_CONTEXT = MappingContext.of(Map.of(
+                PLATELETS, Mapping.of(PLATELETS, "Observation", "value", null, List.of(),
+                        List.of(AttributeMapping.of("code", STATUS, "status"))),
+                OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
+        ), null, CODE_SYSTEM_ALIASES);
+    }
 
     @Test
     void fromJson() throws Exception {
@@ -109,11 +106,19 @@ class RangeCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '26515-7' from loinc] O
-                          where O.value as Quantity between 20 'g/dl' and 30 'g/dl')""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem loinc: 'http://loinc.org'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '26515-7' from loinc] O
+                    where O.value as Quantity between 20 'g/dl' and 30 'g/dl')
+                """);
     }
 
     @Test
@@ -122,11 +127,19 @@ class RangeCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code 'other-value-path' from foo] O
-                          where O.other as Quantity between 1 and 2)""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(FOO_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem foo: 'foo'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code 'other-value-path' from foo] O
+                    where O.other as Quantity between 1 and 2)
+                """);
     }
 
     @Test
@@ -136,12 +149,20 @@ class RangeCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '26515-7' from loinc] O
-                          where O.value as Quantity between 20 'g/dl' and 30 'g/dl' and
-                            O.status = 'final')""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem loinc: 'http://loinc.org'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '26515-7' from loinc] O
+                    where O.value as Quantity between 20 'g/dl' and 30 'g/dl' and
+                      O.status = 'final')
+                """);
     }
 
     @Test
@@ -154,11 +175,19 @@ class RangeCriterionTest {
 
         var container = criterion.toCql(mappingContext);
 
-        assertEquals("""
-                        exists (from [Observation: Code '26515-7' from loinc] O
-                          where O.value as Quantity between 20 'g/dl' and 30 'g/dl' and
-                            O.status = 'final')""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem loinc: 'http://loinc.org'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '26515-7' from loinc] O
+                    where O.value as Quantity between 20 'g/dl' and 30 'g/dl' and
+                      O.status = 'final')
+                """);
     }
 }

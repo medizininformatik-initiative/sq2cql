@@ -4,13 +4,13 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record ReturnClause(Expression expression) implements Clause {
+public record ReturnClause(Expression<?> expression) implements Clause {
 
     public ReturnClause {
         requireNonNull(expression);
     }
 
-    public static ReturnClause of(Expression expression) {
+    public static ReturnClause of(Expression<?> expression) {
         return new ReturnClause(expression);
     }
 

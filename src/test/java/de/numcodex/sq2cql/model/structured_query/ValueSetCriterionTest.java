@@ -2,22 +2,17 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static de.numcodex.sq2cql.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Alexander Kiel
@@ -36,34 +31,29 @@ class ValueSetCriterionTest {
     static final TermCode TNM_P_TC = TermCode.of("http://loinc.org", "21902-2", "Tumor size.pathology Cancer");
     static final ContextualTermCode TNM_C = ContextualTermCode.of(CONTEXT, TNM_C_TC);
     static final ContextualTermCode TNM_P = ContextualTermCode.of(CONTEXT, TNM_P_TC);
+    static final MappingContext MAPPING_CONTEXT;
     static final TermCode LA3649_6 = TermCode.of("http://loinc.org", "LA3649-6", "Stage IVB");
     static final TermCode STATUS = TermCode.of("http://hl7.org/fhir", "observation-status", "observation-status");
     static final TermCode FINAL = TermCode.of("http://hl7.org/fhir/observation-status", "final", "final");
     static final ContextualTermCode ETHNIC_GROUP = ContextualTermCode.of(CONTEXT, TermCode.of("http://snomed.info/sct", "372148003", "Ethnic group (ethnic group)"));
     static final TermCode MIXED = TermCode.of("http://snomed.info/sct", "26242008",
-        "Mixed (qualifier value)");
+            "Mixed (qualifier value)");
     static final ContextualTermCode GENDER = ContextualTermCode.of(CONTEXT, TermCode.of("http://snomed.info/sct", "263495000", "Gender"));
-
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
             "http://loinc.org", "loinc",
             "http://snomed.info/sct", "snomed",
             "http://hl7.org/fhir/administrative-gender", "gender");
 
-    static final MappingContext MAPPING_CONTEXT = MappingContext.of(Map.of(
-            COVID, Mapping.of(COVID, "Observation", "value", null, List.of(),
-                    List.of(AttributeMapping.of("code", STATUS, "status"))),
-            SEX, Mapping.of(SEX, "Observation", "value"),
-            FINDING, Mapping.of(FINDING, "Condition", "severity"),
-            TNM_C, Mapping.of(TNM_C, "Observation", "value"),
-            TNM_P, Mapping.of(TNM_P, "Observation", "value")
-    ), null, CODE_SYSTEM_ALIASES);
-
-    static final CodeSystemDefinition LOINC_CODE_SYSTEM_DEF = CodeSystemDefinition.of("loinc",
-            "http://loinc.org");
-    static final CodeSystemDefinition SNOMED_CODE_SYSTEM_DEF = CodeSystemDefinition.of("snomed",
-            "http://snomed.info/sct");
-    static final CodeSystemDefinition GENDER_CODE_SYSTEM_DEF = CodeSystemDefinition.of("gender",
-            "http://hl7.org/fhir/administrative-gender");
+    static {
+        MAPPING_CONTEXT = MappingContext.of(Map.of(
+                COVID, Mapping.of(COVID, "Observation", "value", null, List.of(),
+                        List.of(AttributeMapping.of("code", STATUS, "status"))),
+                SEX, Mapping.of(SEX, "Observation", "value"),
+                FINDING, Mapping.of(FINDING, "Condition", "severity"),
+                TNM_C, Mapping.of(TNM_C, "Observation", "value"),
+                TNM_P, Mapping.of(TNM_P, "Observation", "value")
+        ), null, CODE_SYSTEM_ALIASES);
+    }
 
     @Test
     void fromJson_WithTwoSelectedConcepts() throws Exception {
@@ -301,11 +291,20 @@ class ValueSetCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '94500-6' from loinc] O
-                          where O.value.coding contains Code 'positive' from snomed)""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem loinc: 'http://loinc.org'
+                codesystem snomed: 'http://snomed.info/sct'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '94500-6' from loinc] O
+                    where O.value.coding contains Code 'positive' from snomed)
+                """);
     }
 
     @Test
@@ -314,13 +313,21 @@ class ValueSetCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '21908-9' from loinc] O
-                          where O.value.coding contains Code 'LA3649-6' from loinc) or
-                        exists (from [Observation: Code '21902-2' from loinc] O
-                          where O.value.coding contains Code 'LA3649-6' from loinc)""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem loinc: 'http://loinc.org'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '21908-9' from loinc] O
+                    where O.value.coding contains Code 'LA3649-6' from loinc) or
+                  exists (from [Observation: Code '21902-2' from loinc] O
+                    where O.value.coding contains Code 'LA3649-6' from loinc)
+                """);
     }
 
     @Test
@@ -329,12 +336,21 @@ class ValueSetCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '76689-9' from loinc] O
-                          where O.value.coding contains Code 'male' from gender or
-                            O.value.coding contains Code 'female' from gender)""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, GENDER_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem gender: 'http://hl7.org/fhir/administrative-gender'
+                codesystem loinc: 'http://loinc.org'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '76689-9' from loinc] O
+                    where O.value.coding contains Code 'male' from gender or
+                      O.value.coding contains Code 'female' from gender)
+                """);
     }
 
     @Test
@@ -343,89 +359,138 @@ class ValueSetCriterionTest {
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Condition: Code '404684003' from snomed] C
-                          where C.severity.coding contains Code '24484000' from snomed)""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem snomed: 'http://snomed.info/sct'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Condition: Code '404684003' from snomed] C
+                    where C.severity.coding contains Code '24484000' from snomed)
+                """);
     }
 
     @Test
     void toCql_WithAttributeFilter() {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(COVID), POSITIVE)
-            .appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
+                .appendAttributeFilter(ValueSetAttributeFilter.of(STATUS, FINAL));
 
         var container = criterion.toCql(MAPPING_CONTEXT);
 
-        assertEquals("""
-                        exists (from [Observation: Code '94500-6' from loinc] O
-                          where O.value.coding contains Code 'positive' from snomed and
-                            O.status = 'final')""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem loinc: 'http://loinc.org'
+                codesystem snomed: 'http://snomed.info/sct'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '94500-6' from loinc] O
+                    where O.value.coding contains Code 'positive' from snomed and
+                      O.status = 'final')
+                """);
     }
 
     @Test
     void toCql_WithFixedCriteria() {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(COVID), POSITIVE);
         var mappingContext = MappingContext.of(Map.of(
-            COVID, Mapping.of(COVID, "Observation", "value", null,
-                List.of(CodeModifier.of("status", "final")),
-                List.of())
+                COVID, Mapping.of(COVID, "Observation", "value", null,
+                        List.of(CodeModifier.of("status", "final")),
+                        List.of())
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
-        assertEquals("""
-                        exists (from [Observation: Code '94500-6' from loinc] O
-                          where O.value.coding contains Code 'positive' from snomed and
-                            O.status = 'final')""",
-                PrintContext.ZERO.print(container));
-        assertEquals(Set.of(LOINC_CODE_SYSTEM_DEF, SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                                                    
+                codesystem loinc: 'http://loinc.org'
+                codesystem snomed: 'http://snomed.info/sct'
+                  
+                context Patient
+                                
+                define Criterion:
+                  exists (from [Observation: Code '94500-6' from loinc] O
+                    where O.value.coding contains Code 'positive' from snomed and
+                      O.status = 'final')
+                """);
     }
 
     @Test
     void toCql_WithCodingValueTypeOnPatient() {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(ETHNIC_GROUP), MIXED);
         var mappingContext = MappingContext.of(Map.of(
-            ETHNIC_GROUP, Mapping.of(ETHNIC_GROUP, "Patient",
-                "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first()",
-                "Coding")
+                ETHNIC_GROUP, Mapping.of(ETHNIC_GROUP, "Patient",
+                        "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first()",
+                        "Coding")
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
-        assertEquals(
-            "Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first() contains Code '26242008' from snomed",
-            PrintContext.ZERO.print(container));
-        assertEquals(Set.of(SNOMED_CODE_SYSTEM_DEF), container.getCodeSystemDefinitions());
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                codesystem snomed: 'http://snomed.info/sct'
+                                                    
+                context Patient
+                                
+                define Criterion:
+                  Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first() contains Code '26242008' from snomed
+                """);
     }
 
     @Test
     void toCql_WithPatientGender() {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(GENDER), MALE);
         var mappingContext = MappingContext.of(Map.of(
-            GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
+                GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
-        assertThat(PrintContext.ZERO.print(container)).isEqualTo("Patient.gender = 'male'");
-        assertThat(container.getCodeSystemDefinitions()).isEmpty();
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                context Patient
+                                
+                define Criterion:
+                  Patient.gender = 'male'
+                """);
     }
 
     @Test
     void toCql_WithPatientGender_TwoConcepts() {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(GENDER), MALE, FEMALE);
         var mappingContext = MappingContext.of(Map.of(
-            GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
+                GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
-        assertThat(PrintContext.ZERO.print(container)).isEqualTo("""
-            Patient.gender = 'male' or
-            Patient.gender = 'female'""");
-        assertThat(container.getCodeSystemDefinitions()).isEmpty();
+        assertThat(container).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                         
+                context Patient
+                                
+                define Criterion:
+                  Patient.gender = 'male' or
+                  Patient.gender = 'female'
+                """);
     }
 }

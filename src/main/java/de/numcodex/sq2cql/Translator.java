@@ -1,19 +1,23 @@
 package de.numcodex.sq2cql;
 
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.cql.*;
+import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
+import de.numcodex.sq2cql.model.cql.Container;
+import de.numcodex.sq2cql.model.cql.DefaultExpression;
 import de.numcodex.sq2cql.model.structured_query.Criterion;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import de.numcodex.sq2cql.model.structured_query.TranslationException;
 
 import java.util.List;
-import java.util.stream.Stream;
+
+import static de.numcodex.sq2cql.model.cql.Container.AND;
+import static de.numcodex.sq2cql.model.cql.Container.AND_NOT;
+import static java.util.Objects.requireNonNull;
 
 /**
  * The translator from Structured Query to CQL.
  * <p>
- * It needs {@code mappings} and will produce a CQL {@link Library} by calling {@link
- * #toCql(StructuredQuery) toCql}.
+ * It needs {@code mappings} and will produce a CQL {@link Container} by calling {@link #toCql(StructuredQuery) toCql}.
  * <p>
  * Instances are immutable and thread-safe.
  *
@@ -21,15 +25,10 @@ import java.util.stream.Stream;
  */
 public class Translator {
 
-    public static final ExpressionDefinition IN_INITIAL_POPULATION = ExpressionDefinition
-            .of("InInitialPopulation",
-                    AndExpression.of(IdentifierExpression.of("Inclusion"), NotExpression
-                            .of(IdentifierExpression.of("Exclusion"))));
-
     private final MappingContext mappingContext;
 
     private Translator(MappingContext mappingContext) {
-        this.mappingContext = mappingContext;
+        this.mappingContext = requireNonNull(mappingContext);
     }
 
     /**
@@ -50,51 +49,23 @@ public class Translator {
         return new Translator(mappingContext);
     }
 
-    private static Library inclusionOnlyLibrary(Container<BooleanExpression> inclusionExpr) {
-        assert inclusionExpr.getExpression().isPresent();
-        var unfilteredContext = Context.of("Unfiltered",
-                List.copyOf(inclusionExpr.getUnfilteredDefinitions()));
-        var patientContext = Context.of("Patient", Stream.concat(inclusionExpr.getPatientDefinitions().stream(), Stream.of(
-                ExpressionDefinition.of("InInitialPopulation", inclusionExpr.getExpression().get()))).toList());
-        return Library.of(inclusionExpr.getCodeSystemDefinitions(),
-                Stream.of(unfilteredContext, patientContext)
-                        .filter(context -> !context.expressionDefinitions().isEmpty()).toList());
-    }
-
-    private static Library library(Container<BooleanExpression> inclusionExpr,
-                                   Container<BooleanExpression> exclusionExpr) {
-        assert inclusionExpr.getExpression().isPresent();
-        assert exclusionExpr.getExpression().isPresent();
-        var unfilteredContext = Context.of("Unfiltered", inclusionExpr.concatUnfilteredDefinitions(exclusionExpr).toList());
-        var patientContext = Context.of("Patient",
-                Stream.concat(inclusionExpr.concatPatientDefinitions(exclusionExpr),
-                        Stream.of(ExpressionDefinition.of("Inclusion", inclusionExpr.getExpression().get()),
-                                ExpressionDefinition.of("Exclusion", exclusionExpr.getExpression().get()),
-                                IN_INITIAL_POPULATION)).toList());
-        return Library.of(Sets.union(inclusionExpr.getCodeSystemDefinitions(),
-                exclusionExpr.getCodeSystemDefinitions()), Stream.of(unfilteredContext, patientContext)
-                .filter(context -> !context.expressionDefinitions().isEmpty()).toList());
-    }
-
     /**
-     * Translates the given {@code structuredQuery} into a CQL {@link Library}.
+     * Translates the given {@code structuredQuery} into a CQL {@link Container}.
      *
      * @param structuredQuery the Structured Query to translate
-     * @return the translated CQL {@link Library}
+     * @return the translated CQL {@link Container}
      * @throws TranslationException if the given {@code structuredQuery} can't be translated into a
-     *                              CQL {@link Library}
+     *                              CQL {@link Container}
      */
-    public Library toCql(StructuredQuery structuredQuery) {
-        Container<BooleanExpression> inclusionExpr = inclusionExpr(structuredQuery.inclusionCriteria());
-        Container<BooleanExpression> exclusionExpr = exclusionExpr(structuredQuery.exclusionCriteria());
-
-        if (inclusionExpr.isEmpty()) {
-            throw new IllegalStateException("Inclusion criteria lead to empty inclusion expression.");
-        }
+    public Container<DefaultExpression> toCql(StructuredQuery structuredQuery) {
+        var inclusionExpr = inclusionExpr(structuredQuery.inclusionCriteria());
+        var exclusionExpr = exclusionExpr(structuredQuery.exclusionCriteria());
 
         return exclusionExpr.isEmpty()
-                ? inclusionOnlyLibrary(inclusionExpr)
-                : library(inclusionExpr, exclusionExpr);
+                ? inclusionExpr.moveToPatientContext("InInitialPopulation")
+                : AND_NOT.apply(inclusionExpr.moveToPatientContext("Inclusion"),
+                        exclusionExpr.moveToPatientContext("Exclusion"))
+                .moveToPatientContext("InInitialPopulation");
     }
 
     /**
@@ -104,13 +75,12 @@ public class Translator {
      * @return a {@link Container} of the boolean inclusion expression together with the used {@link
      * CodeSystemDefinition CodeSystemDefinitions}
      */
-    private Container<BooleanExpression> inclusionExpr(List<List<Criterion>> criteria) {
-        return criteria.stream().map(this::orExpr).reduce(Container.empty(), Container.AND);
+    private Container<DefaultExpression> inclusionExpr(List<List<Criterion>> criteria) {
+        return criteria.stream().map(this::orExpr).reduce(Container.empty(), AND);
     }
 
-    private Container<BooleanExpression> orExpr(List<Criterion> criteria) {
-        return criteria.stream().map(c -> c.toCql(mappingContext))
-                .reduce(Container.empty(), Container.OR);
+    private Container<DefaultExpression> orExpr(List<Criterion> criteria) {
+        return criteria.stream().map(c -> c.toCql(mappingContext)).reduce(Container.empty(), Container.OR);
     }
 
     /**
@@ -120,12 +90,12 @@ public class Translator {
      * @return a {@link Container} of the boolean exclusion expression together with the used {@link
      * CodeSystemDefinition CodeSystemDefinitions}
      */
-    private Container<BooleanExpression> exclusionExpr(List<List<Criterion>> criteria) {
+    private Container<DefaultExpression> exclusionExpr(List<List<Criterion>> criteria) {
         return criteria.stream().map(this::andExpr).reduce(Container.empty(), Container.OR);
     }
 
-    private Container<BooleanExpression> andExpr(List<Criterion> criteria) {
+    private Container<DefaultExpression> andExpr(List<Criterion> criteria) {
         return criteria.stream().map(c -> c.toCql(mappingContext))
-                .reduce(Container.empty(), Container.AND);
+                .reduce(Container.empty(), AND);
     }
 }

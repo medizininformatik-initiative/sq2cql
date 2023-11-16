@@ -9,8 +9,8 @@ class ExpressionDefinitionTest {
 
     @Test
     void print_query() {
-        var sourceClause = SourceClause.of(AliasedQuerySource.of(RetrieveExpression.of("Observation"), IdentifierExpression.of("O")));
-        var expr = ExpressionDefinition.of("foo-bar", QueryExpression.of(sourceClause, WhereClause.of(BooleanExpression.TRUE)));
+        var sourceClause = SourceClause.of(AliasedQuerySource.of(RetrieveExpression.of("Observation"), StandardIdentifierExpression.of("O")));
+        var expr = ExpressionDefinition.of("foo-bar", QueryExpression.of(sourceClause, WhereClause.of(Expression.TRUE)));
 
         var s = expr.print(PrintContext.ZERO);
 

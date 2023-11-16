@@ -1,6 +1,5 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.*;
@@ -28,14 +27,14 @@ public record ReferenceModifier(String path, String targetType, List<Criterion> 
                 .moveToPatientContext(referenceExprName())
                 .map(referencesExprName -> {
                     var referenceExpr = InvocationExpression.of(query.sourceAlias(), path);
-                    var alias = IdentifierExpression.of(targetType.substring(0, 1));
+                    var alias = StandardIdentifierExpression.of(targetType.substring(0, 1));
                     var ref = AdditionExpressionTerm.of(StringLiteralExpression.of(targetType + "/"), InvocationExpression.of(alias, "id"));
                     var comparatorExpr = ComparatorExpression.equal(referenceExpr, ref);
                     return query.appendQueryInclusionClause(WithClause.of(AliasedQuerySource.of(referencesExprName, alias), comparatorExpr));
                 }));
     }
 
-    private Container<Expression> getReferenceExpr(MappingContext mappingContext) {
+    private Container<DefaultExpression> getReferenceExpr(MappingContext mappingContext) {
         return criteria.stream()
                 .map(criterion -> criterion.toReferencesCql(mappingContext))
                 .reduce(Container.empty(), Container.UNION);

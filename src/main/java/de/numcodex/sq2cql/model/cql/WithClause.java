@@ -4,14 +4,14 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record WithClause(AliasedQuerySource source, Expression expression) implements QueryInclusionClause {
+public record WithClause(AliasedQuerySource source, Expression<?> expression) implements QueryInclusionClause {
 
     public WithClause {
         requireNonNull(source);
         requireNonNull(expression);
     }
 
-    public static WithClause of(AliasedQuerySource source, Expression expression) {
+    public static WithClause of(AliasedQuerySource source, Expression<?> expression) {
         return new WithClause(source, expression);
     }
 

@@ -2,11 +2,12 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
+import java.util.Map;
+
 import static java.util.Objects.requireNonNull;
 
-public record OverlapsIntervalOperatorPhrase(Expression leftInterval,
-                                             Expression rightInterval) implements
-        BooleanExpression {
+public record OverlapsIntervalOperatorPhrase(Expression<?> leftInterval, Expression<?> rightInterval) implements
+        DefaultExpression {
 
     public static final int PRECEDENCE = 7;
 
@@ -15,8 +16,7 @@ public record OverlapsIntervalOperatorPhrase(Expression leftInterval,
         requireNonNull(rightInterval);
     }
 
-    public static OverlapsIntervalOperatorPhrase of(Expression leftInterval,
-                                                    Expression rightInterval) {
+    public static DefaultExpression of(Expression<?> leftInterval, Expression<?> rightInterval) {
         return new OverlapsIntervalOperatorPhrase(leftInterval, rightInterval);
     }
 
@@ -25,5 +25,11 @@ public record OverlapsIntervalOperatorPhrase(Expression leftInterval,
         var operatorPrintContext = printContext.withPrecedence(PRECEDENCE);
         return printContext.parenthesize(PRECEDENCE, "%s overlaps %s".formatted(leftInterval.print(operatorPrintContext),
                 rightInterval.print(operatorPrintContext)));
+    }
+
+    @Override
+    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
+        return new OverlapsIntervalOperatorPhrase(leftInterval.withIncrementedSuffixes(increments),
+                rightInterval.withIncrementedSuffixes(increments));
     }
 }

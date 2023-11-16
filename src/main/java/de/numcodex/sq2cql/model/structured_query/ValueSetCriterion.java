@@ -1,6 +1,5 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -66,11 +65,10 @@ public final class ValueSetCriterion extends AbstractCriterion<ValueSetCriterion
     }
 
     @Override
-    Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
-                                           IdentifierExpression sourceAlias) {
+    Container<DefaultExpression> valueExpr(MappingContext mappingContext, Mapping mapping, IdentifierExpression sourceAlias) {
         if ("code".equals(mapping.valueType())) {
             return selectedConcepts.stream()
-                    .map(concept -> Container.of((BooleanExpression) ComparatorExpression.equal(
+                    .map(concept -> Container.of(ComparatorExpression.equal(
                             InvocationExpression.of(sourceAlias, mapping.valueFhirPath()),
                             StringLiteralExpression.of(concept.code()))))
                     .reduce(Container.empty(), Container.OR);
@@ -78,7 +76,7 @@ public final class ValueSetCriterion extends AbstractCriterion<ValueSetCriterion
             var valueExpr = valuePathExpr(sourceAlias, mapping);
             return selectedConcepts.stream()
                     .map(concept -> codeSelector(mappingContext, concept).map(terminology ->
-                            (BooleanExpression) MembershipExpression.contains(valueExpr, terminology)))
+                            MembershipExpression.contains(valueExpr, terminology)))
                     .reduce(Container.empty(), Container.OR);
         }
     }

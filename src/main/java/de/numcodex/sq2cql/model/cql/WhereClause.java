@@ -6,17 +6,17 @@ import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
-public record WhereClause(BooleanExpression expression) implements Clause {
+public record WhereClause(DefaultExpression expression) implements Clause {
 
     public WhereClause {
         requireNonNull(expression);
     }
 
-    public static WhereClause of(BooleanExpression expression) {
+    public static WhereClause of(DefaultExpression expression) {
         return new WhereClause(expression);
     }
 
-    public WhereClause map(Function<BooleanExpression, BooleanExpression> mapper) {
+    public WhereClause map(Function<DefaultExpression, DefaultExpression> mapper) {
         return new WhereClause(mapper.apply(expression));
     }
 

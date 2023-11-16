@@ -1,8 +1,8 @@
 package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
