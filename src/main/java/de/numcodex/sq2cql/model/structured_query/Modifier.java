@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
+import de.numcodex.sq2cql.model.cql.Container;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
 
 import java.util.stream.Stream;

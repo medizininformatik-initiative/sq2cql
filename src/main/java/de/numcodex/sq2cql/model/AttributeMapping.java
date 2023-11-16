@@ -31,8 +31,4 @@ public record AttributeMapping(String type, TermCode key, String path, String re
     public static AttributeMapping of(String type, TermCode key, String path) {
         return new AttributeMapping(type, key, path, null);
     }
-
-    public static AttributeMapping of(String type, TermCode key, String path, String referenceTargetType) {
-        return new AttributeMapping(type, key, path, referenceTargetType);
-    }
 }

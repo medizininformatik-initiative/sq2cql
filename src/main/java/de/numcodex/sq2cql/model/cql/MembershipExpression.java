@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record MembershipExpression(Expression a, String op, Expression b) implements BooleanExpression {
+public record MembershipExpression(Expression<?> a, String op, Expression<?> b) implements DefaultExpression {
 
     public static final int PRECEDENCE = 5;
 
@@ -13,11 +13,11 @@ public record MembershipExpression(Expression a, String op, Expression b) implem
         requireNonNull(b);
     }
 
-    public static MembershipExpression contains(Expression a, Expression b) {
+    public static DefaultExpression contains(Expression<?> a, Expression<?> b) {
         return new MembershipExpression(a, "contains", b);
     }
 
-    public static MembershipExpression in(Expression a, Expression b) {
+    public static DefaultExpression in(Expression<?> a, Expression<?> b) {
         return new MembershipExpression(a, "in", b);
     }
 

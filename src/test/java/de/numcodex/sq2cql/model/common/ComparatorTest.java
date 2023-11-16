@@ -2,11 +2,7 @@ package de.numcodex.sq2cql.model.common;
 
 import org.junit.jupiter.api.Test;
 
-import static de.numcodex.sq2cql.model.common.Comparator.EQUAL;
-import static de.numcodex.sq2cql.model.common.Comparator.GREATER_EQUAL;
-import static de.numcodex.sq2cql.model.common.Comparator.GREATER_THAN;
-import static de.numcodex.sq2cql.model.common.Comparator.LESS_EQUAL;
-import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
+import static de.numcodex.sq2cql.model.common.Comparator.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -16,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ComparatorTest {
 
     @Test
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     void fromJson() {
         assertEquals(EQUAL, Comparator.fromJson("eq"));
         assertEquals(LESS_EQUAL, Comparator.fromJson("le"));

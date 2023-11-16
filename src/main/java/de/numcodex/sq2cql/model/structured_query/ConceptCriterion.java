@@ -1,9 +1,9 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.cql.BooleanExpression;
+import de.numcodex.sq2cql.model.cql.Container;
+import de.numcodex.sq2cql.model.cql.DefaultExpression;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;
 
 import java.util.LinkedList;
@@ -51,8 +51,7 @@ public final class ConceptCriterion extends AbstractCriterion<ConceptCriterion> 
     }
 
     @Override
-    Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
-                                           IdentifierExpression sourceAlias) {
+    Container<DefaultExpression> valueExpr(MappingContext mappingContext, Mapping mapping, IdentifierExpression sourceAlias) {
         return Container.empty();
     }
 }

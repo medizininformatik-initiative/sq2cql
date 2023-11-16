@@ -8,12 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -139,6 +140,17 @@ public class AcceptanceTest {
     @Test
     public void allCriteriaTime() throws Exception {
         var structuredQuery = new ObjectMapper().readValue(slurp("example-all-crits-time.json"), StructuredQuery.class);
+        var cql = translator.toCql(structuredQuery).print();
+        var measureUri = createMeasureAndLibrary(cql);
+        var report = evaluateMeasure(measureUri);
+
+        assertEquals(0, report.getGroupFirstRep().getPopulationFirstRep().getCount());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"large-query-worst-case-with-time-constraints.json", "test-large-query-more-crit-time-rest-1.json"})
+    public void largeQuery(String filename) throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
         var measureUri = createMeasureAndLibrary(cql);
         var report = evaluateMeasure(measureUri);

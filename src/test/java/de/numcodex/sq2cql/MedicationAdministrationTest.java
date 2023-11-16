@@ -10,8 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import static de.numcodex.sq2cql.Assertions.assertThat;
 import static de.numcodex.sq2cql.Util.createTranslator;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MedicationAdministrationTest {
 
@@ -28,9 +28,9 @@ public class MedicationAdministrationTest {
         var translator = createTranslator();
         var structuredQuery = readStructuredQuery();
 
-        var cql = translator.toCql(structuredQuery).print();
+        var library = translator.toCql(structuredQuery);
 
-        assertEquals("""
+        assertThat(library).printsTo("""
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
@@ -45,10 +45,13 @@ public class MedicationAdministrationTest {
                         
                 context Patient
                         
-                define InInitialPopulation:
+                define Criterion:
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in HeparinB01AB01Ref)
-                    """, cql);
+                    
+                define InInitialPopulation:
+                  Criterion
+                """);
     }
 
     private StructuredQuery readStructuredQuery() throws Exception {

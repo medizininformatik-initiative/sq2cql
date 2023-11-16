@@ -12,7 +12,7 @@ class AndExpressionTest {
     void createWithTrueFirst() {
         var expr = ExistsExpression.of(QuantityExpression.of(BigDecimal.ONE));
 
-        var result = AndExpression.of(BooleanExpression.TRUE, expr);
+        var result = AndExpression.of(Expression.TRUE, expr);
 
         assertThat(result).isEqualTo(expr);
     }
@@ -21,7 +21,7 @@ class AndExpressionTest {
     void createWithTrueSecond() {
         var expr = ExistsExpression.of(QuantityExpression.of(BigDecimal.ONE));
 
-        var result = AndExpression.of(expr, BooleanExpression.TRUE);
+        var result = AndExpression.of(expr, Expression.TRUE);
 
         assertThat(result).isEqualTo(expr);
     }

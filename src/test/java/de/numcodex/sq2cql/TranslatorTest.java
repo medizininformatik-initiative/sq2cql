@@ -6,14 +6,15 @@ import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.TermCodeNode;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.Library;
 import de.numcodex.sq2cql.model.structured_query.*;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import static de.numcodex.sq2cql.Assertions.assertThat;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,330 +86,294 @@ class TranslatorTest {
     static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING = AttributeMapping.of("Coding",
             VERIFICATION_STATUS, "verificationStatus.coding");
 
-    @Test
-    void toCQL_Inclusion_OneDisjunctionWithOneCriterion() {
-        Library library = Translator.of().toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE))));
-
-        assertEquals("true", library.contexts().get(0).expressionDefinitions().get(0).getExpression()
-                .print(PrintContext.ZERO));
+    private Mapping readMapping(String s) throws Exception {
+        return new ObjectMapper().readValue(s, Mapping.class);
     }
 
-    @Test
-    void toCQL_Inclusion_OneDisjunctionWithTwoCriteria() {
-        Library library = Translator.of()
-                .toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE, Criterion.FALSE))));
-
-        assertEquals("true or\nfalse",
-                library.contexts().get(0).expressionDefinitions().get(0).getExpression()
-                        .print(PrintContext.ZERO));
+    private StructuredQuery readStructuredQuery(String s) throws Exception {
+        return new ObjectMapper().readValue(s, StructuredQuery.class);
     }
 
-    @Test
-    void toCQL_Inclusion_TwoDisjunctionsWithOneCriterionEach() {
-        Library library = Translator.of()
-                .toCql(StructuredQuery.of(List.of(List.of(Criterion.FALSE), List.of(Criterion.FALSE))));
+    @Nested
+    class ToCql {
 
-        assertEquals("false and\nfalse",
-                library.contexts().get(0).expressionDefinitions().get(0).getExpression()
-                        .print(PrintContext.ZERO));
-    }
+        @Test
+        void nonExpandableConcept() {
+            var structuredQuery = StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(C71)))));
 
-    @Test
-    void toCQL_Inclusion_TwoDisjunctionsWithTwoCriterionEach() {
-        Library library = Translator.of().toCql(StructuredQuery.of(
-                List.of(List.of(Criterion.TRUE, Criterion.TRUE),
-                        List.of(Criterion.FALSE, Criterion.FALSE))));
+            var message = assertThrows(TranslationException.class, () -> Translator.of().toCql(structuredQuery)).getMessage();
 
-        assertEquals("(true or\ntrue) and\n(false or\nfalse)",
-                library.contexts().get(0).expressionDefinitions().get(0).getExpression()
-                        .print(PrintContext.ZERO));
-    }
+            assertEquals(
+                    "Failed to expand the concept ContextualConcept[context=TermCode[system=context, code=context, display=context], concept=Concept[termCodes=[TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71, display=Malignant neoplasm of brain]]]].",
+                    message);
+        }
 
-    @Test
-    void toCQL_Inclusion_And_Exclusion_OneConjunctionWithOneCriterion() {
-        Library library = Translator.of().toCql(
-                StructuredQuery.of(List.of(List.of(Criterion.TRUE)), List.of(List.of(Criterion.FALSE))));
+        @Test
+        void nonMappableConcept() {
+            var conceptTree = TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1));
+            var mappingContext = MappingContext.of(Map.of(), conceptTree, CODE_SYSTEM_ALIASES);
 
-        assertEquals("define Inclusion:\n  true",
-                library.contexts().get(0).expressionDefinitions().get(0).print(PrintContext.ZERO));
-        assertEquals("define Exclusion:\n  false",
-                library.contexts().get(0).expressionDefinitions().get(1).print(PrintContext.ZERO));
-    }
+            var message = assertThrows(TranslationException.class, () -> Translator.of(mappingContext)
+                    .toCql(StructuredQuery.of(
+                            List.of(List.of(ConceptCriterion.of(ContextualConcept.of(C71))))))).getMessage();
 
-    @Test
-    void toCQL_Inclusion_And_Exclusion_OneConjunctionWithTwoCriteria() {
-        Library library = Translator.of().toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
-                List.of(List.of(Criterion.FALSE, Criterion.FALSE))));
+            assertEquals(
+                    "Failed to expand the concept ContextualConcept[context=TermCode[system=context, code=context, display=context], concept=Concept[termCodes=[TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71, display=Malignant neoplasm of brain]]]].",
+                    message);
+        }
 
-        assertEquals("define Exclusion:\n  false and\n  false",
-                library.contexts().get(0).expressionDefinitions().get(1).print(PrintContext.ZERO));
-    }
+        @Test
+        void usage_Documentation() {
+            var c71_1 = ContextualTermCode.of(CONTEXT,
+                    TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+                            "Malignant neoplasm of brain"));
+            var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
+            var conceptTree = TermCodeNode.of(c71_1);
+            var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
+            var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
-    @Test
-    void toCQL_Inclusion_And_Exclusion_TwoConjunctionsWithOneCriterionEach() {
-        Library library = Translator.of().toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
-                List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE))));
+            var library = Translator.of(mappingContext).toCql(
+                    StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1))))));
 
-        assertEquals("true or\nfalse",
-                library.contexts().get(0).expressionDefinitions().get(1).getExpression()
-                        .print(PrintContext.ZERO));
-    }
+            assertThat(library).printsTo("""
+library Retrieve version '1.0.0'
+using FHIR version '4.0.0'
+include FHIRHelpers version '4.0.0'
+                                   
+codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+       
+context Patient
+                
+define Criterion:
+  exists [Condition: Code 'C71.1' from icd10]
+  
+define InInitialPopulation:
+  Criterion
+                    """);
+        }
 
-    @Test
-    void toCQL_Inclusion_And_Exclusion_TwoConjunctionsWithTwoCriterionEach() {
-        Library library = Translator.of().toCql(StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
-                List.of(List.of(Criterion.FALSE, Criterion.FALSE),
-                        List.of(Criterion.FALSE, Criterion.FALSE))));
+        @Test
+        void timeRestriction() {
+            var c71_1 = ContextualTermCode.of(CONTEXT,
+                    TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+                            "Malignant neoplasm of brain"));
+            var mappings = Map.of(c71_1,
+                    Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), "onset"));
+            var conceptTree = TermCodeNode.of(c71_1);
+            var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
+            var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
-        assertEquals("false and\nfalse or\nfalse and\nfalse",
-                library.contexts().get(0).expressionDefinitions().get(1).getExpression()
-                        .print(PrintContext.ZERO));
-    }
+            var library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(List.of(
+                    ConceptCriterion.of(ContextualConcept.of(c71_1),
+                            TimeRestriction.of("2020-01-01T", "2020-01-02T"))))));
 
-    @Test
-    void toCQL_NonExpandableConcept() {
-        var message = assertThrows(TranslationException.class, () -> Translator.of().toCql(
-                StructuredQuery.of(
-                        List.of(List.of(ConceptCriterion.of(ContextualConcept.of(C71))))))).getMessage();
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                                                       
+                    codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+                                   
+                    context Patient
+                                    
+                    define Criterion:
+                      exists (from [Condition: Code 'C71.1' from icd10] C
+                        where ToDate(C.onset as dateTime) in Interval[@2020-01-01T, @2020-01-02T] or
+                          C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
+                          
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
 
-        assertEquals(
-                "Failed to expand the concept ContextualConcept[context=TermCode[system=context, code=context, display=context], concept=Concept[termCodes=[TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71, display=Malignant neoplasm of brain]]]].",
-                message);
-    }
+        @Test
+        void timeRestriction_missingPathInMapping() {
+            var c71_1 = ContextualTermCode.of(CONTEXT,
+                    TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
+                            "Malignant neoplasm of brain"));
+            var mappings = Map.of(c71_1,
+                    Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), null));
+            var conceptTree = TermCodeNode.of(c71_1);
+            var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
+            var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
+            var query = StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1),
+                    TimeRestriction.of("2020-01-01T", "2020-01-02T")))));
+            var translator = Translator.of(mappingContext);
 
-    @Test
-    void toCQL_NonMappableConcept() {
-        var conceptTree = TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1));
-        var mappingContext = MappingContext.of(Map.of(), conceptTree, CODE_SYSTEM_ALIASES);
+            assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query)).withMessage(
+                    "Missing timeRestrictionFhirPath in mapping with key ContextualTermCode[context=TermCode[system=context, code=context, display=context], termCode=TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain]].");
+        }
 
-        var message = assertThrows(TranslationException.class, () -> Translator.of(mappingContext)
-                .toCql(StructuredQuery.of(
-                        List.of(List.of(ConceptCriterion.of(ContextualConcept.of(C71))))))).getMessage();
+        @Test
+        void test_Task1() {
+            var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"), C71_0,
+                    Mapping.of(C71_0, "Condition", null, null, List.of(),
+                            List.of(VERIFICATION_STATUS_ATTR_MAPPING)), C71_1,
+                    Mapping.of(C71_1, "Condition", null, null, List.of(),
+                            List.of(VERIFICATION_STATUS_ATTR_MAPPING)), TMZ,
+                    Mapping.of(TMZ, "MedicationStatement"));
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(TMZ),
+                    TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1)));
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+            var structuredQuery = StructuredQuery.of(List.of(List.of(
+                            ConceptCriterion.of(ContextualConcept.of(C71))
+                                    .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
+                    List.of(
+                            NumericCriterion.of(ContextualConcept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50),
+                                    "g/dl")), List.of(ConceptCriterion.of(ContextualConcept.of(TMZ)))));
 
-        assertEquals(
-                "Failed to expand the concept ContextualConcept[context=TermCode[system=context, code=context, display=context], concept=Concept[termCodes=[TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71, display=Malignant neoplasm of brain]]]].",
-                message);
-    }
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
 
-    @Test
-    void toCQL_Usage_Documentation() {
-        var c71_1 = ContextualTermCode.of(CONTEXT,
-                TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-                        "Malignant neoplasm of brain"));
-        var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
-        var conceptTree = TermCodeNode.of(c71_1);
-        var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
-        var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
-
-        Library library = Translator.of(mappingContext).toCql(
-                StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1))))));
-
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
-                                                   
-                codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                       
-                context Patient
-                                
-                define InInitialPopulation:
-                  exists [Condition: Code 'C71.1' from icd10]
-                """, library.print());
-    }
-
-    @Test
-    void toCQL_TimeRestriction() {
-        var c71_1 = ContextualTermCode.of(CONTEXT,
-                TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-                        "Malignant neoplasm of brain"));
-        var mappings = Map.of(c71_1,
-                Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), "onset"));
-        var conceptTree = TermCodeNode.of(c71_1);
-        var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
-        var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
-
-        Library library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(List.of(
-                ConceptCriterion.of(ContextualConcept.of(c71_1),
-                        TimeRestriction.of("2020-01-01T", "2020-01-02T"))))));
-
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
-                                                   
-                codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                               
-                context Patient
-                                
-                define InInitialPopulation:
-                  exists (from [Condition: Code 'C71.1' from icd10] C
-                    where ToDate(C.onset as dateTime) in Interval[@2020-01-01T, @2020-01-02T] or
-                      C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
-                """, library.print());
-    }
-
-    @Test
-    void toCQL_TimeRestriction_missingPathInMapping() {
-        var c71_1 = ContextualTermCode.of(CONTEXT,
-                TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
-                        "Malignant neoplasm of brain"));
-        var mappings = Map.of(c71_1,
-                Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), null));
-        var conceptTree = TermCodeNode.of(c71_1);
-        var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
-        var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
-        var query = StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1),
-                TimeRestriction.of("2020-01-01T", "2020-01-02T")))));
-        var translator = Translator.of(mappingContext);
-
-        assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query)).withMessage(
-                "Missing timeRestrictionFhirPath in mapping with key ContextualTermCode[context=TermCode[system=context, code=context, display=context], termCode=TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain]].");
-    }
-
-    @Test
-    void toCQL_Test_Task1() {
-        var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"), C71_0,
-                Mapping.of(C71_0, "Condition", null, null, List.of(),
-                        List.of(VERIFICATION_STATUS_ATTR_MAPPING)), C71_1,
-                Mapping.of(C71_1, "Condition", null, null, List.of(),
-                        List.of(VERIFICATION_STATUS_ATTR_MAPPING)), TMZ,
-                Mapping.of(TMZ, "MedicationStatement"));
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(TMZ),
-                TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1)));
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
-        var structuredQuery = StructuredQuery.of(List.of(List.of(
-                        ConceptCriterion.of(ContextualConcept.of(C71))
-                                .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
-                List.of(
-                        NumericCriterion.of(ContextualConcept.of(PLATELETS), LESS_THAN, BigDecimal.valueOf(50),
-                                "g/dl")), List.of(ConceptCriterion.of(ContextualConcept.of(TMZ)))));
-
-        Library library = Translator.of(mappingContext).toCql(structuredQuery);
-
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                            
+                    codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
+                    codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+                    codesystem loinc: 'http://loinc.org'
+                    codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                            
+                    context Patient
+                      
+                    define "Criterion 1":
+                      exists (from [Condition: Code 'C71.0' from icd10] C
+                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
+                      exists (from [Condition: Code 'C71.1' from icd10] C
+                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
                         
-                codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
-                codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                codesystem loinc: 'http://loinc.org'
-                codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                    define "Criterion 2":
+                      exists (from [Observation: Code '26515-7' from loinc] O
+                        where O.value as Quantity < 50 'g/dl')
                         
-                context Patient
+                    define "Criterion 3":
+                      exists [MedicationStatement: Code 'L01AX03' from atc]
+                      
+                    define InInitialPopulation:
+                      "Criterion 1" and
+                      "Criterion 2" and
+                      "Criterion 3"
+                    """);
+        }
+
+        @Test
+        void test_Task2() {
+            var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"), HYPERTENSION,
+                    Mapping.of(HYPERTENSION, "Condition", null, null, List.of(),
+                            List.of(VERIFICATION_STATUS_ATTR_MAPPING)), SERUM, Mapping.of(SERUM, "Specimen"), LIPID,
+                    Mapping.of(LIPID, "MedicationStatement"));
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(HYPERTENSION), TermCodeNode.of(SERUM),
+                    TermCodeNode.of(LIPID));
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+            var structuredQuery = StructuredQuery.of(List.of(List.of(
+                                    ConceptCriterion.of(ContextualConcept.of(HYPERTENSION))
+                                            .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
+                            List.of(ConceptCriterion.of(ContextualConcept.of(SERUM)))),
+                    List.of(List.of(ConceptCriterion.of(ContextualConcept.of(LIPID)))));
+
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
+
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+
+                    codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
+                    codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+                    codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'
+                    codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                                    
+                    context Patient
+
+                    define "Criterion 1":
+                      exists (from [Condition: Code 'I10' from icd10] C
+                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
                         
-                define InInitialPopulation:
-                  (exists (from [Condition: Code 'C71.0' from icd10] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
-                  exists (from [Condition: Code 'C71.1' from icd10] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status)) and
-                  exists (from [Observation: Code '26515-7' from loinc] O
-                    where O.value as Quantity < 50 'g/dl') and
-                  exists [MedicationStatement: Code 'L01AX03' from atc]
-                """, library.print());
-    }
+                    define "Criterion 2":
+                      exists [Specimen: Code 'Serum' from sample]
+                      
+                    define Inclusion:
+                      "Criterion 1" and
+                      "Criterion 2"
 
-    @Test
-    void toCQL_Test_Task2() {
-        var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"), HYPERTENSION,
-                Mapping.of(HYPERTENSION, "Condition", null, null, List.of(),
-                        List.of(VERIFICATION_STATUS_ATTR_MAPPING)), SERUM, Mapping.of(SERUM, "Specimen"), LIPID,
-                Mapping.of(LIPID, "MedicationStatement"));
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(HYPERTENSION), TermCodeNode.of(SERUM),
-                TermCodeNode.of(LIPID));
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
-        var structuredQuery = StructuredQuery.of(List.of(List.of(
-                                ConceptCriterion.of(ContextualConcept.of(HYPERTENSION))
-                                        .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED))),
-                        List.of(ConceptCriterion.of(ContextualConcept.of(SERUM)))),
-                List.of(List.of(ConceptCriterion.of(ContextualConcept.of(LIPID)))));
+                    define "Criterion 3":
+                      exists [MedicationStatement: Code 'C10AA' from atc]
 
-        Library library = Translator.of(mappingContext).toCql(structuredQuery);
+                    define Exclusion:
+                      "Criterion 3"
+                      
+                    define InInitialPopulation:
+                      Inclusion and
+                      not Exclusion
+                    """);
+        }
 
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
+        @Test
+        void geccoTask2() {
+            var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", "value"), COPD,
+                    Mapping.of(COPD, "Condition", null, null,
+                            List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()), G47_31,
+                    Mapping.of(G47_31, "Condition", null, null,
+                            List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()),
+                    TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COPD), TermCodeNode.of(G47_31));
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+            var structuredQuery = StructuredQuery.of(
+                    List.of(List.of(ValueSetCriterion.of(ContextualConcept.of(FRAILTY_SCORE), VERY_FIT, WELL))),
+                    List.of(List.of(ConceptCriterion.of(ContextualConcept.of(COPD)),
+                            ConceptCriterion.of(ContextualConcept.of(G47_31))), List.of(
+                            ValueSetCriterion.of(ContextualConcept.of(TOBACCO_SMOKING_STATUS),
+                                    CURRENT_EVERY_DAY_SMOKER))));
 
-                codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
-                codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'
-                codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                                
-                context Patient
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
 
-                define Inclusion:
-                  exists (from [Condition: Code 'I10' from icd10] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status) and
-                  exists [Specimen: Code 'Serum' from sample]
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
 
-                define Exclusion:
-                  exists [MedicationStatement: Code 'C10AA' from atc]
+                    codesystem frailty-score: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score'
+                    codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+                    codesystem loinc: 'http://loinc.org'
+                    codesystem snomed: 'http://snomed.info/sct'
+                    codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
+                                    
+                    context Patient
+                                    
+                    define "Criterion 1":
+                      exists (from [Observation: Code '713636003' from snomed] O
+                        where O.value.coding contains Code '1' from frailty-score or
+                          O.value.coding contains Code '2' from frailty-score)
+                          
+                    define Inclusion:
+                      "Criterion 1"
+                                      
+                    define "Criterion 2":
+                      exists (from [Condition: Code '13645005' from snomed] C
+                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                        
+                    define "Criterion 3":
+                      exists (from [Condition: Code 'G47.31' from icd10] C
+                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                        
+                    define "Criterion 4":
+                      exists (from [Observation: Code '72166-2' from loinc] O
+                        where O.value.coding contains Code 'LA18976-3' from loinc)
+                        
+                    define Exclusion:
+                      "Criterion 2" and
+                      "Criterion 3" or
+                      "Criterion 4"
+                                    
+                    define InInitialPopulation:
+                      Inclusion and
+                      not Exclusion
+                    """);
+        }
 
-                define InInitialPopulation:
-                  Inclusion and
-                  not Exclusion
-                """, library.print());
-    }
-
-    @Test
-    void toCQL_GeccoTask2() {
-        var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", "value"), COPD,
-                Mapping.of(COPD, "Condition", null, null,
-                        List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()), G47_31,
-                Mapping.of(G47_31, "Condition", null, null,
-                        List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()),
-                TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COPD), TermCodeNode.of(G47_31));
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
-        var structuredQuery = StructuredQuery.of(
-                List.of(List.of(ValueSetCriterion.of(ContextualConcept.of(FRAILTY_SCORE), VERY_FIT, WELL))),
-                List.of(List.of(ConceptCriterion.of(ContextualConcept.of(COPD)),
-                        ConceptCriterion.of(ContextualConcept.of(G47_31))), List.of(
-                        ValueSetCriterion.of(ContextualConcept.of(TOBACCO_SMOKING_STATUS),
-                                CURRENT_EVERY_DAY_SMOKER))));
-
-        Library library = Translator.of(mappingContext).toCql(structuredQuery);
-
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
-
-                codesystem frailty-score: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score'
-                codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                codesystem loinc: 'http://loinc.org'
-                codesystem snomed: 'http://snomed.info/sct'
-                codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                                
-                context Patient
-                                
-                define Inclusion:
-                  exists (from [Observation: Code '713636003' from snomed] O
-                    where O.value.coding contains Code '1' from frailty-score or
-                      O.value.coding contains Code '2' from frailty-score)
-                                
-                define Exclusion:
-                  exists (from [Condition: Code '13645005' from snomed] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status) and
-                  exists (from [Condition: Code 'G47.31' from icd10] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
-                  exists (from [Observation: Code '72166-2' from loinc] O
-                    where O.value.coding contains Code 'LA18976-3' from loinc)
-                                
-                define InInitialPopulation:
-                  Inclusion and
-                  not Exclusion
-                """, library.print());
-    }
-
-
-    @Test
-    void toCql_OnlyFixedCriteria() throws Exception {
-        var mapper = new ObjectMapper();
-
-        var mapping = mapper.readValue("""
+        @Test
+        void onlyFixedCriteria() throws Exception {
+            var mapping = readMapping("""
                     {
                         "resourceType": "Consent",
                         "fixedCriteria": [
@@ -467,354 +432,628 @@ class TranslatorTest {
                         "timeRestrictionParameter": "date",
                         "timeRestrictionFhirPath": "dateTime"
                     }
-                """, Mapping.class);
-        var structuredQuery = mapper.readValue("""
-                {
-                  "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
-                  "display": "",
-                  "inclusionCriteria": [
-                    [
-                      {
-                        "context": {
-                            "code": "context",
-                            "display": "context",
-                            "system": "context"
-                        },
-                        "termCodes": [
+                    """);
+
+            var structuredQuery = readStructuredQuery("""
+                    {
+                      "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
+                      "display": "",
+                      "inclusionCriteria": [
+                        [
                           {
-                            "code": "combined-consent",
-                            "system": "mii.abide",
-                            "display": "Einwilligung für die zentrale Datenanalyse"
+                            "context": {
+                                "code": "context",
+                                "display": "context",
+                                "system": "context"
+                            },
+                            "termCodes": [
+                              {
+                                "code": "combined-consent",
+                                "system": "mii.abide",
+                                "display": "Einwilligung für die zentrale Datenanalyse"
+                              }
+                            ]
                           }
                         ]
-                      }
-                    ]
-                  ]
-                }
-                """, StructuredQuery.class);
+                      ]
+                    }
+                    """);
 
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COMBINED_CONSENT));
-        var mappings = Map.of(COMBINED_CONSENT, mapping);
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COMBINED_CONSENT));
+            var mappings = Map.of(COMBINED_CONSENT, mapping);
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
-        Library library = Translator.of(mappingContext).toCql(structuredQuery);
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
 
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
-                        
-                codesystem consent: 'urn:oid:2.16.840.1.113883.3.1937.777.24.5.3'
-                codesystem loinc: 'http://loinc.org'
-                        
-                context Patient
-                        
-                define InInitialPopulation:
-                  exists (from [Consent: Code '54133-1' from loinc] C
-                    where C.status = 'active' and
-                      C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.5' from consent and
-                      C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.2' from consent)
-                """, library.print());
-    }
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                            
+                    codesystem consent: 'urn:oid:2.16.840.1.113883.3.1937.777.24.5.3'
+                    codesystem loinc: 'http://loinc.org'
+                            
+                    context Patient
+                      
+                    define Criterion:
+                      exists (from [Consent: Code '54133-1' from loinc] C
+                        where C.status = 'active' and
+                          C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.5' from consent and
+                          C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.2' from consent)
+                            
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
 
-    @Test
-    void test_NumericAgeTranslation() throws Exception {
-        var objectMapper = new ObjectMapper();
-
-        var mapping = objectMapper.readValue("""
-                {
-                    "resourceType": "Patient",
-                    "context": {
-                        "code": "context",
-                        "display": "context",
-                        "system": "context"
-                    },
-                    "key": {
-                        "code": "424144002",
-                        "display": "Current chronological age",
-                        "system": "http://snomed.info/sct"
-                    },
-                    "valueFhirPath": "birthDate",
-                    "valueSearchParameter": "birthDate",
-                    "valueType": "Age"
-                }
-                """, Mapping.class);
-
-        var structuredQuery = objectMapper.readValue("""
-                {
-                  "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
-                  "display": "",
-                  "inclusionCriteria": [
-                    [
-                      {
+        @Test
+        void numericAgeTranslation() throws Exception {
+            var mapping = readMapping("""
+                    {
+                        "resourceType": "Patient",
                         "context": {
                             "code": "context",
                             "display": "context",
                             "system": "context"
                         },
-                        "termCodes": [
-                          {
+                        "key": {
                             "code": "424144002",
-                            "system": "http://snomed.info/sct",
-                            "display": "Current chronological age"
+                            "display": "Current chronological age",
+                            "system": "http://snomed.info/sct"
+                        },
+                        "valueFhirPath": "birthDate",
+                        "valueSearchParameter": "birthDate",
+                        "valueType": "Age"
+                    }
+                    """);
+
+            var structuredQuery = readStructuredQuery("""
+                    {
+                      "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
+                      "display": "",
+                      "inclusionCriteria": [
+                        [
+                          {
+                            "context": {
+                                "code": "context",
+                                "display": "context",
+                                "system": "context"
+                            },
+                            "termCodes": [
+                              {
+                                "code": "424144002",
+                                "system": "http://snomed.info/sct",
+                                "display": "Current chronological age"
+                              }
+                            ],
+                            "valueFilter": {
+                              "selectedConcepts": [],
+                              "type": "quantity-comparator",
+                              "unit": {
+                                "code": "a",
+                                "display": "a"
+                              },
+                              "value": 5,
+                              "comparator": "gt"
+                            }
                           }
-                        ],
-                        "valueFilter": {
-                          "selectedConcepts": [],
-                          "type": "quantity-comparator",
-                          "unit": {
-                            "code": "a",
-                            "display": "a"
-                          },
-                          "value": 5,
-                          "comparator": "gt"
-                        }
-                      }
-                    ]
-                  ]
-                }
-                """, StructuredQuery.class);
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
-        var mappings = Map.of(AGE, mapping);
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+                        ]
+                      ]
+                    }
+                    """);
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+            var mappings = Map.of(AGE, mapping);
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
-        Library library = Translator.of(mappingContext).toCql(structuredQuery);
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
 
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
-                        
-                context Patient
-                        
-                define InInitialPopulation:
-                  AgeInYears() > 5
-                """, library.print());
-    }
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                            
+                    context Patient
+                      
+                    define Criterion:
+                      AgeInYears() > 5
+                            
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
 
-    @Test
-    void test_AgeRangeTranslation() throws Exception {
-        var objectMapper = new ObjectMapper();
-
-        var mapping = objectMapper.readValue("""
-                {
-                    "resourceType": "Patient",
-                    "context": {
-                        "code": "context",
-                        "display": "context",
-                        "system": "context"
-                    },
-                    "key": {
-                        "code": "424144002",
-                        "display": "Current chronological age",
-                        "system": "http://snomed.info/sct"
-                    },
-                    "valueFhirPath": "birthDate",
-                    "valueSearchParameter": "birthDate",
-                    "valueType": "Age"
-                }
-                """, Mapping.class);
-
-        var structuredQuery = objectMapper.readValue("""
-                {
-                  "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
-                  "display": "",
-                  "inclusionCriteria": [
-                    [
-                      {
+        @Test
+        void ageRangeTranslation() throws Exception {
+            var mapping = readMapping("""
+                    {
+                        "resourceType": "Patient",
                         "context": {
                             "code": "context",
                             "display": "context",
                             "system": "context"
                         },
-                        "termCodes": [
-                          {
+                        "key": {
                             "code": "424144002",
-                            "system": "http://snomed.info/sct",
-                            "display": "Current chronological age"
+                            "display": "Current chronological age",
+                            "system": "http://snomed.info/sct"
+                        },
+                        "valueFhirPath": "birthDate",
+                        "valueSearchParameter": "birthDate",
+                        "valueType": "Age"
+                    }
+                    """);
+
+            var structuredQuery = readStructuredQuery("""
+                    {
+                      "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
+                      "display": "",
+                      "inclusionCriteria": [
+                        [
+                          {
+                            "context": {
+                                "code": "context",
+                                "display": "context",
+                                "system": "context"
+                            },
+                            "termCodes": [
+                              {
+                                "code": "424144002",
+                                "system": "http://snomed.info/sct",
+                                "display": "Current chronological age"
+                              }
+                            ],
+                            "valueFilter": {
+                              "selectedConcepts": [],
+                              "type": "quantity-range",
+                              "unit": {
+                                "code": "a",
+                                "display": "a"
+                              },
+                              "minValue": 5,
+                              "maxValue": 10
+                            }
                           }
-                        ],
-                        "valueFilter": {
-                          "selectedConcepts": [],
-                          "type": "quantity-range",
-                          "unit": {
-                            "code": "a",
-                            "display": "a"
-                          },
-                          "minValue": 5,
-                          "maxValue": 10
-                        }
-                      }
-                    ]
-                  ]
-                }
-                """, StructuredQuery.class);
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
-        var mappings = Map.of(AGE, mapping);
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+                        ]
+                      ]
+                    }
+                    """);
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+            var mappings = Map.of(AGE, mapping);
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
-        Library library = Translator.of(mappingContext).toCql(structuredQuery);
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
 
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
-                        
-                context Patient
-                        
-                define InInitialPopulation:
-                  AgeInYears() between 5 and 10
-                """, library.print());
-    }
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                            
+                    context Patient
+                      
+                    define Criterion:
+                      AgeInYears() between 5 and 10
+                            
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
 
-    @Test
-    void test_NumericAgeTranslationInHours() throws Exception {
-        var objectMapper = new ObjectMapper();
-
-        var mapping = objectMapper.readValue("""
-                {
-                    "resourceType": "Patient",
-                    "context": {
-                        "code": "context",
-                        "display": "context",
-                        "system": "context"
-                    },
-                    "key": {
-                        "code": "424144002",
-                        "display": "Current chronological age",
-                        "system": "http://snomed.info/sct"
-                    },
-                    "valueFhirPath": "birthDate",
-                    "valueSearchParameter": "birthDate",
-                    "valueType": "Age"
-                }
-                """, Mapping.class);
-
-        var structuredQuery = objectMapper.readValue("""
-                {
-                  "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
-                  "display": "",
-                  "inclusionCriteria": [
-                    [
-                      {
+        @Test
+        void numericAgeTranslationInHours() throws Exception {
+            var mapping = readMapping("""
+                    {
+                        "resourceType": "Patient",
                         "context": {
                             "code": "context",
                             "display": "context",
                             "system": "context"
                         },
-                        "termCodes": [
-                          {
+                        "key": {
                             "code": "424144002",
-                            "system": "http://snomed.info/sct",
-                            "display": "Current chronological age"
+                            "display": "Current chronological age",
+                            "system": "http://snomed.info/sct"
+                        },
+                        "valueFhirPath": "birthDate",
+                        "valueSearchParameter": "birthDate",
+                        "valueType": "Age"
+                    }
+                    """);
+
+            var structuredQuery = readStructuredQuery("""
+                    {
+                      "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
+                      "display": "",
+                      "inclusionCriteria": [
+                        [
+                          {
+                            "context": {
+                                "code": "context",
+                                "display": "context",
+                                "system": "context"
+                            },
+                            "termCodes": [
+                              {
+                                "code": "424144002",
+                                "system": "http://snomed.info/sct",
+                                "display": "Current chronological age"
+                              }
+                            ],
+                            "valueFilter": {
+                              "selectedConcepts": [],
+                              "type": "quantity-comparator",
+                              "unit": {
+                                "code": "h",
+                                "display": "h"
+                              },
+                              "value": 5,
+                              "comparator": "lt"
+                            }
                           }
-                        ],
-                        "valueFilter": {
-                          "selectedConcepts": [],
-                          "type": "quantity-comparator",
-                          "unit": {
-                            "code": "h",
-                            "display": "h"
-                          },
-                          "value": 5,
-                          "comparator": "lt"
-                        }
-                      }
-                    ]
-                  ]
-                }
-                """, StructuredQuery.class);
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
-        var mappings = Map.of(AGE, mapping);
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+                        ]
+                      ]
+                    }
+                    """);
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+            var mappings = Map.of(AGE, mapping);
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
-        Library library = Translator.of(mappingContext).toCql(structuredQuery);
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
 
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
-                        
-                context Patient
-                        
-                define InInitialPopulation:
-                  AgeInHours() < 5
-                """, library.print());
-    }
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                            
+                    context Patient
+                      
+                    define Criterion:
+                      AgeInHours() < 5
+                            
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
 
-    @Test
-    void test_PatientGender() throws Exception {
-        var objectMapper = new ObjectMapper();
-
-        var mapping = objectMapper.readValue("""
-                {
-                    "resourceType": "Patient",
-                    "context": {
-                        "code": "context",
-                        "display": "context",
-                        "system": "context"
-                    },
-                    "key": {
-                        "code": "263495000",
-                        "display": "Geschlecht",
-                        "system": "http://snomed.info/sct"
-                    },
-                    "valueFhirPath": "gender",
-                    "valueSearchParameter": "gender",
-                    "valueType": "code",
-                    "valueTypeFhir": "code"
-                }
-                """, Mapping.class);
-
-        var structuredQuery = objectMapper.readValue("""
-                {
-                  "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
-                  "display": "",
-                  "inclusionCriteria": [
-                    [
-                      {
+        @Test
+        void patientGender() throws Exception {
+            var mapping = readMapping("""
+                    {
+                        "resourceType": "Patient",
                         "context": {
                             "code": "context",
                             "display": "context",
                             "system": "context"
                         },
-                        "termCodes": [
-                          {
+                        "key": {
                             "code": "263495000",
                             "display": "Geschlecht",
                             "system": "http://snomed.info/sct"
-                          }
-                        ],
-                        "valueFilter": {
-                          "type": "concept",
-                          "selectedConcepts": [
-                            {
-                              "code": "female",
-                              "system": "http://hl7.org/fhir/administrative-gender",
-                              "display": "Female"
+                        },
+                        "valueFhirPath": "gender",
+                        "valueSearchParameter": "gender",
+                        "valueType": "code",
+                        "valueTypeFhir": "code"
+                    }
+                    """);
+            var structuredQuery = readStructuredQuery("""
+                    {
+                      "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
+                      "display": "",
+                      "inclusionCriteria": [
+                        [
+                          {
+                            "context": {
+                                "code": "context",
+                                "display": "context",
+                                "system": "context"
+                            },
+                            "termCodes": [
+                              {
+                                "code": "263495000",
+                                "display": "Geschlecht",
+                                "system": "http://snomed.info/sct"
+                              }
+                            ],
+                            "valueFilter": {
+                              "type": "concept",
+                              "selectedConcepts": [
+                                {
+                                  "code": "female",
+                                  "system": "http://hl7.org/fhir/administrative-gender",
+                                  "display": "Female"
+                                }
+                              ]
                             }
-                          ]
-                        }
-                      }
-                    ]
-                  ]
-                }
-                """, StructuredQuery.class);
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(GENDER));
-        var mappings = Map.of(GENDER, mapping);
-        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+                          }
+                        ]
+                      ]
+                    }
+                    """);
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(GENDER));
+            var mappings = Map.of(GENDER, mapping);
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
-        Library library = Translator.of(mappingContext).toCql(structuredQuery);
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
 
-        assertEquals("""
-                library Retrieve version '1.0.0'
-                using FHIR version '4.0.0'
-                include FHIRHelpers version '4.0.0'
-                        
-                context Patient
-                        
-                define InInitialPopulation:
-                  Patient.gender = 'female'
-                """, library.print());
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                            
+                    context Patient
+                      
+                    define Criterion:
+                      Patient.gender = 'female'
+                      
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
+
+        @Nested
+        class Inclusion {
+
+            @Test
+            void oneDisjunctionWithOneCriterion() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE)));
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                            
+                        define Criterion:
+                          true
+                                                
+                        define InInitialPopulation:
+                          Criterion
+                        """);
+            }
+
+            @Test
+            void oneDisjunctionWithTwoCriteria() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE, Criterion.FALSE)));
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                            
+                        define "Criterion 1":
+                          true
+                            
+                        define "Criterion 2":
+                          false
+                          
+                        define InInitialPopulation:
+                          "Criterion 1" or
+                          "Criterion 2"
+                        """);
+            }
+
+            @Test
+            void twoDisjunctionsWithOneCriterionEach() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE)));
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                            
+                        define "Criterion 1":
+                          true
+                            
+                        define "Criterion 2":
+                          false
+                                                
+                        define InInitialPopulation:
+                          "Criterion 1" and
+                          "Criterion 2"
+                        """);
+            }
+
+            @Test
+            void twoDisjunctionsWithTwoCriterionEach() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE, Criterion.TRUE),
+                        List.of(Criterion.FALSE, Criterion.FALSE)));
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                            
+                        define "Criterion 1":
+                          true
+                            
+                        define "Criterion 2":
+                          true
+                            
+                        define "Criterion 3":
+                          false
+                            
+                        define "Criterion 4":
+                          false
+                                                
+                        define InInitialPopulation:
+                          ("Criterion 1" or
+                          "Criterion 2") and
+                          ("Criterion 3" or
+                          "Criterion 4")
+                        """);
+            }
+        }
+
+        @Nested
+        class InclusionAndExclusion {
+
+            @Test
+            void oneConjunctionWithOneCriterion() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE)), List.of(List.of(Criterion.FALSE)));
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                            
+                        define "Criterion 1":
+                          true
+                                   
+                        define Inclusion:
+                          "Criterion 1"
+                            
+                        define "Criterion 2":
+                          false
+                                   
+                        define Exclusion:
+                          "Criterion 2"
+                                                
+                        define InInitialPopulation:
+                          Inclusion and
+                          not Exclusion
+                        """);
+            }
+
+            @Test
+            void oneConjunctionWithTwoCriteria() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
+                        List.of(List.of(Criterion.FALSE, Criterion.FALSE)));
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                              
+                        define "Criterion 1":
+                          true
+                                                
+                        define Inclusion:
+                          "Criterion 1"
+                              
+                        define "Criterion 2":
+                          false
+                              
+                        define "Criterion 3":
+                          false
+                                   
+                        define Exclusion:
+                          "Criterion 2" and
+                          "Criterion 3"
+                                                
+                        define InInitialPopulation:
+                          Inclusion and
+                          not Exclusion
+                        """);
+            }
+
+            @Test
+            void twoConjunctionsWithOneCriterionEach() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
+                        List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE)));
+
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                              
+                        define "Criterion 1":
+                          true
+                                                
+                        define Inclusion:
+                          "Criterion 1"
+                              
+                        define "Criterion 2":
+                          true
+                              
+                        define "Criterion 3":
+                          false
+                                   
+                        define Exclusion:
+                          "Criterion 2" or
+                          "Criterion 3"
+                                                
+                        define InInitialPopulation:
+                          Inclusion and
+                          not Exclusion
+                        """);
+            }
+
+            @Test
+            void twoConjunctionsWithTwoCriterionEach() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE)),
+                        List.of(List.of(Criterion.FALSE, Criterion.FALSE),
+                                List.of(Criterion.FALSE, Criterion.FALSE)));
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                              
+                        define "Criterion 1":
+                          true
+                                                
+                        define Inclusion:
+                          "Criterion 1"
+                              
+                        define "Criterion 2":
+                          false
+                              
+                        define "Criterion 3":
+                          false
+                              
+                        define "Criterion 4":
+                          false
+                              
+                        define "Criterion 5":
+                          false
+                                   
+                        define Exclusion:
+                          "Criterion 2" and
+                          "Criterion 3" or
+                          "Criterion 4" and
+                          "Criterion 5"
+                                                
+                        define InInitialPopulation:
+                          Inclusion and
+                          not Exclusion
+                        """);
+            }
+
+            @Test
+            void twoInclusionAndTwoExclusionCriteria() {
+                var structuredQuery = StructuredQuery.of(List.of(List.of(Criterion.TRUE), List.of(Criterion.FALSE)),
+                        List.of(List.of(Criterion.TRUE, Criterion.FALSE)));
+
+                var library = Translator.of().toCql(structuredQuery);
+
+                assertThat(library).patientContextPrintsTo("""
+                        context Patient
+                              
+                        define "Criterion 1":
+                          true
+                              
+                        define "Criterion 2":
+                          false
+                                                
+                        define Inclusion:
+                          "Criterion 1" and
+                          "Criterion 2"
+                              
+                        define "Criterion 3":
+                          true
+                              
+                        define "Criterion 4":
+                          false
+                                   
+                        define Exclusion:
+                          "Criterion 3" and
+                          "Criterion 4"
+                                                
+                        define InInitialPopulation:
+                          Inclusion and
+                          not Exclusion
+                        """);
+            }
+        }
     }
 }

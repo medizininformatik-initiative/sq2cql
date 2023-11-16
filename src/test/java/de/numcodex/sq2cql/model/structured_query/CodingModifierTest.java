@@ -3,7 +3,7 @@ package de.numcodex.sq2cql.model.structured_query;
 import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.IdentifierExpression;
+import de.numcodex.sq2cql.model.cql.StandardIdentifierExpression;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -27,7 +27,7 @@ class CodingModifierTest {
     void expression() {
         var modifier = CodingModifier.of("verificationStatus.coding", CONFIRMED);
 
-        var expression = modifier.expression(MAPPING_CONTEXT, IdentifierExpression.of("C"));
+        var expression = modifier.expression(MAPPING_CONTEXT, StandardIdentifierExpression.of("C"));
 
         assertEquals("C.verificationStatus.coding contains Code 'confirmed' from ver_status",
                 expression.getExpression().map(PrintContext.ZERO::print).orElse(""));

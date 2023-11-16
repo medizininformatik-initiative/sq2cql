@@ -1,6 +1,5 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.*;
 
@@ -23,7 +22,7 @@ public record CodeModifier(String path, List<String> codes) implements SimpleMod
     }
 
     @Override
-    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
+    public Container<DefaultExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
         var propertyExpr = InvocationExpression.of(sourceAlias, path);
         if (codes.size() == 1) {
             return Container.of(ComparatorExpression.equal(propertyExpr, StringLiteralExpression.of(codes.get(0))));

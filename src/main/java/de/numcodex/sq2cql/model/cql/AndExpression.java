@@ -3,15 +3,15 @@ package de.numcodex.sq2cql.model.cql;
 import de.numcodex.sq2cql.PrintContext;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
 /**
  * Expression1 AND Expression2 AND Expression ... AND ExpressionN
  */
-public record AndExpression(List<BooleanExpression> expressions) implements BooleanExpression {
+public record AndExpression(List<DefaultExpression> expressions) implements DefaultExpression {
 
     public static final int PRECEDENCE = 4;
 
@@ -19,16 +19,16 @@ public record AndExpression(List<BooleanExpression> expressions) implements Bool
         expressions = List.copyOf(expressions);
     }
 
-    public static BooleanExpression of(BooleanExpression e1, BooleanExpression e2) {
-        if (e1 == BooleanExpression.TRUE) {
+    public static DefaultExpression of(DefaultExpression e1, DefaultExpression e2) {
+        if (e1 == Expression.TRUE) {
             return e2;
-        } else if (e2 == BooleanExpression.TRUE) {
+        } else if (e2 == Expression.TRUE) {
             return e1;
         } else if (e1 instanceof AndExpression) {
             return new AndExpression(Stream.concat(((AndExpression) e1).expressions.stream(),
-                    Stream.of(requireNonNull(e2))).toList());
+                    Stream.of(new WrapperExpression(e2))).toList());
         } else {
-            return new AndExpression(List.of(requireNonNull(e1), requireNonNull(e2)));
+            return new AndExpression(List.of(new WrapperExpression(e1), new WrapperExpression(e2)));
         }
     }
 
@@ -37,5 +37,10 @@ public record AndExpression(List<BooleanExpression> expressions) implements Bool
         return printContext.parenthesize(PRECEDENCE, expressions.stream()
                 .map(printContext.withPrecedence(PRECEDENCE)::print)
                 .collect(joining(" and\n" + printContext.getIndent())));
+    }
+
+    @Override
+    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
+        return new AndExpression(expressions.stream().map(e -> e.withIncrementedSuffixes(increments)).toList());
     }
 }

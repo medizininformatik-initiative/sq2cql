@@ -10,8 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import static de.numcodex.sq2cql.Assertions.assertThat;
 import static de.numcodex.sq2cql.Util.createTranslator;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SpecimenTest {
 
@@ -28,9 +28,9 @@ public class SpecimenTest {
         var translator = createTranslator();
         var structuredQuery = readStructuredQuery("SpecimenSQ.json");
 
-        var cql = translator.toCql(structuredQuery).print();
+        var library = translator.toCql(structuredQuery);
 
-        assertEquals("""
+        assertThat(library).printsTo("""
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
@@ -45,11 +45,14 @@ public class SpecimenTest {
                   [Condition: Code 'E13.91' from icd10] union
                   [Condition: Code 'E13.90' from icd10]
                         
-                define InInitialPopulation:
+                define Criterion:
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
                       such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id)
-                    """, cql);
+                      
+                define InInitialPopulation:
+                  Criterion
+                """);
     }
 
     @Test
@@ -57,9 +60,9 @@ public class SpecimenTest {
         var translator = createTranslator();
         var structuredQuery = readStructuredQuery("SpecimenSQExclusion.json");
 
-        var cql = translator.toCql(structuredQuery).print();
+        var library = translator.toCql(structuredQuery);
 
-        assertEquals("""
+        assertThat(library).printsTo("""
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
@@ -68,24 +71,30 @@ public class SpecimenTest {
                 codesystem snomed: 'http://snomed.info/sct'
                         
                 context Patient
+                                                       
+                define "Criterion 1":
+                  Patient.gender = 'female'
+                  
+                define Inclusion:
+                  "Criterion 1"
                         
                 define "Diagnose E13.9":
                   [Condition: Code 'E13.9' from icd10] union
                   [Condition: Code 'E13.91' from icd10] union
                   [Condition: Code 'E13.90' from icd10]
-                                                       
-                define Inclusion:
-                  Patient.gender = 'female'
                         
-                define Exclusion:
+                define "Criterion 2":
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
                       such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id)
                       
+                define Exclusion:
+                  "Criterion 2"
+                      
                 define InInitialPopulation:
                   Inclusion and
                   not Exclusion
-                    """, cql);
+                    """);
     }
 
     @Test
@@ -93,9 +102,9 @@ public class SpecimenTest {
         var translator = createTranslator();
         var structuredQuery = readStructuredQuery("SpecimenSQTwoInclusion.json");
 
-        var cql = translator.toCql(structuredQuery).print();
+        var library = translator.toCql(structuredQuery);
 
-        assertEquals("""
+        assertThat(library).printsTo("""
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
@@ -105,17 +114,23 @@ public class SpecimenTest {
                         
                 context Patient
                         
+                define "Criterion 1":
+                  Patient.gender = 'female'
+                  
                 define "Diagnose E13.9":
                   [Condition: Code 'E13.9' from icd10] union
                   [Condition: Code 'E13.91' from icd10] union
                   [Condition: Code 'E13.90' from icd10]
                         
-                define InInitialPopulation:
-                  Patient.gender = 'female' and
+                define "Criterion 2":
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
                       such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id)
-                    """, cql);
+                      
+                define InInitialPopulation:
+                  "Criterion 1" and
+                  "Criterion 2"
+                    """);
     }
 
     @Test
@@ -123,9 +138,9 @@ public class SpecimenTest {
         var translator = createTranslator();
         var structuredQuery = readStructuredQuery("SpecimenSQTwoReferenceCriteria.json");
 
-        var cql = translator.toCql(structuredQuery).print();
+        var library = translator.toCql(structuredQuery);
 
-        assertEquals("""
+        assertThat(library).printsTo("""
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
@@ -142,11 +157,14 @@ public class SpecimenTest {
                   [Condition: Code 'E13.1' from icd10] union
                   [Condition: Code 'E13.11' from icd10]
                         
-                define InInitialPopulation:
+                define Criterion:
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9 and Diagnose E13.1" C
                       such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id)
-                    """, cql);
+                      
+                define InInitialPopulation:
+                  Criterion
+                """);
     }
 
     @Test
@@ -154,9 +172,9 @@ public class SpecimenTest {
         var translator = createTranslator();
         var structuredQuery = readStructuredQuery("SpecimenSQAndBodySite.json");
 
-        var cql = translator.toCql(structuredQuery).print();
+        var library = translator.toCql(structuredQuery);
 
-        assertEquals("""
+        assertThat(library).printsTo("""
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
@@ -172,12 +190,15 @@ public class SpecimenTest {
                   [Condition: Code 'E13.91' from icd10] union
                   [Condition: Code 'E13.90' from icd10]
                         
-                define InInitialPopulation:
+                define Criterion:
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
                       such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
                     where S.collection.bodySite.coding contains Code 'C44.6' from icd_o_3)
-                    """, cql);
+                    
+                define InInitialPopulation:
+                  Criterion
+                """);
     }
 
     private StructuredQuery readStructuredQuery(String name) throws Exception {

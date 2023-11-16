@@ -4,9 +4,9 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record BetweenExpression(Expression value,
-                                Expression lowerBound,
-                                Expression upperBound) implements BooleanExpression {
+public record BetweenExpression(Expression<?> value,
+                                Expression<?> lowerBound,
+                                Expression<?> upperBound) implements DefaultExpression {
 
     public static final int PRECEDENCE = 10;
 
@@ -16,7 +16,7 @@ public record BetweenExpression(Expression value,
         requireNonNull(upperBound);
     }
 
-    public static BetweenExpression of(Expression value, Expression lowerBound, Expression upperBound) {
+    public static BetweenExpression of(Expression<?> value, Expression<?> lowerBound, Expression<?> upperBound) {
         return new BetweenExpression(value, lowerBound, upperBound);
     }
 

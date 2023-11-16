@@ -1,6 +1,5 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.cql.*;
 
@@ -21,7 +20,7 @@ public record TimeRestrictionModifier(String path, String afterDate, String befo
     }
 
     @Override
-    public Container<BooleanExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
+    public Container<DefaultExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
         var invocationExpr = InvocationExpression.of(sourceAlias, path);
         var castExp = TypeExpression.of(invocationExpr, "dateTime");
         var toDateFunction = FunctionInvocation.of("ToDate", List.of(castExp));

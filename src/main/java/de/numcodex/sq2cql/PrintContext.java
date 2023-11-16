@@ -39,15 +39,11 @@ public record PrintContext(int indent, int precedence) {
         return new PrintContext(indent, 0);
     }
 
-    public String print(Expression expression) {
+    public String print(Expression<?> expression) {
         return expression.print(this);
     }
 
     public String print(Clause clause) {
         return clause.print(this);
-    }
-
-    public String print(Container<? extends Expression> container) {
-        return container.getExpression().map(this::print).orElse("");
     }
 }

@@ -5,12 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.cql.BooleanExpression;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
+import de.numcodex.sq2cql.model.cql.Container;
+import de.numcodex.sq2cql.model.cql.DefaultExpression;
 import de.numcodex.sq2cql.model.cql.Expression;
 
 import java.util.List;
@@ -39,12 +39,12 @@ public interface Criterion {
         }
 
         @Override
-        public Container<BooleanExpression> toCql(MappingContext mappingContext) {
-            return Container.of(BooleanExpression.TRUE);
+        public Container<DefaultExpression> toCql(MappingContext mappingContext) {
+            return Container.of(Expression.TRUE).moveToPatientContext("Criterion");
         }
 
         @Override
-        public Container<Expression> toReferencesCql(MappingContext mappingContext) {
+        public Container<DefaultExpression> toReferencesCql(MappingContext mappingContext) {
             throw new UnsupportedOperationException();
         }
 
@@ -65,12 +65,12 @@ public interface Criterion {
         }
 
         @Override
-        public Container<BooleanExpression> toCql(MappingContext mappingContext) {
-            return Container.of(BooleanExpression.FALSE);
+        public Container<DefaultExpression> toCql(MappingContext mappingContext) {
+            return Container.of(Expression.FALSE).moveToPatientContext("Criterion");
         }
 
         @Override
-        public Container<Expression> toReferencesCql(MappingContext mappingContext) {
+        public Container<DefaultExpression> toReferencesCql(MappingContext mappingContext) {
             throw new UnsupportedOperationException();
         }
 
@@ -168,9 +168,9 @@ public interface Criterion {
      * @return a {@link Container} of the CQL expression together with its used {@link CodeSystemDefinition
      * CodeSystemDefinitions}
      */
-    Container<BooleanExpression> toCql(MappingContext mappingContext);
+    Container<DefaultExpression> toCql(MappingContext mappingContext);
 
-    Container<Expression> toReferencesCql(MappingContext mappingContext);
+    Container<DefaultExpression> toReferencesCql(MappingContext mappingContext);
 
     TimeRestriction timeRestriction();
 }

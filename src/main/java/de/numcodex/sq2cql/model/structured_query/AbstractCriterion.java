@@ -1,6 +1,5 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.Container;
 import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -18,7 +17,7 @@ import static java.util.Objects.requireNonNull;
  */
 abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Criterion {
 
-    private static final IdentifierExpression PATIENT = IdentifierExpression.of("Patient");
+    private static final IdentifierExpression PATIENT = StandardIdentifierExpression.of("Patient");
 
     final ContextualConcept concept;
     final List<AttributeFilter> attributeFilters;
@@ -69,7 +68,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                 RetrieveExpression.of(mapping.resourceType(), terminology));
     }
 
-    static ExistsExpression existsExpr(SourceClause sourceClause, BooleanExpression whereExpr) {
+    static ExistsExpression existsExpr(SourceClause sourceClause, DefaultExpression whereExpr) {
         return ExistsExpression.of(QueryExpression.of(sourceClause, WhereClause.of(whereExpr)));
     }
 
@@ -85,16 +84,16 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
     }
 
     @Override
-    public Container<BooleanExpression> toCql(MappingContext mappingContext) {
+    public Container<DefaultExpression> toCql(MappingContext mappingContext) {
         var expr = fullExpr(mappingContext);
         if (expr.isEmpty()) {
             throw new TranslationException("Failed to expand the concept %s.".formatted(concept));
         }
-        return expr;
+        return expr.moveToPatientContext("Criterion");
     }
 
     @Override
-    public Container<Expression> toReferencesCql(MappingContext mappingContext) {
+    public Container<DefaultExpression> toReferencesCql(MappingContext mappingContext) {
         return mappingContext.expandConcept(concept)
                 .map(termCode -> refExpr(mappingContext, termCode))
                 .reduce(Container.empty(), Container.UNION);
@@ -104,13 +103,13 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
      * Builds an OR-expression with an expression for each concept of the expansion of {@code
      * termCode}.
      */
-    private Container<BooleanExpression> fullExpr(MappingContext mappingContext) {
+    private Container<DefaultExpression> fullExpr(MappingContext mappingContext) {
         return mappingContext.expandConcept(concept)
                 .map(termCode -> expr(mappingContext, termCode))
                 .reduce(Container.empty(), Container.OR);
     }
 
-    private Container<BooleanExpression> expr(MappingContext mappingContext, ContextualTermCode termCode) {
+    private Container<DefaultExpression> expr(MappingContext mappingContext, ContextualTermCode termCode) {
         var mapping = mappingContext.findMapping(termCode)
                 .orElseThrow(() -> new MappingNotFoundException(termCode));
         switch (mapping.resourceType()) {
@@ -141,7 +140,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
         }
     }
 
-    private Container<Expression> refExpr(MappingContext mappingContext, ContextualTermCode termCode) {
+    private Container<DefaultExpression> refExpr(MappingContext mappingContext, ContextualTermCode termCode) {
         var mapping = mappingContext.findMapping(termCode)
                 .orElseThrow(() -> new MappingNotFoundException(termCode));
         return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {
@@ -150,14 +149,14 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
             var query = valueExpr(mappingContext, mapping, alias)
                     .map(valueExpr -> QueryExpression.of(sourceClause, WhereClause.of(valueExpr)))
                     .or(() -> QueryExpression.of(sourceClause));
-            return appendModifier(mappingContext, mapping, query);
+            return appendModifier(mappingContext, mapping, query).map(WrapperExpression::new);
         });
     }
 
     /*
      * Creates an expression from value criteria that will end up in the where clause.
      */
-    abstract Container<BooleanExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
+    abstract Container<DefaultExpression> valueExpr(MappingContext mappingContext, Mapping mapping,
                                                     IdentifierExpression sourceAlias);
 
     /*

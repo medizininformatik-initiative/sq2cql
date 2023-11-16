@@ -5,7 +5,7 @@ import de.numcodex.sq2cql.PrintContext;
 import static java.util.Objects.requireNonNull;
 
 
-public record StringLiteralExpression(String value) implements ExpressionTerm {
+public record StringLiteralExpression(String value) implements DefaultExpression {
 
     public StringLiteralExpression {
         requireNonNull(value);

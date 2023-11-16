@@ -5,7 +5,8 @@ import de.numcodex.sq2cql.model.common.Comparator;
 
 import static java.util.Objects.requireNonNull;
 
-public record ComparatorExpression(Expression a, Comparator comparator, Expression b) implements BooleanExpression {
+public record ComparatorExpression(Expression<?> a, Comparator comparator,
+                                   Expression<?> b) implements DefaultExpression {
 
     public ComparatorExpression {
         requireNonNull(a);
@@ -13,11 +14,11 @@ public record ComparatorExpression(Expression a, Comparator comparator, Expressi
         requireNonNull(b);
     }
 
-    public static ComparatorExpression of(Expression a, Comparator comparator, Expression b) {
+    public static ComparatorExpression of(Expression<?> a, Comparator comparator, Expression<?> b) {
         return new ComparatorExpression(a, comparator, b);
     }
 
-    public static ComparatorExpression equal(Expression a, Expression b) {
+    public static ComparatorExpression equal(Expression<?> a, Expression<?> b) {
         return new ComparatorExpression(a, Comparator.EQUAL, b);
     }
 

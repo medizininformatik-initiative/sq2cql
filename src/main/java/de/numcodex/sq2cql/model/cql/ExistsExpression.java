@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import static java.util.Objects.requireNonNull;
 
-public record ExistsExpression(Expression expression) implements BooleanExpression {
+public record ExistsExpression(Expression<?> expression) implements DefaultExpression {
 
     public static final int PRECEDENCE = 11;
 
@@ -12,7 +12,7 @@ public record ExistsExpression(Expression expression) implements BooleanExpressi
         requireNonNull(expression);
     }
 
-    public static ExistsExpression of(Expression expression) {
+    public static ExistsExpression of(Expression<?> expression) {
         return new ExistsExpression(expression);
     }
 

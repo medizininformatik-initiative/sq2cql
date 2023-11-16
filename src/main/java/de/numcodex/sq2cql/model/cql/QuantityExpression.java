@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 import static java.util.Objects.requireNonNull;
 
-public record QuantityExpression(BigDecimal value, String unit) implements Expression {
+public record QuantityExpression(BigDecimal value, String unit) implements DefaultExpression {
 
     public QuantityExpression {
         requireNonNull(value);
