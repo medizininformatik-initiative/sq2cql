@@ -147,6 +147,16 @@ public class AcceptanceTest {
         assertEquals(0, report.getGroupFirstRep().getPopulationFirstRep().getCount());
     }
 
+    @Test
+    public void consent() throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp("consent.json"), StructuredQuery.class);
+        var cql = translator.toCql(structuredQuery).print();
+        var measureUri = createMeasureAndLibrary(cql);
+        var report = evaluateMeasure(measureUri);
+
+        assertEquals(1, report.getGroupFirstRep().getPopulationFirstRep().getCount());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"large-query-worst-case-with-time-constraints.json", "test-large-query-more-crit-time-rest-1.json"})
     public void largeQuery(String filename) throws Exception {
