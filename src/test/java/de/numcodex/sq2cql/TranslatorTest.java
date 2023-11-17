@@ -32,6 +32,11 @@ class TranslatorTest {
             TermCode.of("http://snomed.info/sct", "424144002", "Current chronological age"));
     static final ContextualTermCode GENDER = ContextualTermCode.of(CONTEXT,
             TermCode.of("http://snomed.info/sct", "263495000", "Gender"));
+    static final TermCode CONTEXT_CONSENT = TermCode.of("fdpg.mii.cds", "Einwilligung", "Einwilligung");
+    static final ContextualTermCode CONSENT_MDAT = ContextualTermCode.of(CONTEXT_CONSENT,
+            TermCode.of("urn:oid:2.16.840.1.113883.3.1937.777.24.5.3",
+                    "2.16.840.1.113883.3.1937.777.24.5.3.8",
+                    "MDAT wissenschaftlich nutzen EU DSGVO NIVEAU"));
     static final ContextualTermCode ROOT = ContextualTermCode.of(CONTEXT, TermCode.of("", "", ""));
     static final ContextualTermCode C71 = ContextualTermCode.of(CONTEXT,
             TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
@@ -136,19 +141,19 @@ class TranslatorTest {
                     StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1))))));
 
             assertThat(library).printsTo("""
-library Retrieve version '1.0.0'
-using FHIR version '4.0.0'
-include FHIRHelpers version '4.0.0'
-                                   
-codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-       
-context Patient
-                
-define Criterion:
-  exists [Condition: Code 'C71.1' from icd10]
-  
-define InInitialPopulation:
-  Criterion
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                                                       
+                    codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
+                           
+                    context Patient
+                                    
+                    define Criterion:
+                      exists [Condition: Code 'C71.1' from icd10]
+                      
+                    define InInitialPopulation:
+                      Criterion
                     """);
         }
 
@@ -784,6 +789,77 @@ define InInitialPopulation:
                       
                     define Criterion:
                       Patient.gender = 'female'
+                      
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
+
+        @Test
+        void consent() throws Exception {
+            var mapping = readMapping("""
+                    {
+                        "context": {
+                            "code": "Einwilligung",
+                            "display": "Einwilligung",
+                            "system": "fdpg.mii.cds",
+                            "version": "1.0.0"
+                        },
+                        "key": {
+                            "code": "2.16.840.1.113883.3.1937.777.24.5.3.8",
+                            "display": "MDAT wissenschaftlich nutzen EU DSGVO NIVEAU",
+                            "system": "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3",
+                            "version": "1.0.2"
+                        },
+                        "name": "Einwilligung",
+                        "resourceType": "Consent",
+                        "termCodeFhirPath": "provision.provision.code"
+                    }
+                    """);
+
+            var structuredQuery = readStructuredQuery("""
+                    {
+                      "version": "http://to_be_decided.com/draft-1/schema#",
+                      "display": "",
+                      "inclusionCriteria": [
+                        [
+                          {
+                            "context": {
+                              "code": "Einwilligung",
+                              "display": "Einwilligung",
+                              "system": "fdpg.mii.cds",
+                              "version": "1.0.0"
+                            },
+                            "termCodes": [
+                              {
+                                "code": "2.16.840.1.113883.3.1937.777.24.5.3.8",
+                                "display": "MDAT wissenschaftlich nutzen EU DSGVO NIVEAU",
+                                "system": "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3"
+                              }
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                    """);
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(CONSENT_MDAT));
+            var mappings = Map.of(CONSENT_MDAT, mapping);
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
+
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                                    
+                    codesystem consent: 'urn:oid:2.16.840.1.113883.3.1937.777.24.5.3'
+                                    
+                    context Patient
+                                    
+                    define Criterion:
+                      exists (from [Consent] C
+                        where C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.8' from consent)
                       
                     define InInitialPopulation:
                       Criterion

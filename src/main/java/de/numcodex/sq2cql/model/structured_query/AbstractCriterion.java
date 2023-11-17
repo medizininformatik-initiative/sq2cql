@@ -63,9 +63,11 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                                                       ContextualTermCode termCode) {
         var mapping = mappingContext.findMapping(termCode)
                 .orElseThrow(() -> new MappingNotFoundException(termCode));
-        // TODO if no primary code retrieve all resources
-        return codeSelector(mappingContext, mapping.primaryCode()).map(terminology ->
-                RetrieveExpression.of(mapping.resourceType(), terminology));
+
+        return mapping.termCodeFhirPath() == null
+                ? codeSelector(mappingContext, mapping.primaryCode())
+                .map(terminology -> RetrieveExpression.of(mapping.resourceType(), terminology))
+                : Container.of(RetrieveExpression.of(mapping.resourceType()));
     }
 
     static ExistsExpression existsExpr(SourceClause sourceClause, DefaultExpression whereExpr) {
@@ -164,8 +166,12 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
      */
     private Container<QueryExpression> appendModifier(MappingContext mappingContext, Mapping mapping,
                                                       Container<QueryExpression> queryContainer) {
-        for (var criterion : mapping.fixedCriteria()) {
-            queryContainer = criterion.updateQuery(mappingContext, queryContainer);
+        var termCodeModifier = termCodeModifier(mapping);
+        if (termCodeModifier != null) {
+            queryContainer = termCodeModifier.updateQuery(mappingContext, queryContainer);
+        }
+        for (var modifier : mapping.fixedCriteria()) {
+            queryContainer = modifier.updateQuery(mappingContext, queryContainer);
         }
         for (var modifier : resolveAttributeModifiers(mapping.attributeMappings())) {
             queryContainer = modifier.updateQuery(mappingContext, queryContainer);
@@ -174,6 +180,11 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
             queryContainer = timeRestriction.toModifier(mapping).updateQuery(mappingContext, queryContainer);
         }
         return queryContainer;
+    }
+
+    private Modifier termCodeModifier(Mapping mapping) {
+        var termCodeFhirPath = mapping.termCodeFhirPath();
+        return termCodeFhirPath == null ? null : new CodingModifier(termCodeFhirPath + ".coding", List.of(mapping.primaryCode()));
     }
 
     private List<Modifier> resolveAttributeModifiers(Map<TermCode, AttributeMapping> attributeMappings) {

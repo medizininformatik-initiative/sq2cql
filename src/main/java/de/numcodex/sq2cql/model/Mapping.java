@@ -131,4 +131,8 @@ public final class Mapping {
         // TODO: decouple key and primary code. The key should only be used for the mapping lookup.
         return primaryCode == null ? key.termCode() : primaryCode;
     }
+
+    public String termCodeFhirPath() {
+        return termCodeFhirPath;
+    }
 }
