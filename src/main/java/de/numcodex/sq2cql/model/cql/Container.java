@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.joining;
  */
 public final class Container<T extends Expression<T>> {
 
-    private static final Container<DefaultExpression> EMPTY = new Container<>(null, Set.of(), List.of(), List.of());
+    private static final Container<DefaultExpression> EMPTY = new Container<>(null, Set.of(), Set.of(), List.of());
     public static final BinaryOperator<Container<DefaultExpression>> AND = combiner(AndExpression::of);
     public static final BinaryOperator<Container<DefaultExpression>> AND_NOT = combiner((a, b) -> a.and(NotExpression.of(b)));
     public static final BinaryOperator<Container<DefaultExpression>> OR = combiner(OrExpression::of);
@@ -39,11 +39,11 @@ public final class Container<T extends Expression<T>> {
             """;
     private final T expression;
     private final Set<CodeSystemDefinition> codeSystemDefinitions;
-    private final List<ExpressionDefinition> unfilteredDefinitions;
+    private final Set<ExpressionDefinition> unfilteredDefinitions;
     private final List<ExpressionDefinition> patientDefinitions;
 
     private Container(T expression, Set<CodeSystemDefinition> codeSystemDefinitions,
-                      List<ExpressionDefinition> unfilteredDefinitions,
+                      Set<ExpressionDefinition> unfilteredDefinitions,
                       List<ExpressionDefinition> patientDefinitions) {
         this.expression = expression;
         this.codeSystemDefinitions = codeSystemDefinitions;
@@ -75,7 +75,7 @@ public final class Container<T extends Expression<T>> {
      * @throws NullPointerException if {@code expression} is null
      */
     public static <T extends Expression<T>> Container<T> of(T expression, CodeSystemDefinition... codeSystemDefinitions) {
-        return new Container<>(requireNonNull(expression), Set.of(codeSystemDefinitions), List.of(), List.of());
+        return new Container<>(requireNonNull(expression), Set.of(codeSystemDefinitions), Set.of(), List.of());
     }
 
     /**
@@ -115,7 +115,7 @@ public final class Container<T extends Expression<T>> {
             return new Container<>(combiner.apply(a.expression.withIncrementedSuffixes(aIncrements),
                     b.expression.withIncrementedSuffixes(bIncrements)),
                     Sets.union(a.codeSystemDefinitions, b.codeSystemDefinitions),
-                    Lists.concat(a.unfilteredDefinitions, b.unfilteredDefinitions),
+                    Sets.union(a.unfilteredDefinitions, b.unfilteredDefinitions),
                     Lists.concat(a.withIncrementedSuffixes(aIncrements), b.withIncrementedSuffixes(bIncrements)));
         };
     }
@@ -150,9 +150,11 @@ public final class Container<T extends Expression<T>> {
     }
 
     private Optional<Context> getUnfilteredContext() {
+        var list = new ArrayList<>(unfilteredDefinitions);
+        list.sort(Comparator.comparing(ExpressionDefinition::name));
         return unfilteredDefinitions.isEmpty()
                 ? Optional.empty() :
-                Optional.of(Context.of("Unfiltered", unfilteredDefinitions));
+                Optional.of(Context.of("Unfiltered", List.copyOf(list)));
     }
 
     private Optional<Context> getPatientContext() {
@@ -177,7 +179,7 @@ public final class Container<T extends Expression<T>> {
 
         var identifier = StandardIdentifierExpression.of(name);
         return new Container<>(new WrapperExpression(identifier), codeSystemDefinitions,
-                Lists.append(unfilteredDefinitions, ExpressionDefinition.of(identifier, expression)),
+                Sets.append(unfilteredDefinitions, ExpressionDefinition.of(identifier, expression)),
                 patientDefinitions);
     }
 
@@ -224,7 +226,7 @@ public final class Container<T extends Expression<T>> {
             var increments = suffixes();
             return new Container<>(container.expression.withIncrementedSuffixes(increments),
                     Sets.union(codeSystemDefinitions, container.codeSystemDefinitions),
-                    Lists.concat(unfilteredDefinitions, container.unfilteredDefinitions),
+                    Sets.union(unfilteredDefinitions, container.unfilteredDefinitions),
                     Lists.concat(patientDefinitions, container.patientDefinitions.stream()
                             .map(d -> d.withIncrementedSuffixes(increments))
                             .toList()));
