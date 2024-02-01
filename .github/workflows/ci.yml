@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Check out Git repository
@@ -45,7 +45,7 @@ jobs:
   release:
     needs: build
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Check out Git repository
@@ -66,7 +66,7 @@ jobs:
   release-v2:
     needs: build
     if: github.ref == 'refs/heads/v2'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Check out Git repository
