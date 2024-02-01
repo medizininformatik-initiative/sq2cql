@@ -70,10 +70,6 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                 : Container.of(RetrieveExpression.of(mapping.resourceType()));
     }
 
-    static ExistsExpression existsExpr(SourceClause sourceClause, DefaultExpression whereExpr) {
-        return ExistsExpression.of(QueryExpression.of(sourceClause, WhereClause.of(whereExpr)));
-    }
-
     private static String referenceName(TermCode termCode) {
         return "%s".formatted(termCode.display() + termCode.code() + "Ref");
     }
@@ -119,15 +115,17 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                 return valueExpr(mappingContext, mapping, PATIENT);
             }
             case "MedicationAdministration" -> {
-                return medicationReferencesExpr(mappingContext, termCode.termCode())
+                var query = medicationReferencesExpr(mappingContext, termCode.termCode())
                         .moveToUnfilteredContext(referenceName(termCode.termCode()))
                         .map(medicationReferencesExpr -> {
                             var retrieveExpr = RetrieveExpression.of("MedicationAdministration");
                             var alias = retrieveExpr.alias();
                             var sourceClause = SourceClause.of(AliasedQuerySource.of(retrieveExpr, alias));
                             var referenceExpression = InvocationExpression.of(alias, "medication.reference");
-                            return existsExpr(sourceClause, MembershipExpression.in(referenceExpression, medicationReferencesExpr));
+                            var whereExpr = MembershipExpression.in(referenceExpression, medicationReferencesExpr);
+                            return QueryExpression.of(sourceClause, WhereClause.of(whereExpr));
                         });
+                return appendModifier(mappingContext, mapping, query).map(ExistsExpression::of);
             }
             default -> {
                 return retrieveExpr(mappingContext, termCode).flatMap(retrieveExpr -> {

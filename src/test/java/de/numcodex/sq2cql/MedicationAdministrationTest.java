@@ -26,7 +26,7 @@ public class MedicationAdministrationTest {
     @Test
     public void translateMedicationAdministration() throws Exception {
         var translator = createTranslator();
-        var structuredQuery = readStructuredQuery();
+        var structuredQuery = readStructuredQuery("MedicationAdministrationSQ.json");
 
         var library = translator.toCql(structuredQuery);
 
@@ -54,7 +54,40 @@ public class MedicationAdministrationTest {
                 """);
     }
 
-    private StructuredQuery readStructuredQuery() throws Exception {
-        return new ObjectMapper().readValue(slurp("MedicationAdministrationSQ.json"), StructuredQuery.class);
+    @Test
+    public void translateMedicationAdministrationTimeRestriction() throws Exception {
+        var translator = createTranslator();
+        var structuredQuery = readStructuredQuery("MedicationAdministrationSQTimeRestriction.json");
+
+        var library = translator.toCql(structuredQuery);
+
+        assertThat(library).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                        
+                codesystem atc: 'http://fhir.de/CodeSystem/bfarm/atc'
+                        
+                context Unfiltered
+                        
+                define HeparinB01AB01Ref:
+                  from [Medication: Code 'B01AB01' from atc] M
+                    return 'Medication/' + M.id
+                        
+                context Patient
+                        
+                define Criterion:
+                  exists (from [MedicationAdministration] M
+                    where M.medication.reference in HeparinB01AB01Ref and
+                      (ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01] or
+                      M.effective overlaps Interval[@2024-01-01, @2024-02-01]))
+                    
+                define InInitialPopulation:
+                  Criterion
+                """);
+    }
+
+    private StructuredQuery readStructuredQuery(String filename) throws Exception {
+        return new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
     }
 }
