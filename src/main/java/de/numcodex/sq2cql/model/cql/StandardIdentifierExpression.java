@@ -25,4 +25,9 @@ public record StandardIdentifierExpression(String identifier) implements Identif
     public IdentifierExpression withIncrementedSuffixes(Map<String, Integer> increments) {
         return this;
     }
+
+    @Override
+    public String unquotedIdentifier() {
+        return identifier;
+    }
 }

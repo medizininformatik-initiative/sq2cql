@@ -32,4 +32,9 @@ public record SuffixedIdentifierExpression(String prefix, int suffix) implements
     public Map<String, Integer> suffixes() {
         return Map.of(prefix, suffix);
     }
+
+    @Override
+    public String unquotedIdentifier() {
+        return "%s %d".formatted(prefix, suffix);
+    }
 }

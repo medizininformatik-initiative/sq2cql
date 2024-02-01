@@ -87,6 +87,86 @@ public class MedicationAdministrationTest {
                 """);
     }
 
+    @Test
+    public void translateMedicationAdministrationDoubleCriteria() throws Exception {
+        var translator = createTranslator();
+        var structuredQuery = readStructuredQuery("MedicationAdministrationSQDoubleCriteria.json");
+
+        var library = translator.toCql(structuredQuery);
+
+        assertThat(library).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                        
+                codesystem atc: 'http://fhir.de/CodeSystem/bfarm/atc'
+                        
+                context Unfiltered
+                        
+                define HeparinB01AB01Ref:
+                  from [Medication: Code 'B01AB01' from atc] M
+                    return 'Medication/' + M.id
+                        
+                context Patient
+                        
+                define "Criterion 1":
+                  exists (from [MedicationAdministration] M
+                    where M.medication.reference in HeparinB01AB01Ref and
+                      (ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01] or
+                      M.effective overlaps Interval[@2024-01-01, @2024-02-01]))
+                        
+                define "Criterion 2":
+                  exists (from [MedicationAdministration] M
+                    where M.medication.reference in HeparinB01AB01Ref and
+                      (ToDate(M.effective as dateTime) in Interval[@2023-01-01, @2023-02-01] or
+                      M.effective overlaps Interval[@2023-01-01, @2023-02-01]))
+                    
+                define InInitialPopulation:
+                  "Criterion 1" and
+                  "Criterion 2"
+                """);
+    }
+
+    @Test
+    public void translateMedicationAdministrationTwoCriteria() throws Exception {
+        var translator = createTranslator();
+        var structuredQuery = readStructuredQuery("MedicationAdministrationSQTwoCriteria.json");
+
+        var library = translator.toCql(structuredQuery);
+
+        assertThat(library).printsTo("""
+                library Retrieve version '1.0.0'
+                using FHIR version '4.0.0'
+                include FHIRHelpers version '4.0.0'
+                        
+                codesystem atc: 'http://fhir.de/CodeSystem/bfarm/atc'
+                        
+                context Unfiltered
+                                                
+                define "AcetylsalicylsäureB01AC06Ref":
+                  from [Medication: Code 'B01AC06' from atc] M
+                    return 'Medication/' + M.id
+                        
+                define HeparinB01AB01Ref:
+                  from [Medication: Code 'B01AB01' from atc] M
+                    return 'Medication/' + M.id
+                        
+                context Patient
+                        
+                define "Criterion 1":
+                  exists (from [MedicationAdministration] M
+                    where M.medication.reference in HeparinB01AB01Ref)
+                        
+                define "Criterion 2":
+                  exists (from [MedicationAdministration] M
+                    where M.medication.reference in "AcetylsalicylsäureB01AC06Ref")
+                    
+                define InInitialPopulation:
+                  "Criterion 1" and
+                  "Criterion 2"
+                """);
+    }
+
     private StructuredQuery readStructuredQuery(String filename) throws Exception {
         return new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
     }
