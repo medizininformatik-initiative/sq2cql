@@ -23,6 +23,10 @@ public class MedicationAdministrationTest {
         return Files.readString(resourcePath(name));
     }
 
+    private static StructuredQuery readStructuredQuery(String filename) throws Exception {
+        return new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
+    }
+
     @Test
     public void translateMedicationAdministration() throws Exception {
         var translator = createTranslator();
@@ -165,9 +169,5 @@ public class MedicationAdministrationTest {
                   "Criterion 1" and
                   "Criterion 2"
                 """);
-    }
-
-    private StructuredQuery readStructuredQuery(String filename) throws Exception {
-        return new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
     }
 }

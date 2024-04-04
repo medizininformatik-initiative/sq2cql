@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.TermCodeNode;
@@ -49,7 +50,7 @@ public class EvaluationIT {
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of("http://loinc.org", "loinc");
 
     @Container
-    private final GenericContainer<?> blaze = new GenericContainer<>(DockerImageName.parse("samply/blaze:pr-1270"))
+    private final GenericContainer<?> blaze = new GenericContainer<>(DockerImageName.parse("samply/blaze:0.25"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withExposedPorts(8080)
             .waitingFor(Wait.forHttp("/health").forStatusCode(200))
@@ -78,6 +79,14 @@ public class EvaluationIT {
         return bundle;
     }
 
+    private static Mapping readMapping(String s) throws Exception {
+        return new ObjectMapper().readValue(s, Mapping.class);
+    }
+
+    private static StructuredQuery readStructuredQuery(String s) throws Exception {
+        return new ObjectMapper().readValue(s, StructuredQuery.class);
+    }
+
     @BeforeEach
     public void setUp() {
         fhirClient = fhirContext.newRestfulGenericClient(format("http://localhost:%d/fhir", blaze.getFirstMappedPort()));
@@ -95,6 +104,101 @@ public class EvaluationIT {
         var translator = Translator.of(mappingContext);
         var criterion = NumericCriterion.of(ContextualConcept.of(BLOOD_PRESSURE), LESS_THAN, BigDecimal.valueOf(80), "mm[Hg]");
         var structuredQuery = StructuredQuery.of(List.of(List.of(criterion)));
+        var cql = translator.toCql(structuredQuery).print();
+        var libraryUri = "urn:uuid" + UUID.randomUUID();
+        var library = appendCql(parseResource(Library.class, slurp("Library.json")).setUrl(libraryUri), cql);
+        var measureUri = "urn:uuid" + UUID.randomUUID();
+        var measure = parseResource(Measure.class, slurp("Measure.json")).setUrl(measureUri).addLibrary(libraryUri);
+        var bundle = createBundle(library, measure);
+
+        fhirClient.transaction().withBundle(bundle).execute();
+
+        var report = fhirClient.operation()
+                .onType(Measure.class)
+                .named("evaluate-measure")
+                .withSearchParameter(Parameters.class, "measure", new StringParam(measureUri))
+                .andSearchParameter("periodStart", new DateParam("1900"))
+                .andSearchParameter("periodEnd", new DateParam("2100"))
+                .useHttpGet()
+                .returnResourceType(MeasureReport.class)
+                .execute();
+
+        assertEquals(1, report.getGroupFirstRep().getPopulationFirstRep().getCount());
+    }
+
+    @Test
+    public void evaluateBloodPressureAttribute() throws Exception {
+        fhirClient.transaction().withBundle(parseResource(Bundle.class, slurp("blood-pressure-bundle.json"))).execute();
+
+        var mapping = readMapping("""
+                {
+                    "context": {
+                          "system": "context",
+                          "code": "context",
+                          "display": "context"
+                    },
+                    "key": {
+                        "system": "http://loinc.org",
+                        "code": "85354-9",
+                        "display": "Blood pressure panel with all children optional"
+                    },
+                    "resourceType": "Observation",
+                    "attributeFhirPaths": [
+                      {
+                        "attributeType": "Coding",
+                        "attributeKey": {
+                          "system": "http://loinc.org",
+                          "code": "8462-4",
+                          "display": "Diastolic blood pressure"
+                        },
+                        "attributePath": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first()"
+                      }
+                    ]
+                }
+                """);
+        var mappings = Map.of(BLOOD_PRESSURE, mapping);
+        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(BLOOD_PRESSURE));
+        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+        var translator = Translator.of(mappingContext);
+        var structuredQuery = readStructuredQuery("""
+                {
+                  "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
+                  "display": "",
+                  "inclusionCriteria": [
+                    [
+                      {
+                        "context": {
+                          "system": "context",
+                          "code": "context",
+                          "display": "context"
+                        },
+                        "termCodes": [
+                          {
+                            "system": "http://loinc.org",
+                            "code": "85354-9",
+                            "display": "Blood pressure panel with all children optional"
+                          }
+                        ],
+                        "attributeFilters": [
+                          {
+                            "attributeCode": {
+                              "system": "http://loinc.org",
+                              "code": "8462-4",
+                              "display": "Diastolic blood pressure"
+                            },
+                            "type": "quantity-comparator",
+                            "comparator": "lt",
+                            "value": 80,
+                            "unit": {
+                              "code": "mm[Hg]"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  ]
+                }
+                """);
         var cql = translator.toCql(structuredQuery).print();
         var libraryUri = "urn:uuid" + UUID.randomUUID();
         var library = appendCql(parseResource(Library.class, slurp("Library.json")).setUrl(libraryUri), cql);
