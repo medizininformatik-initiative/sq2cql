@@ -23,6 +23,10 @@ public class SpecimenTest {
         return Files.readString(resourcePath(name));
     }
 
+    private static StructuredQuery readStructuredQuery(String name) throws Exception {
+        return new ObjectMapper().readValue(slurp(name), StructuredQuery.class);
+    }
+
     @Test
     public void translate() throws Exception {
         var translator = createTranslator();
@@ -199,9 +203,5 @@ public class SpecimenTest {
                 define InInitialPopulation:
                   Criterion
                 """);
-    }
-
-    private StructuredQuery readStructuredQuery(String name) throws Exception {
-        return new ObjectMapper().readValue(slurp(name), StructuredQuery.class);
     }
 }

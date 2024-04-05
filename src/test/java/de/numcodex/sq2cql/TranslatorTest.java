@@ -76,6 +76,9 @@ class TranslatorTest {
             TermCode.of("http://fhir.de/CodeSystem/dimdi/atc", "L01AX03", "Temozolomide"));
     static final ContextualTermCode LIPID = ContextualTermCode.of(CONTEXT,
             TermCode.of("http://fhir.de/CodeSystem/dimdi/atc", "C10AA", "lipid lowering drugs"));
+    static final TermCode CONTEXT_LAB = TermCode.of("fdpg.mii.cds", "Laboruntersuchung", "Laboruntersuchung");
+    static final ContextualTermCode BLOOD_PRESSURE = ContextualTermCode.of(CONTEXT_LAB,
+            TermCode.of("http://loinc.org", "85354-9", "Blood pressure panel with all children optional"));
     static final TermCode CONFIRMED = TermCode.of(
             "http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed", "Confirmed");
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
@@ -91,11 +94,11 @@ class TranslatorTest {
     static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING = AttributeMapping.of("Coding",
             VERIFICATION_STATUS, "verificationStatus.coding");
 
-    private Mapping readMapping(String s) throws Exception {
+    private static Mapping readMapping(String s) throws Exception {
         return new ObjectMapper().readValue(s, Mapping.class);
     }
 
-    private StructuredQuery readStructuredQuery(String s) throws Exception {
+    private static StructuredQuery readStructuredQuery(String s) throws Exception {
         return new ObjectMapper().readValue(s, StructuredQuery.class);
     }
 
@@ -811,7 +814,6 @@ class TranslatorTest {
                             "system": "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3",
                             "version": "1.0.2"
                         },
-                        "name": "Einwilligung",
                         "resourceType": "Consent",
                         "termCodeFhirPath": "provision.provision.code"
                     }
@@ -861,6 +863,100 @@ class TranslatorTest {
                       exists (from [Consent] C
                         where C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.8' from consent)
                       
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
+
+        @Test
+        void bloodPressure() throws Exception {
+            var mapping = readMapping("""
+                    {
+                        "context": {
+                          "code": "Laboruntersuchung",
+                          "display": "Laboruntersuchung",
+                          "system": "fdpg.mii.cds",
+                          "version": "1.0.0"
+                        },
+                        "key": {
+                            "system": "http://loinc.org",
+                            "code": "85354-9",
+                            "display": "Blood pressure panel with all children optional"
+                        },
+                        "resourceType": "Observation",
+                        "attributeFhirPaths": [
+                          {
+                            "attributeType": "Coding",
+                            "attributeKey": {
+                              "system": "http://loinc.org",
+                              "code": "8462-4",
+                              "display": "Diastolic blood pressure"
+                            },
+                            "attributePath": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first()"
+                          }
+                        ]
+                    }
+                    """);
+
+            var structuredQuery = readStructuredQuery("""
+                    {
+                      "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
+                      "display": "",
+                      "inclusionCriteria": [
+                        [
+                          {
+                            "context": {
+                              "code": "Laboruntersuchung",
+                              "display": "Laboruntersuchung",
+                              "system": "fdpg.mii.cds",
+                              "version": "1.0.0"
+                            },
+                            "termCodes": [
+                              {
+                                "system": "http://loinc.org",
+                                "code": "85354-9",
+                                "display": "Blood pressure panel with all children optional"
+                              }
+                            ],
+                            "attributeFilters": [
+                              {
+                                "attributeCode": {
+                                  "system": "http://loinc.org",
+                                  "code": "8462-4",
+                                  "display": "Diastolic blood pressure"
+                                },
+                                "type": "quantity-comparator",
+                                "comparator": "lt",
+                                "value": 80,
+                                "unit": {
+                                  "code": "mm[Hg]"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                    """);
+            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(BLOOD_PRESSURE));
+            var mappings = Map.of(BLOOD_PRESSURE, mapping);
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
+
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                                    
+                    codesystem loinc: 'http://loinc.org'
+                               
+                    context Patient
+                                        
+                    define Criterion:
+                      exists (from [Observation: Code '85354-9' from loinc] O
+                        where O.component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first() as Quantity < 80 'mm[Hg]')
+                        
                     define InInitialPopulation:
                       Criterion
                     """);
