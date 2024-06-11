@@ -4,11 +4,13 @@ on:
   push:
     branches:
     - main
-    - v2
+    - develop
+    tags:
+    - 'v*.*.*'
   pull_request:
     branches:
     - main
-    - v2
+    - develop
 
 jobs:
   build:
@@ -42,45 +44,6 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
 
-  release:
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-22.04
-
-    steps:
-    - name: Check out Git repository
-      uses: actions/checkout@v4
-
     - name: Release
-      uses: qcastel/github-actions-maven-release@v1.12.41
-      with:
-        release-branch-name: "main"
-        access-token: ${{ secrets.GITHUB_TOKEN }}
-        maven-args: "-DskipTests -DskipITs"
-        maven-repo-server-id: github
-        maven-repo-server-username: ${{ github.actor }}
-        maven-repo-server-password: ${{ secrets.GITHUB_TOKEN }}
-      env:
-        JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
-
-  release-v2:
-    needs: build
-    if: github.ref == 'refs/heads/v2'
-    runs-on: ubuntu-22.04
-
-    steps:
-    - name: Check out Git repository
-      uses: actions/checkout@v4
-
-    - name: Release
-      uses: qcastel/github-actions-maven-release@v1.12.41
-      with:
-        release-branch-name: "v2"
-        version-patch: false
-        access-token: ${{ secrets.GITHUB_TOKEN }}
-        maven-args: "-DskipTests -DskipITs"
-        maven-repo-server-id: github
-        maven-repo-server-username: ${{ github.actor }}
-        maven-repo-server-password: ${{ secrets.GITHUB_TOKEN }}
-      env:
-        JAVA_HOME: /usr/lib/jvm/java-17-openjdk/
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
