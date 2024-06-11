@@ -58,8 +58,10 @@ public record QueryExpression(SourceClause sourceClause, List<QueryInclusionClau
 
     @Override
     public QueryExpression withIncrementedSuffixes(Map<String, Integer> increments) {
-        //TODO: decent into clauses
-        return this;
+        return new QueryExpression(sourceClause.withIncrementedSuffixes(increments),
+                queryInclusionClauses.stream().map(e -> e.withIncrementedSuffixes(increments)).toList(),
+                whereClause.withIncrementedSuffixes(increments),
+                returnClause == null ? null : returnClause.withIncrementedSuffixes(increments));
     }
 
     private List<Clause> clauses() {

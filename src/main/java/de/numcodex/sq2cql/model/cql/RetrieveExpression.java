@@ -29,7 +29,8 @@ public record RetrieveExpression(String resourceType, Expression<?> terminology)
 
     @Override
     public RetrieveExpression withIncrementedSuffixes(Map<String, Integer> increments) {
-        return new RetrieveExpression(resourceType, terminology.withIncrementedSuffixes(increments));
+        return new RetrieveExpression(resourceType,
+                terminology == null ? null : terminology.withIncrementedSuffixes(increments));
     }
 
     public IdentifierExpression alias() {

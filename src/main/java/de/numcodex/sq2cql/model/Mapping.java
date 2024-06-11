@@ -32,41 +32,42 @@ public final class Mapping {
     private final String termCodeFhirPath;
 
     public Mapping(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria,
-                   List<AttributeMapping> attributeMappings, String timeRestrictionFhirPath, TermCode primaryCode, String termCodeFhirPath) {
+                   Map<TermCode, AttributeMapping> attributeMappings, String timeRestrictionFhirPath, TermCode primaryCode, String termCodeFhirPath) {
         this.key = requireNonNull(key);
         this.resourceType = requireNonNull(resourceType);
         this.valueFhirPath = valueFhirPath;
         this.valueType = valueType;
-        this.fixedCriteria = List.copyOf(fixedCriteria);
-        this.attributeMappings = (attributeMappings == null ? Map.of() : attributeMappings.stream()
-                .collect(Collectors.toMap(AttributeMapping::key, Function.identity())));
+        this.fixedCriteria = fixedCriteria;
+        this.attributeMappings = attributeMappings;
         this.timeRestrictionFhirPath = timeRestrictionFhirPath;
         this.primaryCode = primaryCode;
         this.termCodeFhirPath = termCodeFhirPath;
     }
 
     public static Mapping of(ContextualTermCode key, String resourceType) {
-        return new Mapping(key, resourceType, "value", null, List.of(), List.of(), null, null, null);
+        return new Mapping(key, resourceType, "value", null, List.of(), Map.of(), null, null, null);
     }
 
     public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath) {
-        return new Mapping(key, resourceType, valueFhirPath, null, List.of(), List.of(), null, null, null);
+        return new Mapping(key, resourceType, valueFhirPath, null, List.of(), Map.of(), null, null, null);
     }
 
     public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType) {
-        return new Mapping(key, resourceType, valueFhirPath, valueType, List.of(), List.of(), null, null, null);
+        return new Mapping(key, resourceType, valueFhirPath, valueType, List.of(), Map.of(), null, null, null);
     }
 
     public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings) {
         return new Mapping(key, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
-                attributeMappings, null, null, null);
+                (attributeMappings == null ? Map.of() : attributeMappings.stream()
+                        .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))), null, null, null);
     }
 
     public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings, String timeRestrictionFhirPath) {
         return new Mapping(key, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
-                attributeMappings, timeRestrictionFhirPath, null, null);
+                (attributeMappings == null ? Map.of() : attributeMappings.stream()
+                        .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))), timeRestrictionFhirPath, null, null);
     }
 
     @JsonCreator
@@ -86,7 +87,8 @@ public final class Mapping {
                 valueFhirPath == null ? "value" : valueFhirPath,
                 valueType,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
-                attributeMappings,
+                (attributeMappings == null ? Map.of() : attributeMappings.stream()
+                        .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))),
                 timeRestrictionFhirPath,
                 primaryCode,
                 termCodeFhirPath);
@@ -123,7 +125,8 @@ public final class Mapping {
     /**
      * Returns the primary code of this mapping. The primary code is used in the retrieve CQL
      * expression to identify the resources of interest. The path for the primary code path is
-     * implicitly given in CQL but can be looked up at https://github.com/cqframework/clinical_quality_language/blob/master/Src/java/quick/src/main/resources/org/hl7/fhir/fhir-modelinfo-4.0.1.xml
+     * implicitly given in CQL but can be looked up
+     * <a href="https://github.com/cqframework/clinical_quality_language/blob/master/Src/java/quick/src/main/resources/org/hl7/fhir/fhir-modelinfo-4.0.1.xml">here</a>
      *
      * @return the primary code of this mapping or the key if no primary code is defined
      */

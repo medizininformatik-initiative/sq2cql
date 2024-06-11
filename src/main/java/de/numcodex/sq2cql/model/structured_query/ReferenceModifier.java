@@ -24,7 +24,7 @@ public record ReferenceModifier(String path, String targetType, List<Criterion> 
     @Override
     public Container<QueryExpression> updateQuery(MappingContext mappingContext, Container<QueryExpression> queryContainer) {
         return queryContainer.flatMap(query -> getReferenceExpr(mappingContext)
-                .moveToPatientContext(referenceExprName())
+                .moveToPatientContextWithUniqueName(referenceExprName())
                 .map(referencesExprName -> {
                     var referenceExpr = InvocationExpression.of(query.sourceAlias(), path);
                     var alias = StandardIdentifierExpression.of(targetType.substring(0, 1));

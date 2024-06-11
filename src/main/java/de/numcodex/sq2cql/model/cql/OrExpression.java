@@ -29,14 +29,14 @@ public record OrExpression(List<DefaultExpression> expressions) implements Defau
     }
 
     @Override
-    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
-        return new OrExpression(expressions.stream().map(e -> e.withIncrementedSuffixes(increments)).toList());
-    }
-
-    @Override
     public String print(PrintContext printContext) {
         return printContext.parenthesize(PRECEDENCE, expressions.stream()
                 .map(printContext.withPrecedence(PRECEDENCE)::print)
                 .collect(joining(" or\n" + printContext.getIndent())));
+    }
+
+    @Override
+    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
+        return new OrExpression(expressions.stream().map(e -> e.withIncrementedSuffixes(increments)).toList());
     }
 }
