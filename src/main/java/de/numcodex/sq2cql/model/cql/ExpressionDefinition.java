@@ -29,6 +29,11 @@ public record ExpressionDefinition(IdentifierExpression name, Expression<?> expr
                 expression.print(newPrintContext));
     }
 
+    /**
+     * Returns a map of the {@code name} identifier prefix to its numerical suffix if the name is suffixed.
+     *
+     * @return a map of identifier prefix to its numerical suffix
+     */
     public Map<String, Integer> suffixes() {
         return name.suffixes();
     }

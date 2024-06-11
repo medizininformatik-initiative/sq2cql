@@ -29,14 +29,14 @@ public record UnionExpression(List<DefaultExpression> expressions) implements De
     }
 
     @Override
-    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
-        return new UnionExpression(expressions.stream().map(e -> e.withIncrementedSuffixes(increments)).toList());
-    }
-
-    @Override
     public String print(PrintContext printContext) {
         return printContext.parenthesize(PRECEDENCE, expressions.stream()
                 .map(printContext.withPrecedence(PRECEDENCE)::print)
                 .collect(joining(" union\n" + printContext.getIndent())));
+    }
+
+    @Override
+    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
+        return new UnionExpression(expressions.stream().map(e -> e.withIncrementedSuffixes(increments)).toList());
     }
 }

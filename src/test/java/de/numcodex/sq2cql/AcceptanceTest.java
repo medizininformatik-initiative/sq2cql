@@ -49,7 +49,7 @@ public class AcceptanceTest {
     private static final Logger logger = LoggerFactory.getLogger(AcceptanceTest.class);
 
     private final GenericContainer<?> blaze = new GenericContainer<>(
-            DockerImageName.parse("samply/blaze:0.25"))
+            DockerImageName.parse("samply/blaze:0.27"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv("LOG_LEVEL", "debug")
             .withExposedPorts(8080)

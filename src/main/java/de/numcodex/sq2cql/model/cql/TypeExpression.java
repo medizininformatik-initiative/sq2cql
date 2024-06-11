@@ -2,6 +2,8 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
+import java.util.Map;
+
 import static java.util.Objects.requireNonNull;
 
 public record TypeExpression(Expression<?> expression, String typeSpecifier) implements DefaultExpression {
@@ -21,5 +23,10 @@ public record TypeExpression(Expression<?> expression, String typeSpecifier) imp
     public String print(PrintContext printContext) {
         return printContext.parenthesize(PRECEDENCE, "%s as %s".formatted(expression.print(printContext
                 .withPrecedence(PRECEDENCE)), typeSpecifier));
+    }
+
+    @Override
+    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
+        return new TypeExpression(expression.withIncrementedSuffixes(increments), typeSpecifier);
     }
 }

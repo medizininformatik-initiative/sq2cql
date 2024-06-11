@@ -147,14 +147,14 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                                                       
+                    
                     codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                           
+                    
                     context Patient
-                                    
+                    
                     define Criterion:
                       exists [Condition: Code 'C71.1' from icd10]
-                      
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -179,16 +179,16 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                                                       
+                    
                     codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                                   
+                    
                     context Patient
-                                    
+                    
                     define Criterion:
                       exists (from [Condition: Code 'C71.1' from icd10] C
                         where ToDate(C.onset as dateTime) in Interval[@2020-01-01T, @2020-01-02T] or
                           C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
-                          
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -236,27 +236,27 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                            
+                    
                     codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
                     codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
                     codesystem loinc: 'http://loinc.org'
                     codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                            
+                    
                     context Patient
-                      
+                    
                     define "Criterion 1":
                       exists (from [Condition: Code 'C71.0' from icd10] C
                         where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
                       exists (from [Condition: Code 'C71.1' from icd10] C
                         where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
-                        
+                    
                     define "Criterion 2":
                       exists (from [Observation: Code '26515-7' from loinc] O
                         where O.value as Quantity < 50 'g/dl')
-                        
+                    
                     define "Criterion 3":
                       exists [MedicationStatement: Code 'L01AX03' from atc]
-                      
+                    
                     define InInitialPopulation:
                       "Criterion 1" and
                       "Criterion 2" and
@@ -290,16 +290,16 @@ class TranslatorTest {
                     codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
                     codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'
                     codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                                    
+                    
                     context Patient
 
                     define "Criterion 1":
                       exists (from [Condition: Code 'I10' from icd10] C
                         where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
-                        
+                    
                     define "Criterion 2":
                       exists [Specimen: Code 'Serum' from sample]
-                      
+                    
                     define Inclusion:
                       "Criterion 1" and
                       "Criterion 2"
@@ -309,7 +309,7 @@ class TranslatorTest {
 
                     define Exclusion:
                       "Criterion 3"
-                      
+                    
                     define InInitialPopulation:
                       Inclusion and
                       not Exclusion
@@ -345,34 +345,34 @@ class TranslatorTest {
                     codesystem loinc: 'http://loinc.org'
                     codesystem snomed: 'http://snomed.info/sct'
                     codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                                    
+                    
                     context Patient
-                                    
+                    
                     define "Criterion 1":
                       exists (from [Observation: Code '713636003' from snomed] O
                         where O.value.coding contains Code '1' from frailty-score or
                           O.value.coding contains Code '2' from frailty-score)
-                          
+                    
                     define Inclusion:
                       "Criterion 1"
-                                      
+                    
                     define "Criterion 2":
                       exists (from [Condition: Code '13645005' from snomed] C
                         where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
-                        
+                    
                     define "Criterion 3":
                       exists (from [Condition: Code 'G47.31' from icd10] C
                         where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
-                        
+                    
                     define "Criterion 4":
                       exists (from [Observation: Code '72166-2' from loinc] O
                         where O.value.coding contains Code 'LA18976-3' from loinc)
-                        
+                    
                     define Exclusion:
                       "Criterion 2" and
                       "Criterion 3" or
                       "Criterion 4"
-                                    
+                    
                     define InInitialPopulation:
                       Inclusion and
                       not Exclusion
@@ -477,18 +477,18 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                            
+                    
                     codesystem consent: 'urn:oid:2.16.840.1.113883.3.1937.777.24.5.3'
                     codesystem loinc: 'http://loinc.org'
-                            
+                    
                     context Patient
-                      
+                    
                     define Criterion:
                       exists (from [Consent: Code '54133-1' from loinc] C
                         where C.status = 'active' and
                           C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.5' from consent and
                           C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.2' from consent)
-                            
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -559,12 +559,12 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                            
+                    
                     context Patient
-                      
+                    
                     define Criterion:
                       AgeInYears() > 5
-                            
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -635,12 +635,12 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                            
+                    
                     context Patient
-                      
+                    
                     define Criterion:
                       AgeInYears() between 5 and 10
-                            
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -711,12 +711,12 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                            
+                    
                     context Patient
-                      
+                    
                     define Criterion:
                       AgeInHours() < 5
-                            
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -787,12 +787,12 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                            
+                    
                     context Patient
-                      
+                    
                     define Criterion:
                       Patient.gender = 'female'
-                      
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -854,15 +854,15 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                                    
+                    
                     codesystem consent: 'urn:oid:2.16.840.1.113883.3.1937.777.24.5.3'
-                                    
+                    
                     context Patient
-                                    
+                    
                     define Criterion:
                       exists (from [Consent] C
                         where C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.8' from consent)
-                      
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -948,15 +948,15 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-                                    
+                    
                     codesystem loinc: 'http://loinc.org'
-                               
+                    
                     context Patient
-                                        
+                    
                     define Criterion:
                       exists (from [Observation: Code '85354-9' from loinc] O
                         where O.component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first() as Quantity < 80 'mm[Hg]')
-                        
+                    
                     define InInitialPopulation:
                       Criterion
                     """);
@@ -973,10 +973,10 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                            
+                        
                         define Criterion:
                           true
-                                                
+                        
                         define InInitialPopulation:
                           Criterion
                         """);
@@ -990,13 +990,13 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                            
+                        
                         define "Criterion 1":
                           true
-                            
+                        
                         define "Criterion 2":
                           false
-                          
+                        
                         define InInitialPopulation:
                           "Criterion 1" or
                           "Criterion 2"
@@ -1011,13 +1011,13 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                            
+                        
                         define "Criterion 1":
                           true
-                            
+                        
                         define "Criterion 2":
                           false
-                                                
+                        
                         define InInitialPopulation:
                           "Criterion 1" and
                           "Criterion 2"
@@ -1033,19 +1033,19 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                            
+                        
                         define "Criterion 1":
                           true
-                            
+                        
                         define "Criterion 2":
                           true
-                            
+                        
                         define "Criterion 3":
                           false
-                            
+                        
                         define "Criterion 4":
                           false
-                                                
+                        
                         define InInitialPopulation:
                           ("Criterion 1" or
                           "Criterion 2") and
@@ -1066,19 +1066,19 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                            
+                        
                         define "Criterion 1":
                           true
-                                   
+                        
                         define Inclusion:
                           "Criterion 1"
-                            
+                        
                         define "Criterion 2":
                           false
-                                   
+                        
                         define Exclusion:
                           "Criterion 2"
-                                                
+                        
                         define InInitialPopulation:
                           Inclusion and
                           not Exclusion
@@ -1094,23 +1094,23 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                              
+                        
                         define "Criterion 1":
                           true
-                                                
+                        
                         define Inclusion:
                           "Criterion 1"
-                              
+                        
                         define "Criterion 2":
                           false
-                              
+                        
                         define "Criterion 3":
                           false
-                                   
+                        
                         define Exclusion:
                           "Criterion 2" and
                           "Criterion 3"
-                                                
+                        
                         define InInitialPopulation:
                           Inclusion and
                           not Exclusion
@@ -1127,23 +1127,23 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                              
+                        
                         define "Criterion 1":
                           true
-                                                
+                        
                         define Inclusion:
                           "Criterion 1"
-                              
+                        
                         define "Criterion 2":
                           true
-                              
+                        
                         define "Criterion 3":
                           false
-                                   
+                        
                         define Exclusion:
                           "Criterion 2" or
                           "Criterion 3"
-                                                
+                        
                         define InInitialPopulation:
                           Inclusion and
                           not Exclusion
@@ -1160,31 +1160,31 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                              
+                        
                         define "Criterion 1":
                           true
-                                                
+                        
                         define Inclusion:
                           "Criterion 1"
-                              
+                        
                         define "Criterion 2":
                           false
-                              
+                        
                         define "Criterion 3":
                           false
-                              
+                        
                         define "Criterion 4":
                           false
-                              
+                        
                         define "Criterion 5":
                           false
-                                   
+                        
                         define Exclusion:
                           "Criterion 2" and
                           "Criterion 3" or
                           "Criterion 4" and
                           "Criterion 5"
-                                                
+                        
                         define InInitialPopulation:
                           Inclusion and
                           not Exclusion
@@ -1200,27 +1200,27 @@ class TranslatorTest {
 
                 assertThat(library).patientContextPrintsTo("""
                         context Patient
-                              
+                        
                         define "Criterion 1":
                           true
-                              
+                        
                         define "Criterion 2":
                           false
-                                                
+                        
                         define Inclusion:
                           "Criterion 1" and
                           "Criterion 2"
-                              
+                        
                         define "Criterion 3":
                           true
-                              
+                        
                         define "Criterion 4":
                           false
-                                   
+                        
                         define Exclusion:
                           "Criterion 3" and
                           "Criterion 4"
-                                                
+                        
                         define InInitialPopulation:
                           Inclusion and
                           not Exclusion

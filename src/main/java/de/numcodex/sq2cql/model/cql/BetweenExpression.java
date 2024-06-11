@@ -2,6 +2,8 @@ package de.numcodex.sq2cql.model.cql;
 
 import de.numcodex.sq2cql.PrintContext;
 
+import java.util.Map;
+
 import static java.util.Objects.requireNonNull;
 
 public record BetweenExpression(Expression<?> value,
@@ -25,5 +27,11 @@ public record BetweenExpression(Expression<?> value,
         var childPrintContext = printContext.withPrecedence(PRECEDENCE);
         return printContext.parenthesize(PRECEDENCE, "%s between %s and %s".formatted(value.print(childPrintContext),
                 lowerBound.print(childPrintContext), upperBound.print(childPrintContext)));
+    }
+
+    @Override
+    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
+        return new BetweenExpression(value.withIncrementedSuffixes(increments),
+                lowerBound.withIncrementedSuffixes(increments), upperBound.withIncrementedSuffixes(increments));
     }
 }

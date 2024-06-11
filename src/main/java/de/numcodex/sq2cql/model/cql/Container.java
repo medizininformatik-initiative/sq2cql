@@ -1,6 +1,5 @@
 package de.numcodex.sq2cql.model.cql;
 
-import de.numcodex.sq2cql.Lists;
 import de.numcodex.sq2cql.Maps;
 import de.numcodex.sq2cql.Sets;
 
@@ -116,10 +115,16 @@ public final class Container<T extends Expression<T>> {
                     b.expression.withIncrementedSuffixes(bIncrements)),
                     Sets.union(a.codeSystemDefinitions, b.codeSystemDefinitions),
                     Sets.union(a.unfilteredDefinitions, b.unfilteredDefinitions),
-                    Lists.concat(a.withIncrementedSuffixes(aIncrements), b.withIncrementedSuffixes(bIncrements)));
+                    ExpressionDefinitions.unionByName(a.withIncrementedSuffixes(aIncrements),
+                            b.withIncrementedSuffixes(bIncrements)));
         };
     }
 
+    /**
+     * Returns a map of patient definitions name identifier prefixes to their maximum numerical suffixes.
+     *
+     * @return a map of identifier prefixes to numerical suffixes
+     */
     private Map<String, Integer> suffixes() {
         return patientDefinitions.stream()
                 .map(ExpressionDefinition::suffixes)
@@ -198,7 +203,29 @@ public final class Container<T extends Expression<T>> {
         }
         var identifier = SuffixedIdentifierExpression.of(name, suffixes().getOrDefault(name, 0));
         return new Container<>(new WrapperExpression(identifier), codeSystemDefinitions, unfilteredDefinitions,
-                Lists.append(patientDefinitions, ExpressionDefinition.of(identifier, expression)));
+                ExpressionDefinitions.appendByUniqueName(patientDefinitions, ExpressionDefinition.of(identifier, expression)));
+    }
+
+    /**
+     * Moves the expression of this container into the patient context and returns a Container with an
+     * {@link IdentifierExpression} holding {@code name}.
+     * <p>
+     * If this Container just holds an {@link IdentifierExpression} it's not moved.
+     * <p>
+     * The difference to {@link #moveToPatientContext(String)} is that the name given has to be already unique as it
+     * will not get a suffix that gets incremented on collision. So the caller has to be sure that there will be no
+     * expression with different content but the same name.
+     *
+     * @param name the name of the expression definition in the Patient context that has to be already unique
+     * @return a Container with an {@link IdentifierExpression} holding {@code name}
+     */
+    public Container<DefaultExpression> moveToPatientContextWithUniqueName(String name) {
+        if (expression == null) {
+            return map(WrapperExpression::new);
+        }
+        var identifier = StandardIdentifierExpression.of(name);
+        return new Container<>(new WrapperExpression(identifier), codeSystemDefinitions, unfilteredDefinitions,
+                ExpressionDefinitions.appendByUniqueName(patientDefinitions, ExpressionDefinition.of(identifier, expression)));
     }
 
     /**
@@ -227,7 +254,7 @@ public final class Container<T extends Expression<T>> {
             return new Container<>(container.expression.withIncrementedSuffixes(increments),
                     Sets.union(codeSystemDefinitions, container.codeSystemDefinitions),
                     Sets.union(unfilteredDefinitions, container.unfilteredDefinitions),
-                    Lists.concat(patientDefinitions, container.patientDefinitions.stream()
+                    ExpressionDefinitions.unionByName(patientDefinitions, container.patientDefinitions.stream()
                             .map(d -> d.withIncrementedSuffixes(increments))
                             .toList()));
         }
