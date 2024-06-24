@@ -3,6 +3,8 @@ package de.numcodex.sq2cql.model.cql;
 import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.model.common.Comparator;
 
+import java.util.Map;
+
 import static java.util.Objects.requireNonNull;
 
 public record ComparatorExpression(Expression<?> a, Comparator comparator,
@@ -28,5 +30,11 @@ public record ComparatorExpression(Expression<?> a, Comparator comparator,
         var childPrintContext = printContext.withPrecedence(precedence);
         return printContext.parenthesize(precedence, "%s %s %s".formatted(a.print(childPrintContext), comparator,
                 b.print(childPrintContext)));
+    }
+
+    @Override
+    public DefaultExpression withIncrementedSuffixes(Map<String, Integer> increments) {
+        return new ComparatorExpression(a.withIncrementedSuffixes(increments), comparator,
+                b.withIncrementedSuffixes(increments));
     }
 }

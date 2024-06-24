@@ -62,12 +62,6 @@ mapper.readValue("""
         """, StructuredQuery.class);
 ```
 
-## TODO
-
-* klammerung
-* Modifier ausbauen
-* TimeContraints
-
 ## License
 
 Copyright [yyyy] [name of copyright owner]

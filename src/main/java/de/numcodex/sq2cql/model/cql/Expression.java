@@ -18,6 +18,11 @@ public interface Expression<T extends Expression<T>> {
 
     String print(PrintContext printContext);
 
+    /**
+     * Returns a map of identifier prefixes to numerical suffixes of this expression and all children.
+     *
+     * @return a map of identifier prefixes to numerical suffixes
+     */
     default Map<String, Integer> suffixes() {
         return Map.of();
     }

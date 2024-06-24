@@ -6,6 +6,19 @@ import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * An {@link IdentifierExpression} that consists of a prefix and numerical suffix rather than a simple string.
+ * <p>
+ * Both prefix and the suffix together form the actual name of the identifier. In case the suffix is zero, the name
+ * consists only of the prefix. Otherwise both are separated by a space.
+ * <p>
+ * The idea is to use that identifiers to ensure identifiers are unique in a library. In case to libraries are merged,
+ * the numerical suffix will be incremented using {@link #withIncrementedSuffixes(Map)} in one of the libraries if both
+ * contain identifiers with identical prefix.
+ *
+ * @param prefix the prefix of the name
+ * @param suffix the numerical suffix of the name
+ */
 public record SuffixedIdentifierExpression(String prefix, int suffix) implements IdentifierExpression {
 
     public SuffixedIdentifierExpression {
