@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class AcceptanceTest {
     private static final Logger logger = LoggerFactory.getLogger(AcceptanceTest.class);
 
     private final GenericContainer<?> blaze = new GenericContainer<>(
-            DockerImageName.parse("samply/blaze:0.27"))
+            DockerImageName.parse("samply/blaze:0.28"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv("LOG_LEVEL", "debug")
             .withExposedPorts(8080)
@@ -158,7 +159,8 @@ public class AcceptanceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"large-query-worst-case-with-time-constraints.json", "test-large-query-more-crit-time-rest-1.json"})
+    @ValueSource(strings = {"large-query-worst-case-with-time-constraints.json",
+            "test-large-query-more-crit-time-rest-1.json"})
     public void largeQuery(String filename) throws Exception {
         var structuredQuery = new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
@@ -166,6 +168,23 @@ public class AcceptanceTest {
         var report = evaluateMeasure(measureUri);
 
         assertEquals(0, report.getGroupFirstRep().getPopulationFirstRep().getCount());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "SpecimenSQ.json, 0",
+            "SpecimenSQExclusion.json, 159",
+            "SpecimenSQTwoInclusion.json, 0",
+            "SpecimenSQTwoReferenceCriteria.json, 0",
+            "SpecimenSQAndBodySite.json, 0"
+    })
+    public void specimenQuery(String filename, int count) throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
+        var cql = translator.toCql(structuredQuery).print();
+        var measureUri = createMeasureAndLibrary(cql);
+        var report = evaluateMeasure(measureUri);
+
+        assertEquals(count, report.getGroupFirstRep().getPopulationFirstRep().getCount());
     }
 
     private String createMeasureAndLibrary(String cql) throws Exception {
