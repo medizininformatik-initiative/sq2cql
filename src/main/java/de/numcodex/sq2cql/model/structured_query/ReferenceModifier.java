@@ -29,7 +29,7 @@ public record ReferenceModifier(String path, String targetType, List<Criterion> 
                     var referenceExpr = InvocationExpression.of(query.sourceAlias(), path);
                     var alias = StandardIdentifierExpression.of(targetType.substring(0, 1));
                     var ref = AdditionExpressionTerm.of(StringLiteralExpression.of(targetType + "/"), InvocationExpression.of(alias, "id"));
-                    var comparatorExpr = ComparatorExpression.equal(referenceExpr, ref);
+                    var comparatorExpr = MembershipExpression.contains(referenceExpr, ref);
                     return query.appendQueryInclusionClause(WithClause.of(AliasedQuerySource.of(referencesExprName, alias), comparatorExpr));
                 }));
     }

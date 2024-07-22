@@ -52,25 +52,25 @@ public class SpecimenTest {
                 define Criterion:
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '258590006' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '866034009' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '2421000181104' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '866035005' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '442427000' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '737089009' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id)
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id)
                 
                 define InInitialPopulation:
                   Criterion
@@ -108,25 +108,25 @@ public class SpecimenTest {
                 define "Criterion 2":
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '258590006' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '866034009' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '2421000181104' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '866035005' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '442427000' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '737089009' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id)
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id)
                 
                 define Exclusion:
                   "Criterion 2"
@@ -165,25 +165,25 @@ public class SpecimenTest {
                 define "Criterion 2":
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '258590006' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '866034009' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '2421000181104' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '866035005' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '442427000' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '737089009' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id)
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id)
                 
                 define InInitialPopulation:
                   "Criterion 1" and
@@ -218,25 +218,25 @@ public class SpecimenTest {
                 define Criterion:
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9 and Diagnose E13.1" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '258590006' from snomed] S
                     with "Diagnose E13.9 and Diagnose E13.1" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '866034009' from snomed] S
                     with "Diagnose E13.9 and Diagnose E13.1" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '2421000181104' from snomed] S
                     with "Diagnose E13.9 and Diagnose E13.1" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '866035005' from snomed] S
                     with "Diagnose E13.9 and Diagnose E13.1" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '442427000' from snomed] S
                     with "Diagnose E13.9 and Diagnose E13.1" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id) or
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id) or
                   exists (from [Specimen: Code '737089009' from snomed] S
                     with "Diagnose E13.9 and Diagnose E13.1" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id)
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id)
                 
                 define InInitialPopulation:
                   Criterion
@@ -269,31 +269,31 @@ public class SpecimenTest {
                 define Criterion:
                   exists (from [Specimen: Code '119364003' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id
                     where S.collection.bodySite.coding contains Code 'C44.6' from icd_o_3) or
                   exists (from [Specimen: Code '258590006' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id
                     where S.collection.bodySite.coding contains Code 'C44.6' from icd_o_3) or
                   exists (from [Specimen: Code '866034009' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id
                     where S.collection.bodySite.coding contains Code 'C44.6' from icd_o_3) or
                   exists (from [Specimen: Code '2421000181104' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id
                     where S.collection.bodySite.coding contains Code 'C44.6' from icd_o_3) or
                   exists (from [Specimen: Code '866035005' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id
                     where S.collection.bodySite.coding contains Code 'C44.6' from icd_o_3) or
                   exists (from [Specimen: Code '442427000' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id
                     where S.collection.bodySite.coding contains Code 'C44.6' from icd_o_3) or
                   exists (from [Specimen: Code '737089009' from snomed] S
                     with "Diagnose E13.9" C
-                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference = 'Condition/' + C.id
+                      such that S.extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').first().value.as(Reference).reference contains 'Condition/' + C.id
                     where S.collection.bodySite.coding contains Code 'C44.6' from icd_o_3)
                 
                 define InInitialPopulation:
