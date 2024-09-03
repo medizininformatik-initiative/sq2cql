@@ -5,9 +5,7 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.TermCodeNode;
+import de.numcodex.sq2cql.model.*;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.ContextualConcept;
 import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
@@ -31,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static de.numcodex.sq2cql.Util.createTreeWithoutChildren;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -42,8 +41,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class EvaluationIT {
 
     static final TermCode CONTEXT = TermCode.of("context", "context", "context");
-    static final ContextualTermCode ROOT = ContextualTermCode.of(CONTEXT, TermCode.of("", "", ""));
-    static final ContextualTermCode BLOOD_PRESSURE = ContextualTermCode.of(CONTEXT, TermCode.of("http://loinc.org", "85354-9",
+    static final String BLOOD_PRESSURE_CODE = "85354-9";
+    static final String BLOOD_PRESSURE_SYSTEM = "http://loinc.org";
+    static final ContextualTermCode BLOOD_PRESSURE = ContextualTermCode.of(CONTEXT, TermCode.of(BLOOD_PRESSURE_SYSTEM, BLOOD_PRESSURE_CODE,
             "Blood pressure panel with all children optional"));
     static final TermCode DIASTOLIC_BLOOD_PRESSURE = TermCode.of("http://loinc.org", "8462-4",
             "Diastolic blood pressure");
@@ -99,7 +99,7 @@ public class EvaluationIT {
         var valueFhirPath = format("component.where(code.coding.exists(system = '%s' and code = '%s')).value.first()",
                 DIASTOLIC_BLOOD_PRESSURE.system(), DIASTOLIC_BLOOD_PRESSURE.code());
         var mappings = Map.of(BLOOD_PRESSURE, Mapping.of(BLOOD_PRESSURE, "Observation", valueFhirPath));
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(BLOOD_PRESSURE));
+        var conceptTree = createTreeWithoutChildren(BLOOD_PRESSURE);
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
         var translator = Translator.of(mappingContext);
         var criterion = NumericCriterion.of(ContextualConcept.of(BLOOD_PRESSURE), LESS_THAN, BigDecimal.valueOf(80), "mm[Hg]");
@@ -157,7 +157,7 @@ public class EvaluationIT {
                 }
                 """);
         var mappings = Map.of(BLOOD_PRESSURE, mapping);
-        var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(BLOOD_PRESSURE));
+        var conceptTree = createTreeWithoutChildren(BLOOD_PRESSURE);
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
         var translator = Translator.of(mappingContext);
         var structuredQuery = readStructuredQuery("""

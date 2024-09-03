@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+import static de.numcodex.sq2cql.Util.createTreeWithoutChildren;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,7 +39,7 @@ class MappingContextTest {
 
     @Test
     void expandConcept_MissingMapping() {
-        var context = MappingContext.of(Map.of(), TermCodeNode.of(C1), Map.of());
+        var context = MappingContext.of(Map.of(), createTreeWithoutChildren(C1), Map.of());
 
         var termCodes = context.expandConcept(ContextualConcept.of(C1)).toList();
 

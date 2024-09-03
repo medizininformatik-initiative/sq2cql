@@ -71,7 +71,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
     }
 
     private static String referenceName(TermCode termCode) {
-        return "%s".formatted(termCode.display() + termCode.code() + "Ref");
+        return termCode.code() + "Ref";
     }
 
     public abstract T appendAttributeFilter(AttributeFilter attributeFilter);
