@@ -4,7 +4,7 @@
 
     <groupId>de.medizininformatik-initiative</groupId>
     <artifactId>sq2cql</artifactId>
-    <version>0.4.0</version>
+    <version>v0.5.0-alpha.1</version>
 
     <name>sq2cql</name>
 
@@ -32,7 +32,7 @@
         <hapi-fhir.version>7.2.1</hapi-fhir.version>
         <testcontainers.version>1.20.0</testcontainers.version>
         <slf4j.version>2.0.13</slf4j.version>
-        <ontology.version>2.2.0</ontology.version>
+        <ontology.version>3.0.0-test.1</ontology.version>
     </properties>
 
     <dependencies>
@@ -177,7 +177,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/medizininformatik-initiative/fhir-ontology-generator/raw/v${ontology.version}/example/mii_core_data_set/ontology/mapping.zip</url>
+                            <url>https://github.com/medizininformatik-initiative/fhir-ontology-generator/raw/v${ontology.version}/example/fdpg-ontology/mapping.zip</url>
                             <toDir>${project.build.directory}</toDir>
                         </configuration>
                     </execution>
