@@ -1,10 +1,7 @@
 package de.numcodex.sq2cql;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.AttributeMapping;
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.TermCodeNode;
+import de.numcodex.sq2cql.model.*;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.*;
 import org.junit.jupiter.api.Nested;
@@ -15,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.numcodex.sq2cql.Assertions.assertThat;
+import static de.numcodex.sq2cql.Util.*;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -118,7 +116,7 @@ class TranslatorTest {
 
         @Test
         void nonMappableConcept() {
-            var conceptTree = TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1));
+            var conceptTree = createTreeWithChildren(C71, C71_0, C71_1);
             var mappingContext = MappingContext.of(Map.of(), conceptTree, CODE_SYSTEM_ALIASES);
 
             var message = assertThrows(TranslationException.class, () -> Translator.of(mappingContext)
@@ -136,7 +134,7 @@ class TranslatorTest {
                     TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
                             "Malignant neoplasm of brain"));
             var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
-            var conceptTree = TermCodeNode.of(c71_1);
+            var conceptTree = createTreeWithoutChildren(c71_1);
             var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
             var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
@@ -167,7 +165,7 @@ class TranslatorTest {
                             "Malignant neoplasm of brain"));
             var mappings = Map.of(c71_1,
                     Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), "onset"));
-            var conceptTree = TermCodeNode.of(c71_1);
+            var conceptTree = createTreeWithoutChildren(c71_1);
             var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
             var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
 
@@ -201,7 +199,7 @@ class TranslatorTest {
                             "Malignant neoplasm of brain"));
             var mappings = Map.of(c71_1,
                     Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), null));
-            var conceptTree = TermCodeNode.of(c71_1);
+            var conceptTree = createTreeWithoutChildren(c71_1);
             var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
             var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
             var query = StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1),
@@ -220,8 +218,9 @@ class TranslatorTest {
                     Mapping.of(C71_1, "Condition", null, null, List.of(),
                             List.of(VERIFICATION_STATUS_ATTR_MAPPING)), TMZ,
                     Mapping.of(TMZ, "MedicationStatement"));
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(TMZ),
-                    TermCodeNode.of(C71, TermCodeNode.of(C71_0), TermCodeNode.of(C71_1)));
+            var conceptTree = new MappingTreeBase(List.of(
+                    createTreeRootWithoutChildren(TMZ),
+                    createTreeRootWithChildren(C71, C71_0, C71_1)));
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
             var structuredQuery = StructuredQuery.of(List.of(List.of(
                             ConceptCriterion.of(ContextualConcept.of(C71))
@@ -270,8 +269,10 @@ class TranslatorTest {
                     Mapping.of(HYPERTENSION, "Condition", null, null, List.of(),
                             List.of(VERIFICATION_STATUS_ATTR_MAPPING)), SERUM, Mapping.of(SERUM, "Specimen"), LIPID,
                     Mapping.of(LIPID, "MedicationStatement"));
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(HYPERTENSION), TermCodeNode.of(SERUM),
-                    TermCodeNode.of(LIPID));
+            var conceptTree = new MappingTreeBase(List.of(
+                    createTreeRootWithoutChildren(HYPERTENSION),
+                    createTreeRootWithoutChildren(SERUM),
+                    createTreeRootWithoutChildren(LIPID)));
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
             var structuredQuery = StructuredQuery.of(List.of(List.of(
                                     ConceptCriterion.of(ContextualConcept.of(HYPERTENSION))
@@ -324,7 +325,7 @@ class TranslatorTest {
                     Mapping.of(G47_31, "Condition", null, null,
                             List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()),
                     TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COPD), TermCodeNode.of(G47_31));
+            var conceptTree = new MappingTreeBase(List.of(createTreeRootWithoutChildren(COPD), createTreeRootWithoutChildren(G47_31)));
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
             var structuredQuery = StructuredQuery.of(
                     List.of(List.of(ValueSetCriterion.of(ContextualConcept.of(FRAILTY_SCORE), VERY_FIT, WELL))),
@@ -467,7 +468,7 @@ class TranslatorTest {
                     }
                     """);
 
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(COMBINED_CONSENT));
+            var conceptTree = createTreeWithoutChildren(COMBINED_CONSENT);
             var mappings = Map.of(COMBINED_CONSENT, mapping);
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
@@ -549,7 +550,7 @@ class TranslatorTest {
                       ]
                     }
                     """);
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+            var conceptTree = createTreeWithoutChildren(AGE);
             var mappings = Map.of(AGE, mapping);
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
@@ -625,7 +626,7 @@ class TranslatorTest {
                       ]
                     }
                     """);
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+            var conceptTree = createTreeWithoutChildren(AGE);
             var mappings = Map.of(AGE, mapping);
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
@@ -701,7 +702,7 @@ class TranslatorTest {
                       ]
                     }
                     """);
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(AGE));
+            var conceptTree = createTreeWithoutChildren(AGE);
             var mappings = Map.of(AGE, mapping);
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
@@ -777,7 +778,7 @@ class TranslatorTest {
                       ]
                     }
                     """);
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(GENDER));
+            var conceptTree = createTreeWithoutChildren(GENDER);
             var mappings = Map.of(GENDER, mapping);
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
@@ -844,7 +845,7 @@ class TranslatorTest {
                       ]
                     }
                     """);
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(CONSENT_MDAT));
+            var conceptTree = createTreeWithoutChildren(CONSENT_MDAT);
             var mappings = Map.of(CONSENT_MDAT, mapping);
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 
@@ -938,7 +939,7 @@ class TranslatorTest {
                       ]
                     }
                     """);
-            var conceptTree = TermCodeNode.of(ROOT, TermCodeNode.of(BLOOD_PRESSURE));
+            var conceptTree = createTreeWithoutChildren(BLOOD_PRESSURE);
             var mappings = Map.of(BLOOD_PRESSURE, mapping);
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
 

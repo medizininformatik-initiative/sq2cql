@@ -1,10 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.AttributeMapping;
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.TermCodeNode;
+import de.numcodex.sq2cql.model.*;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import org.junit.jupiter.api.Test;
@@ -15,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static de.numcodex.sq2cql.Assertions.assertThat;
+import static de.numcodex.sq2cql.Util.createTreeWithChildren;
+import static de.numcodex.sq2cql.Util.createTreeWithoutChildren;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -209,7 +208,7 @@ class ConceptCriterionTest {
     void toCql() {
         var criterion = ConceptCriterion.of(ContextualConcept.of(C71));
         var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition")),
-                TermCodeNode.of(C71), CODE_SYSTEM_ALIASES);
+                createTreeWithoutChildren(C71), CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
@@ -233,7 +232,7 @@ class ConceptCriterionTest {
                 ContextualConcept.of(CONTEXT, Concept.of(C71_1_TC, C71_2_TC)));
         var mappings = Map.of(C71_1, Mapping.of(C71_1, "Condition"), C71_2,
                 Mapping.of(C71_2, "Condition"));
-        var mappingContext = MappingContext.of(mappings, TermCodeNode.of(C71), CODE_SYSTEM_ALIASES);
+        var mappingContext = MappingContext.of(mappings, createTreeWithoutChildren(C71), CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
@@ -258,7 +257,7 @@ class ConceptCriterionTest {
                 .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED));
         var mapping = Mapping.of(C71, "Condition", null, null, List.of(),
                 List.of(AttributeMapping.of("Coding", VERIFICATION_STATUS, "verificationStatus.coding")));
-        var mappingContext = MappingContext.of(Map.of(C71, mapping), TermCodeNode.of(C71),
+        var mappingContext = MappingContext.of(Map.of(C71, mapping), createTreeWithoutChildren(C71),
                 CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
@@ -290,7 +289,7 @@ class ConceptCriterionTest {
         var mapping2 = Mapping.of(C71_2, "Condition", null, null, List.of(),
                 List.of(AttributeMapping.of("Coding", VERIFICATION_STATUS, "verificationStatus.coding")));
         var mappingContext = MappingContext.of(Map.of(C71_1, mapping1, C71_2, mapping2),
-                TermCodeNode.of(C71, TermCodeNode.of(C71_1), TermCodeNode.of(C71_2)), CODE_SYSTEM_ALIASES);
+                createTreeWithChildren(C71, C71_1, C71_2), CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 
@@ -373,7 +372,7 @@ class ConceptCriterionTest {
         var criterion = ConceptCriterion.of(ContextualConcept.of(C71));
         var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition", null, null,
                         List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of())),
-                TermCodeNode.of(C71), CODE_SYSTEM_ALIASES);
+                createTreeWithoutChildren(C71), CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
 

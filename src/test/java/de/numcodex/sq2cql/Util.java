@@ -2,13 +2,12 @@ package de.numcodex.sq2cql;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Functions;
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
-import de.numcodex.sq2cql.model.TermCodeNode;
+import de.numcodex.sq2cql.model.*;
 import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
@@ -38,17 +37,18 @@ public interface Util {
             entry("http://fhir.de/CodeSystem/bfarm/ops", "oops"));
 
     private static Map<ContextualTermCode, Mapping> readMappings(ZipFile zipFile) throws IOException {
-        try (var in = zipFile.getInputStream(zipFile.getEntry("ontology/mapping/mapping_cql.json"))) {
+        try (var in = zipFile.getInputStream(zipFile.getEntry("mapping/cql/mapping_cql.json"))) {
             var mapper = new ObjectMapper();
             return Arrays.stream(mapper.readValue(in, Mapping[].class))
                     .collect(Collectors.toMap(Mapping::key, Functions.identity()));
         }
     }
 
-    private static TermCodeNode readConceptTree(ZipFile zipFile) throws IOException {
-        try (var in = zipFile.getInputStream(zipFile.getEntry("ontology/mapping/mapping_tree.json"))) {
+    private static MappingTreeBase readConceptTree(ZipFile zipFile) throws IOException {
+        try (var in = zipFile.getInputStream(zipFile.getEntry("mapping/mapping_tree.json"))) {
             var mapper = new ObjectMapper();
-            return mapper.readValue(in, TermCodeNode.class);
+            return new MappingTreeBase(
+                    Arrays.stream(mapper.readValue(in, MappingTreeModuleRoot[].class)).toList());
         }
     }
 
@@ -59,5 +59,26 @@ public interface Util {
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
             return Translator.of(mappingContext);
         }
+    }
+
+    static MappingTreeBase createTreeWithoutChildren(ContextualTermCode c) {
+        return new MappingTreeBase(List.of(new MappingTreeModuleRoot(c.context(), c.termCode().system(), Map.of(c.termCode().code(),
+                new MappingTreeModuleEntry(c.termCode().code(), List.of())))));
+    }
+
+    static MappingTreeBase createTreeWithChildren(ContextualTermCode c, ContextualTermCode child1, ContextualTermCode child2) {
+        return new MappingTreeBase(List.of(createTreeRootWithChildren(c, child1, child2)));
+    }
+
+    static MappingTreeModuleRoot createTreeRootWithChildren(ContextualTermCode c, ContextualTermCode child1, ContextualTermCode child2) {
+        return new MappingTreeModuleRoot(c.context(), c.termCode().system(), Map.of(
+                c.termCode().code(), new MappingTreeModuleEntry(c.termCode().code(), List.of(child1.termCode().code(), child2.termCode().code())),
+                child1.termCode().code(), new MappingTreeModuleEntry(child1.termCode().code(), List.of()),
+                child2.termCode().code(), new MappingTreeModuleEntry(child2.termCode().code(), List.of())));
+    }
+
+    static MappingTreeModuleRoot createTreeRootWithoutChildren(ContextualTermCode c) {
+        return new MappingTreeModuleRoot(c.context(), c.termCode().system(), Map.of(
+                c.termCode().code(), new MappingTreeModuleEntry(c.termCode().code(), List.of())));
     }
 }

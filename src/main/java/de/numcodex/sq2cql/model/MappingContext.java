@@ -21,10 +21,10 @@ import static java.util.Objects.requireNonNull;
 public class MappingContext {
 
     private final Map<ContextualTermCode, Mapping> mappings;
-    private final TermCodeNode conceptTree;
+    private final MappingTreeBase conceptTree;
     private final Map<String, CodeSystemDefinition> codeSystemDefinitions;
 
-    private MappingContext(Map<ContextualTermCode, Mapping> mappings, TermCodeNode conceptTree,
+    private MappingContext(Map<ContextualTermCode, Mapping> mappings, MappingTreeBase conceptTree,
                            Map<String, CodeSystemDefinition> codeSystemDefinitions) {
         this.mappings = mappings;
         this.conceptTree = conceptTree;
@@ -48,7 +48,7 @@ public class MappingContext {
      * @param codeSystemAliases a map of code system URLs to their aliases
      * @return the mapping context
      */
-    public static MappingContext of(Map<ContextualTermCode, Mapping> mappings, TermCodeNode conceptTree,
+    public static MappingContext of(Map<ContextualTermCode, Mapping> mappings, MappingTreeBase conceptTree,
                                     Map<String, String> codeSystemAliases) {
         return new MappingContext(Map.copyOf(mappings), conceptTree, codeSystemAliases.entrySet().stream()
                 .collect(Collectors.toConcurrentMap(Map.Entry::getKey,

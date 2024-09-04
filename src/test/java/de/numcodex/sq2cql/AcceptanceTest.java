@@ -7,7 +7,11 @@ import ca.uhn.fhir.rest.param.StringParam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.r4.model.*;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Library;
+import org.hl7.fhir.r4.model.Measure;
+import org.hl7.fhir.r4.model.MeasureReport;
+import org.hl7.fhir.r4.model.Parameters;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,9 +36,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.zip.ZipFile;
+import java.util.stream.Stream;
 
 import static de.numcodex.sq2cql.Util.createTranslator;
 import static java.lang.String.format;
@@ -78,41 +81,14 @@ public class AcceptanceTest {
     }
 
     public static List<StructuredQuery> getTestQueriesReturningOnePatient() throws URISyntaxException, IOException {
-        var exclusions = Set.of("new_testdata/1-age.json",
-                // Blaze can't parse the unit [arb'U]/mL https://github.com/samply/blaze/issues/1234
-                "new_testdata/ObservationLab-38dfe76b-ae35-8290-6d80-ab08c963d148",
-                "new_testdata/ObservationLab-16408169-a38d-8afc-fdd2-ed7af97ccc57",
-                "new_testdata/ObservationLab-0fa07a3f-2e29-5065-6fa2-31e959acdd98",
-                "new_testdata/ObservationLab-43eb280e-7901-7990-64e3-22cfa51de78b",
-                "new_testdata/ObservationLab-09c67417-306a-a871-feef-71cbc915d113",
-                "new_testdata/ObservationLab-26184c80-edf6-b1e0-ee8f-0e0999755cb9",
-                "new_testdata/ObservationLab-9d44c93e-7799-a8e2-b368-c5539c30ceaa",
-                "new_testdata/ObservationLab-755a3ac1-32ae-2a20-1ac9-02ee25777cf0",
-                "new_testdata/ObservationLab-8ec9ea98-6581-f934-9bcf-b1c4f87e3560",
-                "new_testdata/ObservationLab-315e8080-7425-f4e9-3891-aef5ebe0572c",
-                "new_testdata/ObservationLab-44c8fd00-1a0f-f218-9eb8-83257add8fed",
-                "new_testdata/ObservationLab-7a2be049-40d2-d16f-3db6-12f46df2fc82",
-                "new_testdata/ObservationLab-78c5a976-1786-72e8-006b-8fd6af157ed9",
-                "new_testdata/ObservationLab-254bf7ae-1d0a-b994-f20b-575d4e28e674",
-                "new_testdata/ObservationLab-4bf41e10-1c62-2f82-d081-3d923aca43f2",
-                // Blaze can't parse the unit /[HPF]
-                "new_testdata/ObservationLab-bf7b68ae-1f89-41b6-e6a1-a40bf031f4b9",
-                "new_testdata/ObservationLab-b080e003-5e7f-503c-4b13-47f601d6d903",
-                "new_testdata/ObservationLab-3dd0c866-0649-def5-0fb2-de1ea0b976c2",
-                "new_testdata/ObservationLab-98b33c6e-0a14-b90a-7795-e98680ee526e",
-                // Blaze can't parse the unit /100{WBCs}
-                "new_testdata/ObservationLab-d2d07223-0b20-ee0f-8505-0a17d2e1ed4d"
-        );
-        try (var zipFile = new ZipFile(resourcePath("returningOnePatient.zip").toString())) {
-            return zipFile.stream()
-                    .filter(entry -> !exclusions.contains(entry.toString()))
-                    .map(entry -> {
-                        try {
-                            return new ObjectMapper().readValue(zipFile.getInputStream(entry), StructuredQuery.class);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }).toList();
+        try (Stream<Path> paths = Files.list(resourcePath("returningOnePatient"))) {
+            return paths.map(path -> {
+                try {
+                    return new ObjectMapper().readValue(Files.readString(path), StructuredQuery.class);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
         }
     }
 
