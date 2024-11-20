@@ -4,7 +4,7 @@
 
     <groupId>de.medizininformatik-initiative</groupId>
     <artifactId>sq2cql</artifactId>
-    <version>v0.5.0-alpha.2-SNAPSHOT</version>
+    <version>0.5.0</version>
 
     <name>sq2cql</name>
 
@@ -32,7 +32,7 @@
         <hapi-fhir.version>7.2.1</hapi-fhir.version>
         <testcontainers.version>1.20.0</testcontainers.version>
         <slf4j.version>2.0.13</slf4j.version>
-        <ontology.version>3.0.0-test.1</ontology.version>
+        <ontology.version>3.0.0</ontology.version>
     </properties>
 
     <dependencies>
