@@ -38,21 +38,21 @@ public class MedicationAdministrationTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                        
+                
                 codesystem atc: 'http://fhir.de/CodeSystem/bfarm/atc'
-                        
+                
                 context Unfiltered
-                        
+                
                 define B01AB01Ref:
                   from [Medication: Code 'B01AB01' from atc] M
                     return 'Medication/' + M.id
-                        
+                
                 context Patient
-                        
+                
                 define Criterion:
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AB01Ref)
-                    
+                
                 define InInitialPopulation:
                   Criterion
                 """);
@@ -69,23 +69,23 @@ public class MedicationAdministrationTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                        
+                
                 codesystem atc: 'http://fhir.de/CodeSystem/bfarm/atc'
-                        
+                
                 context Unfiltered
-                        
+                
                 define B01AB01Ref:
                   from [Medication: Code 'B01AB01' from atc] M
                     return 'Medication/' + M.id
-                        
+                
                 context Patient
-                        
+                
                 define Criterion:
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AB01Ref and
                       (ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01] or
                       M.effective overlaps Interval[@2024-01-01, @2024-02-01]))
-                    
+                
                 define InInitialPopulation:
                   Criterion
                 """);
@@ -102,29 +102,29 @@ public class MedicationAdministrationTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                        
+                
                 codesystem atc: 'http://fhir.de/CodeSystem/bfarm/atc'
-                        
+                
                 context Unfiltered
-                        
+                
                 define B01AB01Ref:
                   from [Medication: Code 'B01AB01' from atc] M
                     return 'Medication/' + M.id
-                        
+                
                 context Patient
-                        
+                
                 define "Criterion 1":
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AB01Ref and
                       (ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01] or
                       M.effective overlaps Interval[@2024-01-01, @2024-02-01]))
-                        
+                
                 define "Criterion 2":
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AB01Ref and
                       (ToDate(M.effective as dateTime) in Interval[@2023-01-01, @2023-02-01] or
                       M.effective overlaps Interval[@2023-01-01, @2023-02-01]))
-                    
+                
                 define InInitialPopulation:
                   "Criterion 1" and
                   "Criterion 2"
@@ -142,29 +142,29 @@ public class MedicationAdministrationTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                
+                
                 codesystem atc: 'http://fhir.de/CodeSystem/bfarm/atc'
-                                
+                
                 context Unfiltered
-                                
+                
                 define B01AB01Ref:
                   from [Medication: Code 'B01AB01' from atc] M
                     return 'Medication/' + M.id
-                                
+                
                 define B01AC06Ref:
                   from [Medication: Code 'B01AC06' from atc] M
                     return 'Medication/' + M.id
-                                
+                
                 context Patient
-                                
+                
                 define "Criterion 1":
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AB01Ref)
-                                
+                
                 define "Criterion 2":
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AC06Ref)
-                                
+                
                 define InInitialPopulation:
                   "Criterion 1" and
                   "Criterion 2"

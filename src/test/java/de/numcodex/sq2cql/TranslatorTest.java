@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,6 @@ class TranslatorTest {
             TermCode.of("urn:oid:2.16.840.1.113883.3.1937.777.24.5.3",
                     "2.16.840.1.113883.3.1937.777.24.5.3.8",
                     "MDAT wissenschaftlich nutzen EU DSGVO NIVEAU"));
-    static final ContextualTermCode ROOT = ContextualTermCode.of(CONTEXT, TermCode.of("", "", ""));
     static final ContextualTermCode C71 = ContextualTermCode.of(CONTEXT,
             TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
                     "Malignant neoplasm of brain"));
@@ -171,7 +171,7 @@ class TranslatorTest {
 
             var library = Translator.of(mappingContext).toCql(StructuredQuery.of(List.of(List.of(
                     ConceptCriterion.of(ContextualConcept.of(c71_1),
-                            TimeRestriction.of("2020-01-01T", "2020-01-02T"))))));
+                            TimeRestriction.of(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2)))))));
 
             assertThat(library).printsTo("""
                     library Retrieve version '1.0.0'
@@ -184,8 +184,8 @@ class TranslatorTest {
                     
                     define Criterion:
                       exists (from [Condition: Code 'C71.1' from icd10] C
-                        where ToDate(C.onset as dateTime) in Interval[@2020-01-01T, @2020-01-02T] or
-                          C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
+                        where ToDate(C.onset as dateTime) in Interval[@2020-01-01, @2020-01-02] or
+                          C.onset overlaps Interval[@2020-01-01, @2020-01-02])
                     
                     define InInitialPopulation:
                       Criterion
@@ -203,7 +203,7 @@ class TranslatorTest {
             var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
             var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
             var query = StructuredQuery.of(List.of(List.of(ConceptCriterion.of(ContextualConcept.of(c71_1),
-                    TimeRestriction.of("2020-01-01T", "2020-01-02T")))));
+                    TimeRestriction.of(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2))))));
             var translator = Translator.of(mappingContext);
 
             assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query)).withMessage(
