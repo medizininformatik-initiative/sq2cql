@@ -77,6 +77,11 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
     public abstract T appendAttributeFilter(AttributeFilter attributeFilter);
 
     @Override
+    public List<AttributeFilter> attributeFilters() {
+        return attributeFilters;
+    }
+
+    @Override
     public ContextualConcept getConcept() {
         return concept;
     }
