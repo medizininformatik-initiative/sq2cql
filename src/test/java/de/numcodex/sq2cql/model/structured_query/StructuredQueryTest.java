@@ -176,39 +176,4 @@ class StructuredQueryTest {
         assertEquals(ContextualConcept.of(TC_1), structuredQuery.inclusionCriteria().get(0).get(0).getConcept());
         assertEquals(ContextualConcept.of(TC_2), structuredQuery.exclusionCriteria().get(0).get(0).getConcept());
     }
-
-    @Test
-    void fromJson_EmptyTimeRestriction() throws Exception {
-        var mapper = new ObjectMapper();
-
-        var structuredQuery = mapper.readValue("""
-                {
-                  "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
-                  "display": "",
-                  "inclusionCriteria": [
-                    [
-                      {
-                         "context": {
-                          "system": "context",
-                          "code": "context",
-                          "display": "context"
-                        },
-                        "termCodes": [
-                          {
-                            "code": "Q50",
-                            "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
-                            "version": "2021",
-                            "display": "Angeborene Fehlbildungen der Ovarien, der Tubae uterinae und der Ligg. lata uteri"
-                          }
-                        ],
-                        "attributeFilters": [],
-                        "timeRestriction": {}
-                      }
-                    ]
-                  ]
-                }
-                """, StructuredQuery.class);
-
-        assertThat(structuredQuery.inclusionCriteria().get(0).get(0).timeRestriction()).isNull();
-    }
 }

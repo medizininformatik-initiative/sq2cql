@@ -49,6 +49,11 @@ public interface Criterion {
         }
 
         @Override
+        public List<AttributeFilter> attributeFilters() {
+            return List.of();
+        }
+
+        @Override
         public TimeRestriction timeRestriction() {
             return null;
         }
@@ -72,6 +77,11 @@ public interface Criterion {
         @Override
         public Container<DefaultExpression> toReferencesCql(MappingContext mappingContext) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AttributeFilter> attributeFilters() {
+            return List.of();
         }
 
         @Override
@@ -171,6 +181,8 @@ public interface Criterion {
     Container<DefaultExpression> toCql(MappingContext mappingContext);
 
     Container<DefaultExpression> toReferencesCql(MappingContext mappingContext);
+
+    List<AttributeFilter> attributeFilters();
 
     TimeRestriction timeRestriction();
 }
