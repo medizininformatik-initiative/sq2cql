@@ -34,7 +34,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -53,7 +52,7 @@ public class AcceptanceTest {
     private static final Logger logger = LoggerFactory.getLogger(AcceptanceTest.class);
 
     private final GenericContainer<?> blaze = new GenericContainer<>(
-            DockerImageName.parse("samply/blaze:0.28"))
+            DockerImageName.parse("samply/blaze:0.30"))
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv("LOG_LEVEL", "debug")
             .withExposedPorts(8080)
@@ -80,16 +79,8 @@ public class AcceptanceTest {
         return bundle;
     }
 
-    public static List<StructuredQuery> getTestQueriesReturningOnePatient() throws URISyntaxException, IOException {
-        try (Stream<Path> paths = Files.list(resourcePath("returningOnePatient"))) {
-            return paths.map(path -> {
-                try {
-                    return new ObjectMapper().readValue(Files.readString(path), StructuredQuery.class);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }).toList();
-        }
+    public static Stream<Path> getTestQueriesReturningOnePatient() throws IOException, URISyntaxException {
+        return Files.list(resourcePath("returningOnePatient"));
     }
 
     @BeforeAll
@@ -106,7 +97,8 @@ public class AcceptanceTest {
 
     @ParameterizedTest
     @MethodSource("de.numcodex.sq2cql.AcceptanceTest#getTestQueriesReturningOnePatient")
-    public void runTestCase(StructuredQuery structuredQuery) throws Exception {
+    public void runTestCase(Path path) throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(Files.readString(path), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
         var measureUri = createMeasureAndLibrary(cql);
         var report = evaluateMeasure(measureUri);

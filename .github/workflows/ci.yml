@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Check out Git repository
@@ -42,7 +42,7 @@ jobs:
       run: mvn -B verify
 
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
 
@@ -63,7 +63,7 @@ jobs:
         key: maven-${{ hashFiles('pom.xml') }}
 
     - name: Maven Settings
-      uses: s4u/maven-settings-action@v3.0.0
+      uses: s4u/maven-settings-action@v3.1.0
       with:
         servers: |
           [{"id": "github", "username": "${{ github.actor }}", "password": "${{ secrets.GITHUB_TOKEN }}"}]
