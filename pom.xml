@@ -4,7 +4,7 @@
 
     <groupId>de.medizininformatik-initiative</groupId>
     <artifactId>sq2cql</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1</version>
 
     <name>sq2cql</name>
 
@@ -32,7 +32,7 @@
         <hapi-fhir.version>7.6.0</hapi-fhir.version>
         <testcontainers.version>1.20.4</testcontainers.version>
         <slf4j.version>2.0.16</slf4j.version>
-        <ontology.version>3.0.0</ontology.version>
+        <ontology.version>3.0.1</ontology.version>
     </properties>
 
     <dependencies>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.18.1</version>
+            <version>2.18.2</version>
         </dependency>
 
         <dependency>
@@ -177,7 +177,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://github.com/medizininformatik-initiative/fhir-ontology-generator/raw/v${ontology.version}/example/fdpg-ontology/mapping.zip</url>
+                            <url>https://github.com/medizininformatik-initiative/fhir-ontology-generator/releases/download/v${ontology.version}/mapping.zip</url>
                             <toDir>${project.build.directory}</toDir>
                         </configuration>
                     </execution>
