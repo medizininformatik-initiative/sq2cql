@@ -119,11 +119,11 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
             case "Patient" -> {
                 return valueExpr(mappingContext, mapping, PATIENT);
             }
-            case "MedicationAdministration" -> {
+            case "MedicationAdministration", "MedicationStatement", "MedicationRequest" -> {
                 var query = medicationReferencesExpr(mappingContext, termCode.termCode())
                         .moveToUnfilteredContext(referenceName(termCode.termCode()))
                         .map(medicationReferencesExpr -> {
-                            var retrieveExpr = RetrieveExpression.of("MedicationAdministration");
+                            var retrieveExpr = RetrieveExpression.of(mapping.resourceType());
                             var alias = retrieveExpr.alias();
                             var sourceClause = SourceClause.of(AliasedQuerySource.of(retrieveExpr, alias));
                             var referenceExpression = InvocationExpression.of(alias, "medication.reference");

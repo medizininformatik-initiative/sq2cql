@@ -99637,6 +99637,50 @@
       }
     }, {
       "resource": {
+        "resourceType": "MedicationStatement",
+        "id": "edd02900-4b0d-42b3-9b2d-44b33b56470b",
+        "meta": {
+          "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+        },
+        "status": "stopped",
+        "medicationReference": {
+          "reference": "Medication/345997bd-cb4c-4311-b865-81fd25ecbc51",
+          "display": "Nitroimidazol-Derivate"
+        },
+        "subject": {
+          "reference": "Patient/b2283a75-bf39-4bcb-b941-2853e473f4dc",
+          "display": "Chiara Lukoschek"
+        },
+        "effectiveDateTime": "2009-03-24T17:36:55+01:00"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "MedicationStatement/edd02900-4b0d-42b3-9b2d-44b33b56470b"
+      }
+    },{
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "edd02900-4b0d-42b3-9b2d-44b33b56470b",
+        "meta": {
+          "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationRequest" ]
+        },
+        "status": "stopped",
+        "medicationReference": {
+          "reference": "Medication/345997bd-cb4c-4311-b865-81fd25ecbc51",
+          "display": "Nitroimidazol-Derivate"
+        },
+        "subject": {
+          "reference": "Patient/b2283a75-bf39-4bcb-b941-2853e473f4dc",
+          "display": "Chiara Lukoschek"
+        },
+        "authoredOn": "2009-03-24T17:36:55+01:00"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "MedicationRequest/edd02900-4b0d-42b3-9b2d-44b33b56470b"
+      }
+    }, {
+      "resource": {
         "resourceType": "Organization",
         "id": "e0c2a72d-09e3-4fb8-ac09-f921766867f2",
         "name": "Knetsch, Zimmer und Schwanitz",
