@@ -241,6 +241,12 @@ class TranslatorTest {
                     codesystem loinc: 'http://loinc.org'
                     codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
                     
+                    context Unfiltered
+                    
+                    define L01AX03Ref:
+                      from [Medication: Code 'L01AX03' from atc] M
+                        return 'Medication/' + M.id
+                    
                     context Patient
                     
                     define "Criterion 1":
@@ -254,7 +260,8 @@ class TranslatorTest {
                         where O.value as Quantity < 50 'g/dl')
                     
                     define "Criterion 3":
-                      exists [MedicationStatement: Code 'L01AX03' from atc]
+                      exists (from [MedicationStatement] M
+                        where M.medication.reference in L01AX03Ref)
                     
                     define InInitialPopulation:
                       "Criterion 1" and
@@ -286,14 +293,20 @@ class TranslatorTest {
                     library Retrieve version '1.0.0'
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
-
+                    
                     codesystem atc: 'http://fhir.de/CodeSystem/dimdi/atc'
                     codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
                     codesystem sample: 'https://fhir.bbmri.de/CodeSystem/SampleMaterialType'
                     codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
                     
+                    context Unfiltered
+                    
+                    define C10AARef:
+                      from [Medication: Code 'C10AA' from atc] M
+                        return 'Medication/' + M.id
+                    
                     context Patient
-
+                    
                     define "Criterion 1":
                       exists (from [Condition: Code 'I10' from icd10] C
                         where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
@@ -304,10 +317,11 @@ class TranslatorTest {
                     define Inclusion:
                       "Criterion 1" and
                       "Criterion 2"
-
+                    
                     define "Criterion 3":
-                      exists [MedicationStatement: Code 'C10AA' from atc]
-
+                      exists (from [MedicationStatement] M
+                        where M.medication.reference in C10AARef)
+                    
                     define Exclusion:
                       "Criterion 3"
                     
