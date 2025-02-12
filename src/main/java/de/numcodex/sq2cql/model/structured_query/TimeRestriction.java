@@ -43,7 +43,7 @@ public record TimeRestriction(LocalDate afterDate, LocalDate beforeDate) {
     }
 
     public Modifier toModifier(Mapping mapping) {
-        var path = mapping.timeRestrictionFhirPath()
+        var path = mapping.timeRestriction()
                 .orElseThrow(() -> new IllegalStateException("Missing timeRestrictionFhirPath in mapping with key %s."
                         .formatted(mapping.key())));
         return TimeRestrictionModifier.of(path, afterDate, beforeDate);
