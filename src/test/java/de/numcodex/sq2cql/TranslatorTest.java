@@ -15,6 +15,8 @@ import java.util.Map;
 import static de.numcodex.sq2cql.Assertions.assertThat;
 import static de.numcodex.sq2cql.Util.*;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
+import static de.numcodex.sq2cql.model.Mapping.TimeRestriction.Type.DATE_TIME;
+import static de.numcodex.sq2cql.model.Mapping.TimeRestriction.Type.PERIOD;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -164,7 +166,7 @@ class TranslatorTest {
                     TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
                             "Malignant neoplasm of brain"));
             var mappings = Map.of(c71_1,
-                    Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), "onset"));
+                    Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), Mapping.TimeRestriction.of("onset", DATE_TIME, PERIOD)));
             var conceptTree = createTreeWithoutChildren(c71_1);
             var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
             var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
@@ -198,7 +200,7 @@ class TranslatorTest {
                     TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
                             "Malignant neoplasm of brain"));
             var mappings = Map.of(c71_1,
-                    Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), null));
+                    Mapping.of(c71_1, "Condition", null, null, List.of(), List.of()));
             var conceptTree = createTreeWithoutChildren(c71_1);
             var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
             var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);

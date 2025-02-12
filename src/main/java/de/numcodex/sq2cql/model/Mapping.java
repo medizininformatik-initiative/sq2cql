@@ -27,12 +27,12 @@ public final class Mapping {
     private final String valueType;
     private final List<Modifier> fixedCriteria;
     private final Map<TermCode, AttributeMapping> attributeMappings;
-    private final String timeRestrictionFhirPath;
+    private final TimeRestriction timeRestrictionFhirPath;
     private final TermCode primaryCode;
     private final String termCodeFhirPath;
 
     public Mapping(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria,
-                   Map<TermCode, AttributeMapping> attributeMappings, String timeRestrictionFhirPath, TermCode primaryCode, String termCodeFhirPath) {
+                   Map<TermCode, AttributeMapping> attributeMappings, TimeRestriction timeRestrictionFhirPath, TermCode primaryCode, String termCodeFhirPath) {
         this.key = requireNonNull(key);
         this.resourceType = requireNonNull(resourceType);
         this.valueFhirPath = valueFhirPath;
@@ -63,11 +63,11 @@ public final class Mapping {
                         .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))), null, null, null);
     }
 
-    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings, String timeRestrictionFhirPath) {
+    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings, TimeRestriction timeRestriction) {
         return new Mapping(key, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
                 (attributeMappings == null ? Map.of() : attributeMappings.stream()
-                        .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))), timeRestrictionFhirPath, null, null);
+                        .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))), timeRestriction, null, null);
     }
 
     @JsonCreator
@@ -78,7 +78,7 @@ public final class Mapping {
                              @JsonProperty("valueType") String valueType,
                              @JsonProperty("fixedCriteria") List<Modifier> fixedCriteria,
                              @JsonProperty("attributeFhirPaths") List<AttributeMapping> attributeMappings,
-                             @JsonProperty("timeRestrictionFhirPath") String timeRestrictionFhirPath,
+                             @JsonProperty("timeRestriction") TimeRestriction timeRestrictionFhirPath,
                              @JsonProperty("primaryCode") TermCode primaryCode,
                              @JsonProperty("termCodeFhirPath") String termCodeFhirPath) {
         var contextualTermCode = ContextualTermCode.of(context, key);
@@ -118,7 +118,7 @@ public final class Mapping {
         return attributeMappings;
     }
 
-    public Optional<String> timeRestrictionFhirPath() {
+    public Optional<TimeRestriction> timeRestriction() {
         return Optional.ofNullable(timeRestrictionFhirPath);
     }
 
@@ -137,5 +137,32 @@ public final class Mapping {
 
     public String termCodeFhirPath() {
         return termCodeFhirPath;
+    }
+
+    public record TimeRestriction(String fhirPath, List<Type> types) {
+
+        public TimeRestriction {
+            requireNonNull(fhirPath);
+            if (types.isEmpty()) {
+                throw new IllegalArgumentException("at least one type required");
+            }
+            types = List.copyOf(types);
+        }
+
+        public static TimeRestriction of(String fhirPath, Type... types) {
+            return new TimeRestriction(fhirPath, List.of(types));
+        }
+
+        public enum Type {
+
+            @JsonProperty("date")
+            DATE,
+
+            @JsonProperty("dateTime")
+            DATE_TIME,
+
+            @JsonProperty("Period")
+            PERIOD
+        }
     }
 }

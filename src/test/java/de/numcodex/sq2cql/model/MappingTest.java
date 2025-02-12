@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static de.numcodex.sq2cql.model.Mapping.TimeRestriction.Type.DATE_TIME;
+import static de.numcodex.sq2cql.model.Mapping.TimeRestriction.Type.PERIOD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -123,13 +125,16 @@ class MappingTest {
                       },
                       "resourceType": "Observation",
                       "valueFhirPath": "value",
-                      "timeRestrictionFhirPath": "effective"
+                      "timeRestriction": {
+                        "fhirPath": "effective",
+                        "types": ["dateTime", "Period"]
+                      }
                     }
                     """);
 
             assertThat(mapping.key()).isEqualTo(TC_2);
             assertThat(mapping.resourceType()).isEqualTo("Observation");
-            assertThat(mapping.timeRestrictionFhirPath()).contains("effective");
+            assertThat(mapping.timeRestriction()).contains(Mapping.TimeRestriction.of("effective", DATE_TIME, PERIOD));
         }
 
         @Nested

@@ -46,8 +46,8 @@ public class SpecimenTest {
                
                define "Diagnose E13.9":
                  [Condition: Code 'E13.9' from icd10] union
-                 [Condition: Code 'E13.91' from icd10] union
-                 [Condition: Code 'E13.90' from icd10]
+                 [Condition: Code 'E13.90' from icd10] union
+                 [Condition: Code 'E13.91' from icd10]
                
                define Criterion:
                  exists (from [Specimen: Code '119364003' from snomed] S
@@ -86,7 +86,7 @@ public class SpecimenTest {
                
                define InInitialPopulation:
                  Criterion
-                """);
+               """);
     }
 
     @Test
@@ -114,8 +114,8 @@ public class SpecimenTest {
                
                define "Diagnose E13.9":
                  [Condition: Code 'E13.9' from icd10] union
-                 [Condition: Code 'E13.91' from icd10] union
-                 [Condition: Code 'E13.90' from icd10]
+                 [Condition: Code 'E13.90' from icd10] union
+                 [Condition: Code 'E13.91' from icd10]
                
                define "Criterion 2":
                  exists (from [Specimen: Code '119364003' from snomed] S
@@ -158,7 +158,7 @@ public class SpecimenTest {
                define InInitialPopulation:
                  Inclusion and
                  not Exclusion
-                """);
+               """);
     }
 
     @Test
@@ -183,8 +183,8 @@ public class SpecimenTest {
                
                define "Diagnose E13.9":
                  [Condition: Code 'E13.9' from icd10] union
-                 [Condition: Code 'E13.91' from icd10] union
-                 [Condition: Code 'E13.90' from icd10]
+                 [Condition: Code 'E13.90' from icd10] union
+                 [Condition: Code 'E13.91' from icd10]
                
                define "Criterion 2":
                  exists (from [Specimen: Code '119364003' from snomed] S
@@ -224,7 +224,7 @@ public class SpecimenTest {
                define InInitialPopulation:
                  "Criterion 1" and
                  "Criterion 2"
-                """);
+               """);
     }
 
     @Test
@@ -246,8 +246,8 @@ public class SpecimenTest {
                
                define "Diagnose E13.9 and Diagnose E13.1":
                  [Condition: Code 'E13.9' from icd10] union
-                 [Condition: Code 'E13.91' from icd10] union
                  [Condition: Code 'E13.90' from icd10] union
+                 [Condition: Code 'E13.91' from icd10] union
                  [Condition: Code 'E13.1' from icd10] union
                  [Condition: Code 'E13.11' from icd10]
                
@@ -288,7 +288,7 @@ public class SpecimenTest {
                
                define InInitialPopulation:
                  Criterion
-                """);
+               """);
     }
 
     @Test
@@ -311,8 +311,8 @@ public class SpecimenTest {
                
                define "Diagnose E13.9":
                  [Condition: Code 'E13.9' from icd10] union
-                 [Condition: Code 'E13.91' from icd10] union
-                 [Condition: Code 'E13.90' from icd10]
+                 [Condition: Code 'E13.90' from icd10] union
+                 [Condition: Code 'E13.91' from icd10]
                
                define Criterion:
                  exists (from [Specimen: Code '119364003' from snomed] S
@@ -362,6 +362,6 @@ public class SpecimenTest {
                
                define InInitialPopulation:
                  Criterion
-                """);
+               """);
     }
 }
