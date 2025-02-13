@@ -83,8 +83,8 @@ public class MedicationAdministrationTest {
                 define Criterion:
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AB01Ref and
-                      (ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01] or
-                      M.effective overlaps Interval[@2024-01-01, @2024-02-01]))
+                      (M.effective overlaps Interval[@2024-01-01, @2024-02-01] or
+                      ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01]))
                 
                 define InInitialPopulation:
                   Criterion
@@ -116,14 +116,14 @@ public class MedicationAdministrationTest {
                 define "Criterion 1":
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AB01Ref and
-                      (ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01] or
-                      M.effective overlaps Interval[@2024-01-01, @2024-02-01]))
+                      (M.effective overlaps Interval[@2024-01-01, @2024-02-01] or
+                      ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01]))
                 
                 define "Criterion 2":
                   exists (from [MedicationAdministration] M
                     where M.medication.reference in B01AB01Ref and
-                      (ToDate(M.effective as dateTime) in Interval[@2023-01-01, @2023-02-01] or
-                      M.effective overlaps Interval[@2023-01-01, @2023-02-01]))
+                      (M.effective overlaps Interval[@2023-01-01, @2023-02-01] or
+                      ToDate(M.effective as dateTime) in Interval[@2023-01-01, @2023-02-01]))
                 
                 define InInitialPopulation:
                   "Criterion 1" and
