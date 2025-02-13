@@ -83,8 +83,8 @@ public class MedicationStatementTest {
                 define Criterion:
                   exists (from [MedicationStatement] M
                     where M.medication.reference in B01AB01Ref and
-                      (ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01] or
-                      M.effective overlaps Interval[@2024-01-01, @2024-02-01]))
+                      (M.effective overlaps Interval[@2024-01-01, @2024-02-01] or
+                      ToDate(M.effective as dateTime) in Interval[@2024-01-01, @2024-02-01]))
                 
                 define InInitialPopulation:
                   Criterion
