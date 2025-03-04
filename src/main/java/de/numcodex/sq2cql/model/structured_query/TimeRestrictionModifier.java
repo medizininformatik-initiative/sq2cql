@@ -9,7 +9,7 @@ import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-public record TimeRestrictionModifier(Mapping.TimeRestriction mapping, LocalDate afterDate,
+public record TimeRestrictionModifier(Mapping.TimeRestrictionMapping mapping, LocalDate afterDate,
                                       LocalDate beforeDate) implements SimpleModifier {
 
     public TimeRestrictionModifier {
@@ -18,7 +18,7 @@ public record TimeRestrictionModifier(Mapping.TimeRestriction mapping, LocalDate
         requireNonNull(beforeDate);
     }
 
-    public static TimeRestrictionModifier of(Mapping.TimeRestriction mapping, LocalDate afterDate, LocalDate beforeDate) {
+    public static TimeRestrictionModifier of(Mapping.TimeRestrictionMapping mapping, LocalDate afterDate, LocalDate beforeDate) {
         return new TimeRestrictionModifier(mapping, afterDate, beforeDate);
     }
 
@@ -36,7 +36,7 @@ public record TimeRestrictionModifier(Mapping.TimeRestriction mapping, LocalDate
 
     @Override
     public Container<DefaultExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
-        var invocationExpr = InvocationExpression.of(sourceAlias, mapping.fhirPath());
+        var invocationExpr = InvocationExpression.of(sourceAlias, mapping.path());
         var intervalSelector = IntervalSelector.of(DateTimeExpression.of(afterDate.toString()), DateTimeExpression.of(beforeDate.toString()));
 
         //noinspection OptionalGetWithoutIsPresent

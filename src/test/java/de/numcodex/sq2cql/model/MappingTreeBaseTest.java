@@ -25,7 +25,7 @@ class MappingTreeBaseTest {
     static final String C5 = "c5";
 
 
-    private static ContextualTermCode contextualTermCodeOf(TermCode context, String system, String code) {
+    private static ContextualTermCode contextualTermCodeMappingOf(TermCode context, String system, String code) {
         return new ContextualTermCode(context, new TermCode(system, code, "display"));
     }
 
@@ -33,7 +33,7 @@ class MappingTreeBaseTest {
     void expand_empty() {
         var base = new MappingTreeBase(List.of(new MappingTreeModuleRoot(CONTEXT_1, SYSTEM_1, Map.of())));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1)).toList();
 
         assertThat(result).isEmpty();
     }
@@ -43,7 +43,7 @@ class MappingTreeBaseTest {
         var base = new MappingTreeBase(List.of(new MappingTreeModuleRoot(CONTEXT_1, SYSTEM_1,
                 Map.of(C1, new MappingTreeModuleEntry(C1, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2)).toList();
 
         assertThat(result).isEmpty();
     }
@@ -54,7 +54,7 @@ class MappingTreeBaseTest {
                 Map.of(C1, new MappingTreeModuleEntry(C1, List.of())))));
 
         var result = base.expand(
-                        contextualTermCodeOf(new TermCode("", "different-context", ""), SYSTEM_1, C2))
+                        contextualTermCodeMappingOf(new TermCode("", "different-context", ""), SYSTEM_1, C2))
                 .toList();
 
         assertThat(result).isEmpty();
@@ -65,7 +65,7 @@ class MappingTreeBaseTest {
         var base = new MappingTreeBase(List.of(new MappingTreeModuleRoot(CONTEXT_1, SYSTEM_1,
                 Map.of(C1, new MappingTreeModuleEntry(C1, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, "system2", C2)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, "system2", C2)).toList();
 
         assertThat(result).isEmpty();
     }
@@ -76,9 +76,9 @@ class MappingTreeBaseTest {
                 Map.of(C1, new MappingTreeModuleEntry(C1, List.of()),
                         C2, new MappingTreeModuleEntry(C2, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1)).toList();
 
-        assertThat(result).containsExactlyInAnyOrder(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1));
+        assertThat(result).containsExactlyInAnyOrder(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1));
     }
 
     @Test
@@ -91,9 +91,9 @@ class MappingTreeBaseTest {
                         Map.of(C3, new MappingTreeModuleEntry(C3, List.of()),
                                 C4, new MappingTreeModuleEntry(C4, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2)).toList();
 
-        assertThat(result).containsExactlyInAnyOrder(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2));
+        assertThat(result).containsExactlyInAnyOrder(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2));
     }
 
     @Test
@@ -106,9 +106,9 @@ class MappingTreeBaseTest {
                         Map.of(C3, new MappingTreeModuleEntry(C3, List.of()),
                                 C4, new MappingTreeModuleEntry(C4, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2)).toList();
 
-        assertThat(result).containsExactlyInAnyOrder(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2));
+        assertThat(result).containsExactlyInAnyOrder(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2));
     }
 
     @Test
@@ -117,7 +117,7 @@ class MappingTreeBaseTest {
                 new MappingTreeModuleRoot(CONTEXT_1, SYSTEM_1,
                         Map.of(C1, new MappingTreeModuleEntry(C1, List.of(C2))))));
 
-        assertThatThrownBy(() -> base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1)).toList())
+        assertThatThrownBy(() -> base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1)).toList())
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -128,11 +128,11 @@ class MappingTreeBaseTest {
                         Map.of(C1, new MappingTreeModuleEntry(C1, List.of(C2)),
                                 C2, new MappingTreeModuleEntry(C2, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1)).toList();
 
         assertThat(result).containsExactlyInAnyOrder(
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2));
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2));
     }
 
     @Test
@@ -143,12 +143,12 @@ class MappingTreeBaseTest {
                                 C2, new MappingTreeModuleEntry(C2, List.of()),
                                 C3, new MappingTreeModuleEntry(C3, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1)).toList();
 
         assertThat(result).containsExactlyInAnyOrder(
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C3));
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C3));
     }
 
     @Test
@@ -161,14 +161,14 @@ class MappingTreeBaseTest {
                                 C4, new MappingTreeModuleEntry(C4, List.of()),
                                 C5, new MappingTreeModuleEntry(C5, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1)).toList();
 
         assertThat(result).containsExactlyInAnyOrder(
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C3),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C4),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C5));
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C3),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C4),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C5));
     }
 
     @Test
@@ -181,14 +181,14 @@ class MappingTreeBaseTest {
                                 C4, new MappingTreeModuleEntry(C4, List.of()),
                                 C5, new MappingTreeModuleEntry(C5, List.of())))));
 
-        var result = base.expand(contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1)).toList();
+        var result = base.expand(contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1)).toList();
 
         assertThat(result).containsExactlyInAnyOrder(
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C1),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C2),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C3),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C4),
-                contextualTermCodeOf(CONTEXT_1, SYSTEM_1, C5));
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C1),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C2),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C3),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C4),
+                contextualTermCodeMappingOf(CONTEXT_1, SYSTEM_1, C5));
     }
 
     @Test

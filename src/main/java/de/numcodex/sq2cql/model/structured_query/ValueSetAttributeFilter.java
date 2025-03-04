@@ -33,12 +33,17 @@ public record ValueSetAttributeFilter(TermCode attributeCode, List<TermCode> sel
 
     @Override
     public Modifier toModifier(AttributeMapping attributeMapping) {
-        return switch (attributeMapping.type()) {
+        if (attributeMapping.types().size() > 1) {
+            throw new IllegalArgumentException("unsupported attribute mapping with multiple types");
+        }
+
+        return switch (attributeMapping.types().get(0)) {
             case "code" ->
-                    CodeModifier.of(attributeMapping.path(), selectedConcepts.stream().map(TermCode::code).toArray(String[]::new));
-            case "Coding" -> CodingModifier.of(attributeMapping.path(), selectedConcepts.toArray(TermCode[]::new));
+                    new CodeModifier(attributeMapping.path(), selectedConcepts.stream().map(TermCode::code).toList());
+            case "Coding", "CodeableConcept" ->
+                    new CodeEquivalentModifier(attributeMapping.path(), selectedConcepts);
             default ->
-                    throw new IllegalStateException("unknown attribute mapping type: %s".formatted(attributeMapping.type()));
+                    throw new IllegalStateException("unknown attribute mapping type: %s".formatted(attributeMapping.types().get(0)));
         };
     }
 }

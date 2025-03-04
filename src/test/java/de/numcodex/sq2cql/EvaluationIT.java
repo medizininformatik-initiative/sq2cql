@@ -96,9 +96,9 @@ public class EvaluationIT {
     public void evaluateBloodPressure() throws Exception {
         fhirClient.transaction().withBundle(parseResource(Bundle.class, slurp("blood-pressure-bundle.json"))).execute();
 
-        var valueFhirPath = format("component.where(code.coding.exists(system = '%s' and code = '%s')).value.first()",
-                DIASTOLIC_BLOOD_PRESSURE.system(), DIASTOLIC_BLOOD_PRESSURE.code());
-        var mappings = Map.of(BLOOD_PRESSURE, Mapping.of(BLOOD_PRESSURE, "Observation", valueFhirPath));
+        var valueMapping = Mapping.PathMapping.of("component.where(code.coding.exists(system = '%s' and code = '%s')).value.first()".formatted(
+                DIASTOLIC_BLOOD_PRESSURE.system(), DIASTOLIC_BLOOD_PRESSURE.code()), Mapping.PathMapping.Type.QUANTITY);
+        var mappings = Map.of(BLOOD_PRESSURE, Mapping.of(BLOOD_PRESSURE, "Observation", valueMapping));
         var conceptTree = createTreeWithoutChildren(BLOOD_PRESSURE);
         var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
         var translator = Translator.of(mappingContext);
@@ -143,15 +143,15 @@ public class EvaluationIT {
                         "display": "Blood pressure panel with all children optional"
                     },
                     "resourceType": "Observation",
-                    "attributeFhirPaths": [
+                    "attributes": [
                       {
-                        "attributeType": "Coding",
-                        "attributeKey": {
+                        "types": ["Coding"],
+                        "key": {
                           "system": "http://loinc.org",
                           "code": "8462-4",
                           "display": "Diastolic blood pressure"
                         },
-                        "attributePath": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first()"
+                        "path": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first()"
                       }
                     ]
                 }

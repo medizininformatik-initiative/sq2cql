@@ -66,27 +66,25 @@ public final class ValueSetCriterion extends AbstractCriterion<ValueSetCriterion
 
     @Override
     Container<DefaultExpression> valueExpr(MappingContext mappingContext, Mapping mapping, IdentifierExpression sourceAlias) {
-        if ("code".equals(mapping.valueType())) {
-            return selectedConcepts.stream()
+        if (mapping.valueMapping().isEmpty()) {
+            throw new IllegalStateException("Numeric criterion is used with the mapping of `%s` without value mapping.".formatted(mapping.key()));
+        }
+
+        var valueMapping = mapping.valueMapping().get();
+
+        // Mapping ensures that the termCodeMapping has exactly one type
+        return switch (valueMapping.types().get(0)) {
+            case CODE -> selectedConcepts.stream()
                     .map(concept -> Container.of(ComparatorExpression.equal(
-                            InvocationExpression.of(sourceAlias, mapping.valueFhirPath()),
+                            InvocationExpression.of(sourceAlias, valueMapping.path()),
                             StringLiteralExpression.of(concept.code()))))
                     .reduce(Container.empty(), Container.OR);
-        } else {
-            var valueExpr = valuePathExpr(sourceAlias, mapping);
-            return selectedConcepts.stream()
+            case CODING, CODEABLE_CONCEPT -> selectedConcepts.stream()
                     .map(concept -> codeSelector(mappingContext, concept).map(terminology ->
-                            MembershipExpression.contains(valueExpr, terminology)))
+                            ComparatorExpression.equivalent(InvocationExpression.of(sourceAlias, valueMapping.path()), terminology)))
                     .reduce(Container.empty(), Container.OR);
-        }
-    }
-
-    private InvocationExpression valuePathExpr(IdentifierExpression identifier, Mapping mapping) {
-        if ("Coding".equals(mapping.valueType())) {
-            return InvocationExpression.of(identifier, mapping.valueFhirPath());
-        } else {
-            return InvocationExpression.of(InvocationExpression.of(identifier, mapping.valueFhirPath()),
-                    "coding");
-        }
+            default ->
+                    throw new IllegalArgumentException("Unsupported type `%s` in value expression.".formatted(valueMapping.types().get(0).fhirTypeName()));
+        };
     }
 }

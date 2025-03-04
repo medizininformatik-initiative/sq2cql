@@ -23,48 +23,42 @@ public final class Mapping {
 
     private final ContextualTermCode key;
     private final String resourceType;
-    private final String valueFhirPath;
-    private final String valueType;
+    private final PathMapping valueMapping;
     private final List<Modifier> fixedCriteria;
     private final Map<TermCode, AttributeMapping> attributeMappings;
-    private final TimeRestriction timeRestrictionFhirPath;
+    private final TimeRestrictionMapping timeRestrictionMapping;
     private final TermCode primaryCode;
-    private final String termCodeFhirPath;
+    private final PathMapping termCodeMapping;
 
-    public Mapping(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria,
-                   Map<TermCode, AttributeMapping> attributeMappings, TimeRestriction timeRestrictionFhirPath, TermCode primaryCode, String termCodeFhirPath) {
+    public Mapping(ContextualTermCode key, String resourceType, PathMapping valueMapping, List<Modifier> fixedCriteria,
+                   Map<TermCode, AttributeMapping> attributeMappings, TimeRestrictionMapping timeRestrictionMapping, TermCode primaryCode, PathMapping termCodeMapping) {
         this.key = requireNonNull(key);
         this.resourceType = requireNonNull(resourceType);
-        this.valueFhirPath = valueFhirPath;
-        this.valueType = valueType;
+        this.valueMapping = valueMapping;
         this.fixedCriteria = fixedCriteria;
         this.attributeMappings = attributeMappings;
-        this.timeRestrictionFhirPath = timeRestrictionFhirPath;
+        this.timeRestrictionMapping = timeRestrictionMapping;
         this.primaryCode = primaryCode;
-        this.termCodeFhirPath = termCodeFhirPath;
+        this.termCodeMapping = termCodeMapping;
     }
 
     public static Mapping of(ContextualTermCode key, String resourceType) {
-        return new Mapping(key, resourceType, "value", null, List.of(), Map.of(), null, null, null);
+        return new Mapping(key, resourceType, null, List.of(), Map.of(), null, null, null);
     }
 
-    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath) {
-        return new Mapping(key, resourceType, valueFhirPath, null, List.of(), Map.of(), null, null, null);
+    public static Mapping of(ContextualTermCode key, String resourceType, PathMapping valueMapping) {
+        return new Mapping(key, resourceType, valueMapping, List.of(), Map.of(), null, null, null);
     }
 
-    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType) {
-        return new Mapping(key, resourceType, valueFhirPath, valueType, List.of(), Map.of(), null, null, null);
-    }
-
-    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings) {
-        return new Mapping(key, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
+    public static Mapping of(ContextualTermCode key, String resourceType, PathMapping valueMapping, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings) {
+        return new Mapping(key, resourceType, valueMapping,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
                 (attributeMappings == null ? Map.of() : attributeMappings.stream()
                         .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))), null, null, null);
     }
 
-    public static Mapping of(ContextualTermCode key, String resourceType, String valueFhirPath, String valueType, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings, TimeRestriction timeRestriction) {
-        return new Mapping(key, resourceType, valueFhirPath == null ? "value" : valueFhirPath, valueType,
+    public static Mapping of(ContextualTermCode key, String resourceType, PathMapping valueMapping, List<Modifier> fixedCriteria, List<AttributeMapping> attributeMappings, TimeRestrictionMapping timeRestriction) {
+        return new Mapping(key, resourceType, valueMapping,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
                 (attributeMappings == null ? Map.of() : attributeMappings.stream()
                         .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))), timeRestriction, null, null);
@@ -74,24 +68,29 @@ public final class Mapping {
     public static Mapping of(@JsonProperty("context") TermCode context,
                              @JsonProperty("key") TermCode key,
                              @JsonProperty("resourceType") String resourceType,
-                             @JsonProperty("valueFhirPath") String valueFhirPath,
-                             @JsonProperty("valueType") String valueType,
+                             @JsonProperty("value") PathMapping valueMapping,
                              @JsonProperty("fixedCriteria") List<Modifier> fixedCriteria,
-                             @JsonProperty("attributeFhirPaths") List<AttributeMapping> attributeMappings,
-                             @JsonProperty("timeRestriction") TimeRestriction timeRestrictionFhirPath,
+                             @JsonProperty("attributes") List<AttributeMapping> attributeMappings,
+                             @JsonProperty("timeRestriction") TimeRestrictionMapping timeRestriction,
                              @JsonProperty("primaryCode") TermCode primaryCode,
-                             @JsonProperty("termCodeFhirPath") String termCodeFhirPath) {
+                             @JsonProperty("termCode") PathMapping termCodeMapping) {
+
+        if (valueMapping != null && valueMapping.types().size() > 1) {
+            throw new IllegalArgumentException("Unsupported `value` mapping with multiple types.");
+        }
+        if (termCodeMapping != null && termCodeMapping.types().size() > 1) {
+            throw new IllegalArgumentException("Unsupported `termCode` mapping with multiple types.");
+        }
         var contextualTermCode = ContextualTermCode.of(context, key);
         return new Mapping(contextualTermCode,
                 requireNonNull(resourceType, "missing JSON property: resourceType"),
-                valueFhirPath == null ? "value" : valueFhirPath,
-                valueType,
+                valueMapping,
                 fixedCriteria == null ? List.of() : List.copyOf(fixedCriteria),
                 (attributeMappings == null ? Map.of() : attributeMappings.stream()
                         .collect(Collectors.toMap(AttributeMapping::key, Function.identity()))),
-                timeRestrictionFhirPath,
+                timeRestriction,
                 primaryCode,
-                termCodeFhirPath);
+                termCodeMapping);
     }
 
     public ContextualTermCode key() {
@@ -102,12 +101,8 @@ public final class Mapping {
         return resourceType;
     }
 
-    public String valueFhirPath() {
-        return valueFhirPath;
-    }
-
-    public String valueType() {
-        return valueType;
+    public Optional<PathMapping> valueMapping() {
+        return Optional.ofNullable(valueMapping);
     }
 
     public List<Modifier> fixedCriteria() {
@@ -118,8 +113,8 @@ public final class Mapping {
         return attributeMappings;
     }
 
-    public Optional<TimeRestriction> timeRestriction() {
-        return Optional.ofNullable(timeRestrictionFhirPath);
+    public Optional<TimeRestrictionMapping> timeRestrictionMapping() {
+        return Optional.ofNullable(timeRestrictionMapping);
     }
 
     /**
@@ -135,22 +130,83 @@ public final class Mapping {
         return primaryCode == null ? key.termCode() : primaryCode;
     }
 
-    public String termCodeFhirPath() {
-        return termCodeFhirPath;
+    public Optional<PathMapping> termCodeMapping() {
+        return Optional.ofNullable(termCodeMapping);
     }
 
-    public record TimeRestriction(String fhirPath, List<Type> types) {
+    /**
+     * Mapping information for a path including it's type.
+     *
+     * @param path the FHIRPath path to the value to extract
+     * @param types the possible types that extracted values can have
+     */
+    public record PathMapping(String path, List<Type> types) {
 
-        public TimeRestriction {
-            requireNonNull(fhirPath);
+        public PathMapping {
+            requireNonNull(path);
+            if (types == null || types.isEmpty()) {
+                throw new IllegalArgumentException("Path mapping without types.");
+            }
+            types = List.copyOf(types);
+        }
+
+        public static PathMapping of(String fhirPath, Type... types) {
+            return new PathMapping(fhirPath, List.of(types));
+        }
+
+        public enum Type {
+
+            @JsonProperty("code")
+            CODE("code"),
+
+            @JsonProperty("Coding")
+            CODING("Coding"),
+
+            @JsonProperty("CodeableConcept")
+            CODEABLE_CONCEPT("CodeableConcept"),
+
+            @JsonProperty("date")
+            DATE("date"),
+
+            @JsonProperty("dateTime")
+            DATE_TIME("dateTime"),
+
+            @JsonProperty("Period")
+            PERIOD("Period"),
+
+            @JsonProperty("Quantity")
+            QUANTITY("Quantity");
+
+            private final String fhirTypeName;
+
+            Type(String fhirTypeName) {
+                this.fhirTypeName = fhirTypeName;
+            }
+
+            public String fhirTypeName() {
+                return fhirTypeName;
+            }
+        }
+    }
+
+    /**
+     * Mapping information for a path including it's type.
+     *
+     * @param path the FHIRPath path to the value to extract
+     * @param types the possible types that extracted values can have
+     */
+    public record TimeRestrictionMapping(String path, List<Type> types) {
+
+        public TimeRestrictionMapping {
+            requireNonNull(path);
             if (types.isEmpty()) {
                 throw new IllegalArgumentException("at least one type required");
             }
             types = List.copyOf(types);
         }
 
-        public static TimeRestriction of(String fhirPath, Type... types) {
-            return new TimeRestriction(fhirPath, List.of(types));
+        public static TimeRestrictionMapping of(String fhirPath, Type... types) {
+            return new TimeRestrictionMapping(fhirPath, List.of(types));
         }
 
         public enum Type {

@@ -32,9 +32,9 @@ class RangeCriterionTest {
 
     static {
         MAPPING_CONTEXT = MappingContext.of(Map.of(
-                PLATELETS, Mapping.of(PLATELETS, "Observation", "value", null, List.of(),
-                        List.of(AttributeMapping.of("code", STATUS, "status"))),
-                OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
+                PLATELETS, Mapping.of(PLATELETS, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.QUANTITY), List.of(),
+                        List.of(AttributeMapping.of(List.of("code"), STATUS, "status"))),
+                OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", Mapping.PathMapping.of("other", Mapping.PathMapping.Type.QUANTITY))
         ), null, CODE_SYSTEM_ALIASES);
     }
 
@@ -110,11 +110,11 @@ class RangeCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                         
+                
                 codesystem loinc: 'http://loinc.org'
-                                                    
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code '26515-7' from loinc] O
                     where O.value as Quantity between 20 'g/dl' and 30 'g/dl')
@@ -131,11 +131,11 @@ class RangeCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                         
+                
                 codesystem foo: 'foo'
-                                                    
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code 'other-value-path' from foo] O
                     where O.other as Quantity between 1 and 2)
@@ -153,11 +153,11 @@ class RangeCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                         
+                
                 codesystem loinc: 'http://loinc.org'
-                                                    
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code '26515-7' from loinc] O
                     where O.value as Quantity between 20 'g/dl' and 30 'g/dl' and
@@ -169,7 +169,7 @@ class RangeCriterionTest {
     void toCql_WithFixedCriteria() {
         var criterion = RangeCriterion.of(ContextualConcept.of(PLATELETS), BigDecimal.valueOf(20), BigDecimal.valueOf(30), "g/dl");
         var mappingContext = MappingContext.of(Map.of(
-                PLATELETS, Mapping.of(PLATELETS, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
+                PLATELETS, Mapping.of(PLATELETS, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.QUANTITY), List.of(CodeModifier.of("status", "final")),
                         List.of())
         ), null, CODE_SYSTEM_ALIASES);
 
@@ -179,7 +179,7 @@ class RangeCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                         
+                
                 codesystem loinc: 'http://loinc.org'
                                                     
                 context Patient

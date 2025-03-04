@@ -19,8 +19,8 @@ class ModifierTest {
         try {
             mapper.readValue("""
                     {
-                      "type": "foo",
-                      "fhirPath": "bar"
+                      "types": ["foo"],
+                      "path": "bar"
                     }
                     """, Modifier.class);
             fail();
@@ -31,8 +31,8 @@ class ModifierTest {
         try {
             mapper.readValue("""
                     {
-                      "type": "foo",
-                      "fhirPath": "bar",
+                      "types": ["foo"],
+                      "path": "bar",
                       "value": []
                     }
                     """, Modifier.class);
@@ -49,14 +49,32 @@ class ModifierTest {
         try {
             mapper.readValue("""
                     {
-                      "type": "foo",
-                      "fhirPath": "bar",
+                      "types": ["foo"],
+                      "path": "bar",
                       "value": ["a"]
                     }
                     """, Modifier.class);
             fail();
         } catch (JsonProcessingException e) {
-            assertEquals("unknown type: foo", e.getCause().getMessage());
+            assertEquals("unknown types: foo", e.getCause().getMessage());
+        }
+    }
+
+    @Test
+    void fromJson_TwoUnknownTypes() {
+        var mapper = new ObjectMapper();
+
+        try {
+            mapper.readValue("""
+                    {
+                      "types": ["foo", "bar"],
+                      "path": "bar",
+                      "value": ["a"]
+                    }
+                    """, Modifier.class);
+            fail();
+        } catch (JsonProcessingException e) {
+            assertEquals("unknown types: foo, bar", e.getCause().getMessage());
         }
     }
 }

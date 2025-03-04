@@ -6,6 +6,7 @@ package de.numcodex.sq2cql.model.common;
 public enum Comparator {
 
     EQUAL("=", 6),
+    EQUIVALENT("~", 6),
     LESS_EQUAL("<=", 9),
     LESS_THAN("<", 9),
     GREATER_EQUAL(">=", 9),

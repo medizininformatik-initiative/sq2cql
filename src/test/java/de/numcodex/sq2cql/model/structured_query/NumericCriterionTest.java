@@ -37,10 +37,10 @@ class NumericCriterionTest {
 
     static {
         MAPPING_CONTEXT = MappingContext.of(Map.of(
-                PLATELETS, Mapping.of(PLATELETS, "Observation", "value"),
-                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(),
-                        List.of(AttributeMapping.of("code", STATUS, "status"))),
-                OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", "other")
+                PLATELETS, Mapping.of(PLATELETS, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.QUANTITY)),
+                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.QUANTITY), List.of(),
+                        List.of(AttributeMapping.of(List.of("code"), STATUS, "status"))),
+                OTHER_VALUE_PATH, Mapping.of(OTHER_VALUE_PATH, "Observation", Mapping.PathMapping.of("other", Mapping.PathMapping.Type.QUANTITY))
         ), null, CODE_SYSTEM_ALIASES);
     }
 
@@ -117,11 +117,11 @@ class NumericCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem loinc: 'http://loinc.org'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code '26515-7' from loinc] O
                     where O.value as Quantity < 50 'g/dl')
@@ -138,11 +138,11 @@ class NumericCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem ecrf: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code '06' from ecrf] O
                     where O.value as Quantity = 6)
@@ -159,11 +159,11 @@ class NumericCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem foo: 'foo'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code 'other-value-path' from foo] O
                     where O.other as Quantity = 1)
@@ -181,11 +181,11 @@ class NumericCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem ecrf: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code '06' from ecrf] O
                     where O.value as Quantity = 6 and
@@ -197,7 +197,7 @@ class NumericCriterionTest {
     void toCql_WithFixedCriteria() {
         var criterion = NumericCriterion.of(ContextualConcept.of(SOFA_SCORE), EQUAL, BigDecimal.valueOf(6));
         var mappingContext = MappingContext.of(Map.of(
-                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", "value", null, List.of(CodeModifier.of("status", "final")),
+                SOFA_SCORE, Mapping.of(SOFA_SCORE, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.QUANTITY), List.of(CodeModifier.of("status", "final")),
                         List.of())
         ), null, CODE_SYSTEM_ALIASES);
 
@@ -207,11 +207,11 @@ class NumericCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem ecrf: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/ecrf-parameter-codes'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code '06' from ecrf] O
                     where O.value as Quantity = 6 and
@@ -223,7 +223,7 @@ class NumericCriterionTest {
     void toCql_WithValueOnPatient() {
         var criterion = NumericCriterion.of(ContextualConcept.of(AGE), EQUAL, BigDecimal.valueOf(16), "a");
         var mappingContext = MappingContext.of(Map.of(
-                AGE, Mapping.of(AGE, "Patient", "birthDate")
+                AGE, Mapping.of(AGE, "Patient", Mapping.PathMapping.of("birthDate", Mapping.PathMapping.Type.DATE))
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
@@ -232,9 +232,9 @@ class NumericCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 context Patient
-                                
+                
                 define Criterion:
                   AgeInYears() = 16
                 """);
