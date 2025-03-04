@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import java.time.LocalDate;
 
 import static de.numcodex.sq2cql.Assertions.assertThat;
-import static de.numcodex.sq2cql.model.Mapping.TimeRestriction.Type.*;
+import static de.numcodex.sq2cql.model.Mapping.TimeRestrictionMapping.Type.*;
 
 class TimeRestrictionModifierTest {
 
@@ -19,7 +19,7 @@ class TimeRestrictionModifierTest {
 
         @Test
         void effective() {
-            var timeRestriction = TimeRestrictionModifier.of(Mapping.TimeRestriction.of("effective", DATE_TIME, PERIOD), LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2));
+            var timeRestriction = TimeRestrictionModifier.of(Mapping.TimeRestrictionMapping.of("effective", DATE_TIME, PERIOD), LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2));
             var identifier = StandardIdentifierExpression.of("O");
 
             var expression = timeRestriction.expression(MappingContext.of(), identifier);
@@ -40,7 +40,7 @@ class TimeRestrictionModifierTest {
         @Test
         @DisplayName("recordedDate has no Period type")
         void recordedDate() {
-            var timeRestriction = TimeRestrictionModifier.of(Mapping.TimeRestriction.of("recordedDate", DATE_TIME), LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2));
+            var timeRestriction = TimeRestrictionModifier.of(Mapping.TimeRestrictionMapping.of("recordedDate", DATE_TIME), LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2));
             var identifier = StandardIdentifierExpression.of("C");
 
             var expression = timeRestriction.expression(MappingContext.of(), identifier);
@@ -60,7 +60,7 @@ class TimeRestrictionModifierTest {
         @Test
         @DisplayName("potential date type test")
         void dateTest() {
-            var timeRestriction = TimeRestrictionModifier.of(Mapping.TimeRestriction.of("date", DATE), LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2));
+            var timeRestriction = TimeRestrictionModifier.of(Mapping.TimeRestrictionMapping.of("date", DATE), LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2));
             var identifier = StandardIdentifierExpression.of("X");
 
             var expression = timeRestriction.expression(MappingContext.of(), identifier);

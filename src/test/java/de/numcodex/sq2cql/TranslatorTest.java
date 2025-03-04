@@ -15,8 +15,8 @@ import java.util.Map;
 import static de.numcodex.sq2cql.Assertions.assertThat;
 import static de.numcodex.sq2cql.Util.*;
 import static de.numcodex.sq2cql.model.common.Comparator.LESS_THAN;
-import static de.numcodex.sq2cql.model.Mapping.TimeRestriction.Type.DATE_TIME;
-import static de.numcodex.sq2cql.model.Mapping.TimeRestriction.Type.PERIOD;
+import static de.numcodex.sq2cql.model.Mapping.TimeRestrictionMapping.Type.DATE_TIME;
+import static de.numcodex.sq2cql.model.Mapping.TimeRestrictionMapping.Type.PERIOD;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -38,6 +38,10 @@ class TranslatorTest {
             TermCode.of("urn:oid:2.16.840.1.113883.3.1937.777.24.5.3",
                     "2.16.840.1.113883.3.1937.777.24.5.3.8",
                     "MDAT wissenschaftlich nutzen EU DSGVO NIVEAU"));
+    static final TermCode CONTEXT_ENCOUNTER = TermCode.of("fdpg.mii.cds", "Fall", "Fall");
+    static final ContextualTermCode ENCOUNTER_CLASS = ContextualTermCode.of(CONTEXT_ENCOUNTER,
+            TermCode.of("http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                    "VR", "virtual"));
     static final ContextualTermCode C71 = ContextualTermCode.of(CONTEXT,
             TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71",
                     "Malignant neoplasm of brain"));
@@ -53,10 +57,10 @@ class TranslatorTest {
             TermCode.of("http://snomed.info/sct",
                     "713636003", "Canadian Study of Health and Aging Clinical Frailty Scale score"));
     static final TermCode VERY_FIT = TermCode.of(
-            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "1",
+            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty_score", "1",
             "Very Fit");
     static final TermCode WELL = TermCode.of(
-            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "2", "Well");
+            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty_score", "2", "Well");
     static final ContextualTermCode COPD = ContextualTermCode.of(CONTEXT,
             TermCode.of("http://snomed.info/sct", "13645005",
                     "Chronic obstructive lung disease (disorder)"));
@@ -82,17 +86,20 @@ class TranslatorTest {
     static final TermCode CONFIRMED = TermCode.of(
             "http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed", "Confirmed");
     static final Map<String, String> CODE_SYSTEM_ALIASES = Map.of(
-            "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10", "http://loinc.org", "loinc",
+            "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10",
+            "http://loinc.org", "loinc",
             "https://fhir.bbmri.de/CodeSystem/SampleMaterialType", "sample",
-            "http://fhir.de/CodeSystem/dimdi/atc", "atc", "http://snomed.info/sct", "snomed",
+            "http://fhir.de/CodeSystem/dimdi/atc", "atc",
+            "http://snomed.info/sct", "snomed",
             "http://hl7.org/fhir/administrative-gender", "gender",
             "http://terminology.hl7.org/CodeSystem/condition-ver-status", "ver_status",
-            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score", "frailty-score",
-            "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3", "consent");
+            "https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty_score", "frailty_score",
+            "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3", "consent",
+            "http://terminology.hl7.org/CodeSystem/v3-ActCode", "act_code");
     static final TermCode VERIFICATION_STATUS = TermCode.of("hl7.org", "verificationStatus",
             "verificationStatus");
-    static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING = AttributeMapping.of("Coding",
-            VERIFICATION_STATUS, "verificationStatus.coding");
+    static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING = AttributeMapping.of(List.of("Coding"),
+            VERIFICATION_STATUS, "verificationStatus");
 
     private static Mapping readMapping(String s) throws Exception {
         return new ObjectMapper().readValue(s, Mapping.class);
@@ -166,7 +173,7 @@ class TranslatorTest {
                     TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
                             "Malignant neoplasm of brain"));
             var mappings = Map.of(c71_1,
-                    Mapping.of(c71_1, "Condition", null, null, List.of(), List.of(), Mapping.TimeRestriction.of("onset", DATE_TIME, PERIOD)));
+                    Mapping.of(c71_1, "Condition", null, List.of(), List.of(), Mapping.TimeRestrictionMapping.of("onset", DATE_TIME, PERIOD)));
             var conceptTree = createTreeWithoutChildren(c71_1);
             var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
             var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
@@ -195,12 +202,12 @@ class TranslatorTest {
         }
 
         @Test
-        void timeRestriction_missingPathInMapping() {
+        void timeRestriction_missingInMapping() {
             var c71_1 = ContextualTermCode.of(CONTEXT,
                     TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1",
                             "Malignant neoplasm of brain"));
             var mappings = Map.of(c71_1,
-                    Mapping.of(c71_1, "Condition", null, null, List.of(), List.of()));
+                    Mapping.of(c71_1, "Condition", null, List.of(), List.of()));
             var conceptTree = createTreeWithoutChildren(c71_1);
             var codeSystemAliases = Map.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "icd10");
             var mappingContext = MappingContext.of(mappings, conceptTree, codeSystemAliases);
@@ -209,15 +216,15 @@ class TranslatorTest {
             var translator = Translator.of(mappingContext);
 
             assertThatIllegalStateException().isThrownBy(() -> translator.toCql(query)).withMessage(
-                    "Missing timeRestrictionFhirPath in mapping with key ContextualTermCode[context=TermCode[system=context, code=context, display=context], termCode=TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain]].");
+                    "Missing time restriction in mapping with key ContextualTermCode[context=TermCode[system=context, code=context, display=context], termCode=TermCode[system=http://fhir.de/CodeSystem/bfarm/icd-10-gm, code=C71.1, display=Malignant neoplasm of brain]].");
         }
 
         @Test
         void test_Task1() {
-            var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"), C71_0,
-                    Mapping.of(C71_0, "Condition", null, null, List.of(),
+            var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.QUANTITY)), C71_0,
+                    Mapping.of(C71_0, "Condition", null, List.of(),
                             List.of(VERIFICATION_STATUS_ATTR_MAPPING)), C71_1,
-                    Mapping.of(C71_1, "Condition", null, null, List.of(),
+                    Mapping.of(C71_1, "Condition", null, List.of(),
                             List.of(VERIFICATION_STATUS_ATTR_MAPPING)), TMZ,
                     Mapping.of(TMZ, "MedicationStatement"));
             var conceptTree = new MappingTreeBase(List.of(
@@ -253,9 +260,9 @@ class TranslatorTest {
                     
                     define "Criterion 1":
                       exists (from [Condition: Code 'C71.0' from icd10] C
-                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
+                        where C.verificationStatus ~ Code 'confirmed' from ver_status) or
                       exists (from [Condition: Code 'C71.1' from icd10] C
-                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                        where C.verificationStatus ~ Code 'confirmed' from ver_status)
                     
                     define "Criterion 2":
                       exists (from [Observation: Code '26515-7' from loinc] O
@@ -274,8 +281,7 @@ class TranslatorTest {
 
         @Test
         void test_Task2() {
-            var mappings = Map.of(PLATELETS, Mapping.of(PLATELETS, "Observation", "value"), HYPERTENSION,
-                    Mapping.of(HYPERTENSION, "Condition", null, null, List.of(),
+            var mappings = Map.of(HYPERTENSION, Mapping.of(HYPERTENSION, "Condition", null, List.of(),
                             List.of(VERIFICATION_STATUS_ATTR_MAPPING)), SERUM, Mapping.of(SERUM, "Specimen"), LIPID,
                     Mapping.of(LIPID, "MedicationStatement"));
             var conceptTree = new MappingTreeBase(List.of(
@@ -311,7 +317,7 @@ class TranslatorTest {
                     
                     define "Criterion 1":
                       exists (from [Condition: Code 'I10' from icd10] C
-                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                        where C.verificationStatus ~ Code 'confirmed' from ver_status)
                     
                     define "Criterion 2":
                       exists [Specimen: Code 'Serum' from sample]
@@ -335,12 +341,12 @@ class TranslatorTest {
 
         @Test
         void geccoTask2() {
-            var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", "value"), COPD,
-                    Mapping.of(COPD, "Condition", null, null,
-                            List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()), G47_31,
-                    Mapping.of(G47_31, "Condition", null, null,
-                            List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of()),
-                    TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", "value"));
+            var mappings = Map.of(FRAILTY_SCORE, Mapping.of(FRAILTY_SCORE, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.CODEABLE_CONCEPT)), COPD,
+                    Mapping.of(COPD, "Condition", null,
+                            List.of(CodeEquivalentModifier.of("verificationStatus", CONFIRMED)), List.of()), G47_31,
+                    Mapping.of(G47_31, "Condition", null,
+                            List.of(CodeEquivalentModifier.of("verificationStatus", CONFIRMED)), List.of()),
+                    TOBACCO_SMOKING_STATUS, Mapping.of(TOBACCO_SMOKING_STATUS, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.CODEABLE_CONCEPT)));
             var conceptTree = new MappingTreeBase(List.of(createTreeRootWithoutChildren(COPD), createTreeRootWithoutChildren(G47_31)));
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
             var structuredQuery = StructuredQuery.of(
@@ -357,7 +363,7 @@ class TranslatorTest {
                     using FHIR version '4.0.0'
                     include FHIRHelpers version '4.0.0'
 
-                    codesystem frailty-score: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty-score'
+                    codesystem frailty_score: 'https://www.netzwerk-universitaetsmedizin.de/fhir/CodeSystem/frailty_score'
                     codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
                     codesystem loinc: 'http://loinc.org'
                     codesystem snomed: 'http://snomed.info/sct'
@@ -367,23 +373,23 @@ class TranslatorTest {
                     
                     define "Criterion 1":
                       exists (from [Observation: Code '713636003' from snomed] O
-                        where O.value.coding contains Code '1' from frailty-score or
-                          O.value.coding contains Code '2' from frailty-score)
+                        where O.value ~ Code '1' from frailty_score or
+                          O.value ~ Code '2' from frailty_score)
                     
                     define Inclusion:
                       "Criterion 1"
                     
                     define "Criterion 2":
                       exists (from [Condition: Code '13645005' from snomed] C
-                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                        where C.verificationStatus ~ Code 'confirmed' from ver_status)
                     
                     define "Criterion 3":
                       exists (from [Condition: Code 'G47.31' from icd10] C
-                        where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                        where C.verificationStatus ~ Code 'confirmed' from ver_status)
                     
                     define "Criterion 4":
                       exists (from [Observation: Code '72166-2' from loinc] O
-                        where O.value.coding contains Code 'LA18976-3' from loinc)
+                        where O.value ~ Code 'LA18976-3' from loinc)
                     
                     define Exclusion:
                       "Criterion 2" and
@@ -403,9 +409,8 @@ class TranslatorTest {
                         "resourceType": "Consent",
                         "fixedCriteria": [
                             {
-                                "fhirPath": "status",
-                                "searchParameter": "status",
-                                "type": "code",
+                                "path": "status",
+                                "types": ["code"],
                                 "value": [
                                     {
                                         "code": "active",
@@ -415,9 +420,8 @@ class TranslatorTest {
                                 ]
                             },
                             {
-                                "fhirPath": "provision.provision.code.coding",
-                                "searchParameter": "mii-provision-provision-code",
-                                "type": "Coding",
+                                "path": "provision.provision.code",
+                                "types": ["Coding"],
                                 "value": [
                                     {
                                         "code": "2.16.840.1.113883.3.1937.777.24.5.3.5",
@@ -427,9 +431,8 @@ class TranslatorTest {
                                 ]
                             },
                             {
-                                "fhirPath": "provision.provision.code.coding",
-                                "searchParameter": "mii-provision-provision-code",
-                                "type": "Coding",
+                                "path": "provision.provision.code",
+                                "types": ["Coding"],
                                 "value": [
                                     {
                                         "code": "2.16.840.1.113883.3.1937.777.24.5.3.2",
@@ -453,9 +456,7 @@ class TranslatorTest {
                             "code": "54133-1",
                             "display": "Consent Document",
                             "system": "http://loinc.org"
-                        },
-                        "timeRestrictionParameter": "date",
-                        "timeRestrictionFhirPath": "dateTime"
+                        }
                     }
                     """);
 
@@ -503,8 +504,10 @@ class TranslatorTest {
                     define Criterion:
                       exists (from [Consent: Code '54133-1' from loinc] C
                         where C.status = 'active' and
-                          C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.5' from consent and
-                          C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.2' from consent)
+                          exists (from C.provision.provision.code C
+                            where C ~ Code '2.16.840.1.113883.3.1937.777.24.5.3.5' from consent) and
+                          exists (from C.provision.provision.code C
+                            where C ~ Code '2.16.840.1.113883.3.1937.777.24.5.3.2' from consent))
                     
                     define InInitialPopulation:
                       Criterion
@@ -525,10 +528,7 @@ class TranslatorTest {
                             "code": "424144002",
                             "display": "Current chronological age",
                             "system": "http://snomed.info/sct"
-                        },
-                        "valueFhirPath": "birthDate",
-                        "valueSearchParameter": "birthDate",
-                        "valueType": "Age"
+                        }
                     }
                     """);
 
@@ -602,9 +602,10 @@ class TranslatorTest {
                             "display": "Current chronological age",
                             "system": "http://snomed.info/sct"
                         },
-                        "valueFhirPath": "birthDate",
-                        "valueSearchParameter": "birthDate",
-                        "valueType": "Age"
+                        "value": {
+                          "path": "birthDate",
+                          "types": [ "date" ]
+                        }
                     }
                     """);
 
@@ -678,9 +679,10 @@ class TranslatorTest {
                             "display": "Current chronological age",
                             "system": "http://snomed.info/sct"
                         },
-                        "valueFhirPath": "birthDate",
-                        "valueSearchParameter": "birthDate",
-                        "valueType": "Age"
+                        "value": {
+                          "path": "birthDate",
+                          "types": [ "date" ]
+                        }
                     }
                     """);
 
@@ -743,21 +745,24 @@ class TranslatorTest {
         void patientGender() throws Exception {
             var mapping = readMapping("""
                     {
-                        "resourceType": "Patient",
-                        "context": {
-                            "code": "context",
-                            "display": "context",
-                            "system": "context"
-                        },
-                        "key": {
-                            "code": "263495000",
-                            "display": "Geschlecht",
-                            "system": "http://snomed.info/sct"
-                        },
-                        "valueFhirPath": "gender",
-                        "valueSearchParameter": "gender",
-                        "valueType": "code",
-                        "valueTypeFhir": "code"
+                      "context": {
+                        "code": "Patient",
+                        "display": "Patient",
+                        "system": "fdpg.mii.cds",
+                        "version": "1.0.0"
+                      },
+                      "key": {
+                        "code": "263495000",
+                        "display": "Geschlecht",
+                        "system": "http://snomed.info/sct"
+                      },
+                      "resourceType": "Patient",
+                      "value": {
+                        "path": "gender",
+                        "types": [
+                          "code"
+                        ]
+                      }
                     }
                     """);
             var structuredQuery = readStructuredQuery("""
@@ -819,20 +824,25 @@ class TranslatorTest {
         void consent() throws Exception {
             var mapping = readMapping("""
                     {
-                        "context": {
-                            "code": "Einwilligung",
-                            "display": "Einwilligung",
-                            "system": "fdpg.mii.cds",
-                            "version": "1.0.0"
-                        },
-                        "key": {
-                            "code": "2.16.840.1.113883.3.1937.777.24.5.3.8",
-                            "display": "MDAT wissenschaftlich nutzen EU DSGVO NIVEAU",
-                            "system": "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3",
-                            "version": "1.0.2"
-                        },
-                        "resourceType": "Consent",
-                        "termCodeFhirPath": "provision.provision.code"
+                      "context": {
+                        "code": "Einwilligung",
+                        "display": "Einwilligung",
+                        "system": "fdpg.mii.cds",
+                        "version": "1.0.0"
+                      },
+                      "key": {
+                        "code": "2.16.840.1.113883.3.1937.777.24.5.3.8",
+                        "display": "MDAT wissenschaftlich nutzen EU DSGVO NIVEAU",
+                        "system": "urn:oid:2.16.840.1.113883.3.1937.777.24.5.3",
+                        "version": "1.0.2"
+                      },
+                      "resourceType": "Consent",
+                      "termCode": {
+                        "path": "provision.provision.code",
+                        "types": [
+                          "CodeableConcept"
+                        ]
+                      }
                     }
                     """);
 
@@ -878,7 +888,84 @@ class TranslatorTest {
                     
                     define Criterion:
                       exists (from [Consent] C
-                        where C.provision.provision.code.coding contains Code '2.16.840.1.113883.3.1937.777.24.5.3.8' from consent)
+                        where exists (from C.provision.provision.code C
+                            where C ~ Code '2.16.840.1.113883.3.1937.777.24.5.3.8' from consent))
+                    
+                    define InInitialPopulation:
+                      Criterion
+                    """);
+        }
+
+        @Test
+        void encounter() throws Exception {
+            var mapping = readMapping("""
+                    {
+                      "context": {
+                        "code": "Fall",
+                        "display": "Fall",
+                        "system": "fdpg.mii.cds",
+                        "version": "1.0.0"
+                      },
+                      "key": {
+                        "code": "VR",
+                        "display": "virtual",
+                        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                        "version": "9.0.0"
+                      },
+                      "resourceType": "Encounter",
+                      "termCode": {
+                        "path": "class",
+                        "types": [
+                          "Coding"
+                        ]
+                      }
+                    }
+                    """);
+
+            var structuredQuery = readStructuredQuery("""
+                    {
+                      "version": "http://to_be_decided.com/draft-1/schema#",
+                      "display": "",
+                      "inclusionCriteria": [
+                        [
+                          {
+                            "context": {
+                              "code": "Fall",
+                              "display": "Fall",
+                              "system": "fdpg.mii.cds",
+                              "version": "1.0.0"
+                            },
+                            "termCodes": [
+                              {
+                                "code": "VR",
+                                "display": "virtual",
+                                "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                                "version": "9.0.0"
+                              }
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                    """);
+            var conceptTree = createTreeWithoutChildren(ENCOUNTER_CLASS);
+            var mappings = Map.of(ENCOUNTER_CLASS, mapping);
+            var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+
+            var library = Translator.of(mappingContext).toCql(structuredQuery);
+
+            assertThat(library).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                    
+                    codesystem act_code: 'http://terminology.hl7.org/CodeSystem/v3-ActCode'
+                    
+                    context Patient
+                    
+                    define Criterion:
+                      exists (from [Encounter] E
+                        where E.class ~ Code 'VR' from act_code)
                     
                     define InInitialPopulation:
                       Criterion
@@ -901,15 +988,15 @@ class TranslatorTest {
                             "display": "Blood pressure panel with all children optional"
                         },
                         "resourceType": "Observation",
-                        "attributeFhirPaths": [
+                        "attributes": [
                           {
-                            "attributeType": "Coding",
-                            "attributeKey": {
+                            "types": ["Coding"],
+                            "key": {
                               "system": "http://loinc.org",
                               "code": "8462-4",
                               "display": "Diastolic blood pressure"
                             },
-                            "attributePath": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first()"
+                            "path": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first()"
                           }
                         ]
                     }

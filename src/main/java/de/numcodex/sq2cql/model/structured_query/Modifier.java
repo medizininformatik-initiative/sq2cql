@@ -9,6 +9,7 @@ import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.Container;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -18,8 +19,8 @@ import java.util.stream.Stream;
 public interface Modifier {
 
     @JsonCreator
-    static Modifier create(@JsonProperty("type") String type,
-                           @JsonProperty("fhirPath") String path,
+    static Modifier create(@JsonProperty("types") List<String> types,
+                           @JsonProperty("path") String path,
                            @JsonProperty("value") JsonNode... values) {
         if (values == null) {
             throw new IllegalArgumentException("missing modifier values");
@@ -29,13 +30,15 @@ public interface Modifier {
             throw new IllegalArgumentException("empty modifier values");
         }
 
-        if ("code".equals(type)) {
-            return CodeModifier.of(path, Stream.of(values).map(TermCode::fromJsonNode).map(TermCode::code).toArray(String[]::new));
+        if (List.of("code").equals(types)) {
+            return new CodeModifier(path, Stream.of(values).map(TermCode::fromJsonNode).map(TermCode::code).toList());
         }
-        if ("Coding".equals(type)) {
-            return CodingModifier.of(path, Stream.of(values).map(TermCode::fromJsonNode).toArray(TermCode[]::new));
+
+        if (List.of("Coding").equals(types) || List.of("CodeableConcept").equals(types)) {
+            return new CodeEquivalentModifier(path, Stream.of(values).map(TermCode::fromJsonNode).toList());
         }
-        throw new IllegalArgumentException("unknown type: " + type);
+
+        throw new IllegalArgumentException("unknown types: " + String.join(", ", types));
     }
 
     Container<QueryExpression> updateQuery(MappingContext mappingContext, Container<QueryExpression> queryContainer);

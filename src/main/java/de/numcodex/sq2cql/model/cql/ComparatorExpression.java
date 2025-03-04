@@ -24,6 +24,10 @@ public record ComparatorExpression(Expression<?> a, Comparator comparator,
         return new ComparatorExpression(a, Comparator.EQUAL, b);
     }
 
+    public static ComparatorExpression equivalent(Expression<?> a, Expression<?> b) {
+        return new ComparatorExpression(a, Comparator.EQUIVALENT, b);
+    }
+
     @Override
     public String print(PrintContext printContext) {
         var precedence = comparator.getPrecedence();

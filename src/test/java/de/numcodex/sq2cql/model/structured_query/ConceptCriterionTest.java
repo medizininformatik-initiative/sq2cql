@@ -1,7 +1,9 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.*;
+import de.numcodex.sq2cql.model.AttributeMapping;
+import de.numcodex.sq2cql.model.Mapping;
+import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import org.junit.jupiter.api.Test;
@@ -216,11 +218,11 @@ class ConceptCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists [Condition: Code 'C71' from icd10]
                 """);
@@ -240,11 +242,11 @@ class ConceptCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists [Condition: Code 'C71.1' from icd10] or
                   exists [Condition: Code 'C71.2' from icd10]
@@ -255,8 +257,8 @@ class ConceptCriterionTest {
     void toCql_WithAttributeFilter() {
         var criterion = ConceptCriterion.of(ContextualConcept.of(C71))
                 .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED));
-        var mapping = Mapping.of(C71, "Condition", null, null, List.of(),
-                List.of(AttributeMapping.of("Coding", VERIFICATION_STATUS, "verificationStatus.coding")));
+        var mapping = Mapping.of(C71, "Condition", null, List.of(),
+                List.of(AttributeMapping.of(List.of("Coding"), VERIFICATION_STATUS, "verificationStatus")));
         var mappingContext = MappingContext.of(Map.of(C71, mapping), createTreeWithoutChildren(C71),
                 CODE_SYSTEM_ALIASES);
 
@@ -266,15 +268,15 @@ class ConceptCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
                 codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Condition: Code 'C71' from icd10] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                    where C.verificationStatus ~ Code 'confirmed' from ver_status)
                 """);
         assertEquals(Set.of(ICD10_CODE_SYSTEM_DEF, VER_STATUS_CODE_SYSTEM_DEF),
                 container.getCodeSystemDefinitions());
@@ -284,10 +286,10 @@ class ConceptCriterionTest {
     void toCql_Expanded_WithAttributeFilter() {
         var criterion = ConceptCriterion.of(ContextualConcept.of(C71))
                 .appendAttributeFilter(ValueSetAttributeFilter.of(VERIFICATION_STATUS, CONFIRMED));
-        var mapping1 = Mapping.of(C71_1, "Condition", null, null, List.of(),
-                List.of(AttributeMapping.of("Coding", VERIFICATION_STATUS, "verificationStatus.coding")));
-        var mapping2 = Mapping.of(C71_2, "Condition", null, null, List.of(),
-                List.of(AttributeMapping.of("Coding", VERIFICATION_STATUS, "verificationStatus.coding")));
+        var mapping1 = Mapping.of(C71_1, "Condition", null, List.of(),
+                List.of(AttributeMapping.of(List.of("Coding"), VERIFICATION_STATUS, "verificationStatus")));
+        var mapping2 = Mapping.of(C71_2, "Condition", null, List.of(),
+                List.of(AttributeMapping.of(List.of("Coding"), VERIFICATION_STATUS, "verificationStatus")));
         var mappingContext = MappingContext.of(Map.of(C71_1, mapping1, C71_2, mapping2),
                 createTreeWithChildren(C71, C71_1, C71_2), CODE_SYSTEM_ALIASES);
 
@@ -297,17 +299,17 @@ class ConceptCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
                 codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Condition: Code 'C71.1' from icd10] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status) or
+                    where C.verificationStatus ~ Code 'confirmed' from ver_status) or
                   exists (from [Condition: Code 'C71.2' from icd10] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                    where C.verificationStatus ~ Code 'confirmed' from ver_status)
                 """);
         assertEquals(Set.of(ICD10_CODE_SYSTEM_DEF, VER_STATUS_CODE_SYSTEM_DEF),
                 container.getCodeSystemDefinitions());
@@ -319,8 +321,8 @@ class ConceptCriterionTest {
                 NumericAttributeFilter.of(DIASTOLIC_BLOOD_PRESSURE, LESS_THAN, BigDecimal.valueOf(80),
                         "mm[Hg]"));
         var mappingContext = MappingContext.of(Map.of(BLOOD_PRESSURE,
-                        Mapping.of(BLOOD_PRESSURE, "Observation", "value", null, List.of(), List.of(
-                                AttributeMapping.of("", DIASTOLIC_BLOOD_PRESSURE, format(
+                        Mapping.of(BLOOD_PRESSURE, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.QUANTITY), List.of(), List.of(
+                                AttributeMapping.of(List.of("Quantity"), DIASTOLIC_BLOOD_PRESSURE, format(
                                         "component.where(code.coding.exists(system = '%s' and code = '%s')).value.first()",
                                         DIASTOLIC_BLOOD_PRESSURE.system(), DIASTOLIC_BLOOD_PRESSURE.code()))))), null,
                 CODE_SYSTEM_ALIASES);
@@ -331,11 +333,11 @@ class ConceptCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                 
+                
                 codesystem loinc: 'http://loinc.org'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code '85354-9' from loinc] O
                     where O.component.where(code.coding.exists(system = 'http://loinc.org' and code = '8462-4')).value.first() as Quantity < 80 'mm[Hg]')
@@ -346,7 +348,7 @@ class ConceptCriterionTest {
     void toCql_FixedCriteria_Code() {
         var criterion = ConceptCriterion.of(ContextualConcept.of(THERAPEUTIC_PROCEDURE));
         var mappingContext = MappingContext.of(Map.of(THERAPEUTIC_PROCEDURE,
-                        Mapping.of(THERAPEUTIC_PROCEDURE, "Procedure", null, null,
+                        Mapping.of(THERAPEUTIC_PROCEDURE, "Procedure", null,
                                 List.of(CodeModifier.of("status", "completed", "in-progress")), List.of())), null,
                 CODE_SYSTEM_ALIASES);
 
@@ -356,11 +358,11 @@ class ConceptCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                 
+                
                 codesystem snomed: 'http://snomed.info/sct'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Procedure: Code '277132007' from snomed] P
                     where P.status in { 'completed', 'in-progress' })
@@ -370,8 +372,8 @@ class ConceptCriterionTest {
     @Test
     void toCql_FixedCriteria_Coding() {
         var criterion = ConceptCriterion.of(ContextualConcept.of(C71));
-        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition", null, null,
-                        List.of(CodingModifier.of("verificationStatus.coding", CONFIRMED)), List.of())),
+        var mappingContext = MappingContext.of(Map.of(C71, Mapping.of(C71, "Condition", null,
+                        List.of(CodeEquivalentModifier.of("verificationStatus", CONFIRMED)), List.of())),
                 createTreeWithoutChildren(C71), CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
@@ -380,15 +382,15 @@ class ConceptCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                                                    
+                
                 codesystem icd10: 'http://fhir.de/CodeSystem/bfarm/icd-10-gm'
                 codesystem ver_status: 'http://terminology.hl7.org/CodeSystem/condition-ver-status'
-                  
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Condition: Code 'C71' from icd10] C
-                    where C.verificationStatus.coding contains Code 'confirmed' from ver_status)
+                    where C.verificationStatus ~ Code 'confirmed' from ver_status)
                 """);
     }
 }

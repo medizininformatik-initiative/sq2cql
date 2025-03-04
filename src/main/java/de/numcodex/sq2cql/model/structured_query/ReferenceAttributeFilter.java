@@ -32,9 +32,15 @@ public record ReferenceAttributeFilter(TermCode attributeCode, List<Criterion> c
 
     @Override
     public Modifier toModifier(AttributeMapping attributeMapping) {
-        if (!"Reference".equals(attributeMapping.type())) {
+        var types = attributeMapping.types();
+        if (types.size() != 1) {
+            throw new IllegalArgumentException("Expect exactly one type of the attribute mapping but was %d types."
+                    .formatted(types.size()));
+        }
+        var type = types.get(0);
+        if (!"Reference".equals(type)) {
             throw new IllegalArgumentException("The type of the attribute mapping has to be `Reference` but was `%s`."
-                    .formatted(attributeMapping.type()));
+                    .formatted(type));
         }
         var targetType = attributeMapping.referenceTargetType();
         if (targetType == null) {

@@ -80,8 +80,17 @@ public final class RangeCriterion extends AbstractCriterion<RangeCriterion> {
         if (mapping.key().termCode().equals(AgeFunctionMapping.AGE)) {
             return ageExpr();
         }
-        var castExpr = TypeExpression.of(InvocationExpression.of(sourceAlias, mapping.valueFhirPath()),
-                "Quantity");
+
+        if (mapping.valueMapping().isEmpty()) {
+            throw new IllegalStateException("Numeric criterion is used with the mapping of `%s` without value mapping.".formatted(mapping.key()));
+        }
+
+        var valueMapping = mapping.valueMapping().get();
+
+        // Mapping ensures that the termCodeMapping has exactly one type
+        var castExpr = TypeExpression.of(InvocationExpression.of(sourceAlias, valueMapping.path()),
+                valueMapping.types().get(0).fhirTypeName());
+
         return Container.of(BetweenExpression.of(castExpr, quantityExpression(lowerBound, unit),
                 quantityExpression(upperBound, unit)));
     }

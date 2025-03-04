@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author Alexander Kiel
  */
-class CodingModifierTest {
+class CodeEquivalentModifierTest {
 
     static final TermCode CONFIRMED = TermCode.of("http://terminology.hl7.org/CodeSystem/condition-ver-status",
             "confirmed", "Conformed");
@@ -25,11 +25,11 @@ class CodingModifierTest {
 
     @Test
     void expression() {
-        var modifier = CodingModifier.of("verificationStatus.coding", CONFIRMED);
+        var modifier = CodeEquivalentModifier.of("verificationStatus", CONFIRMED);
 
         var expression = modifier.expression(MAPPING_CONTEXT, StandardIdentifierExpression.of("C"));
 
-        assertEquals("C.verificationStatus.coding contains Code 'confirmed' from ver_status",
+        assertEquals("C.verificationStatus ~ Code 'confirmed' from ver_status",
                 expression.getExpression().map(PrintContext.ZERO::print).orElse(""));
     }
 }
