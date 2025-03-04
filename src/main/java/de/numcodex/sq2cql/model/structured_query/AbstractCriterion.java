@@ -64,10 +64,9 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
         var mapping = mappingContext.findMapping(termCode)
                 .orElseThrow(() -> new MappingNotFoundException(termCode));
 
-        return mapping.termCodeFhirPath() == null
-                ? codeSelector(mappingContext, mapping.primaryCode())
-                .map(terminology -> RetrieveExpression.of(mapping.resourceType(), terminology))
-                : Container.of(RetrieveExpression.of(mapping.resourceType()));
+        return mapping.termCodeMapping().isPresent()
+                ? Container.of(RetrieveExpression.of(mapping.resourceType()))
+                : codeSelector(mappingContext, mapping.primaryCode()).map(terminology -> RetrieveExpression.of(mapping.resourceType(), terminology));
     }
 
     private static String referenceName(TermCode termCode) {
@@ -170,8 +169,8 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
     private Container<QueryExpression> appendModifier(MappingContext mappingContext, Mapping mapping,
                                                       Container<QueryExpression> queryContainer) {
         var termCodeModifier = termCodeModifier(mapping);
-        if (termCodeModifier != null) {
-            queryContainer = termCodeModifier.updateQuery(mappingContext, queryContainer);
+        if (termCodeModifier.isPresent()) {
+            queryContainer = termCodeModifier.get().updateQuery(mappingContext, queryContainer);
         }
         for (var modifier : mapping.fixedCriteria()) {
             queryContainer = modifier.updateQuery(mappingContext, queryContainer);
@@ -185,9 +184,16 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
         return queryContainer;
     }
 
-    private Modifier termCodeModifier(Mapping mapping) {
-        var termCodeFhirPath = mapping.termCodeFhirPath();
-        return termCodeFhirPath == null ? null : new CodingModifier(termCodeFhirPath + ".coding", List.of(mapping.primaryCode()));
+    private Optional<Modifier> termCodeModifier(Mapping mapping) {
+        return mapping.termCodeMapping().map(m -> {
+            // Mapping ensures that the termCodeMapping has exactly one type
+            return switch (m.types().get(0)) {
+                case CODING, CODEABLE_CONCEPT ->
+                        CodeEquivalentModifier.of(m.path(), mapping.primaryCode());
+                default ->
+                    throw new IllegalArgumentException("Unsupported termCode mapping type `%s`.".formatted(m.types().get(0).fhirTypeName()));
+            };
+        });
     }
 
     private List<Modifier> resolveAttributeModifiers(Map<TermCode, AttributeMapping> attributeMappings) {

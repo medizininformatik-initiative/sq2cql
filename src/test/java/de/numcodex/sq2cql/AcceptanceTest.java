@@ -100,6 +100,7 @@ public class AcceptanceTest {
     public void runTestCase(Path path) throws Exception {
         var structuredQuery = new ObjectMapper().readValue(Files.readString(path), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
+        System.out.println("cql = " + cql);
         var measureUri = createMeasureAndLibrary(cql);
         var report = evaluateMeasure(measureUri);
 
@@ -110,6 +111,7 @@ public class AcceptanceTest {
     public void allCriteriaTime() throws Exception {
         var structuredQuery = new ObjectMapper().readValue(slurp("example-all-crits-time.json"), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
+        System.out.println("cql = " + cql);
         var measureUri = createMeasureAndLibrary(cql);
         var report = evaluateMeasure(measureUri);
 
@@ -120,6 +122,7 @@ public class AcceptanceTest {
     public void consent() throws Exception {
         var structuredQuery = new ObjectMapper().readValue(slurp("consent.json"), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
+        System.out.println("cql = " + cql);
         var measureUri = createMeasureAndLibrary(cql);
         var report = evaluateMeasure(measureUri);
 

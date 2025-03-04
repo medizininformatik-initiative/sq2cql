@@ -46,12 +46,12 @@ class ValueSetCriterionTest {
 
     static {
         MAPPING_CONTEXT = MappingContext.of(Map.of(
-                COVID, Mapping.of(COVID, "Observation", "value", null, List.of(),
-                        List.of(AttributeMapping.of("code", STATUS, "status"))),
-                SEX, Mapping.of(SEX, "Observation", "value"),
-                FINDING, Mapping.of(FINDING, "Condition", "severity"),
-                TNM_C, Mapping.of(TNM_C, "Observation", "value"),
-                TNM_P, Mapping.of(TNM_P, "Observation", "value")
+                COVID, Mapping.of(COVID, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.CODEABLE_CONCEPT), List.of(),
+                        List.of(AttributeMapping.of(List.of("code"), STATUS, "status"))),
+                SEX, Mapping.of(SEX, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.CODEABLE_CONCEPT)),
+                FINDING, Mapping.of(FINDING, "Condition", Mapping.PathMapping.of("severity", Mapping.PathMapping.Type.CODEABLE_CONCEPT)),
+                TNM_C, Mapping.of(TNM_C, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.CODEABLE_CONCEPT)),
+                TNM_P, Mapping.of(TNM_P, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.CODEABLE_CONCEPT))
         ), null, CODE_SYSTEM_ALIASES);
     }
 
@@ -295,15 +295,15 @@ class ValueSetCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                         
+                
                 codesystem loinc: 'http://loinc.org'
                 codesystem snomed: 'http://snomed.info/sct'
-                                                    
+                
                 context Patient
-                                
+                
                 define Criterion:
                   exists (from [Observation: Code '94500-6' from loinc] O
-                    where O.value.coding contains Code 'positive' from snomed)
+                    where O.value ~ Code 'positive' from snomed)
                 """);
     }
 
@@ -317,16 +317,16 @@ class ValueSetCriterionTest {
                 library Retrieve version '1.0.0'
                 using FHIR version '4.0.0'
                 include FHIRHelpers version '4.0.0'
-                         
+                
                 codesystem loinc: 'http://loinc.org'
                                                     
                 context Patient
                                 
                 define Criterion:
                   exists (from [Observation: Code '21908-9' from loinc] O
-                    where O.value.coding contains Code 'LA3649-6' from loinc) or
+                    where O.value ~ Code 'LA3649-6' from loinc) or
                   exists (from [Observation: Code '21902-2' from loinc] O
-                    where O.value.coding contains Code 'LA3649-6' from loinc)
+                    where O.value ~ Code 'LA3649-6' from loinc)
                 """);
     }
 
@@ -348,8 +348,8 @@ class ValueSetCriterionTest {
                                 
                 define Criterion:
                   exists (from [Observation: Code '76689-9' from loinc] O
-                    where O.value.coding contains Code 'male' from gender or
-                      O.value.coding contains Code 'female' from gender)
+                    where O.value ~ Code 'male' from gender or
+                      O.value ~ Code 'female' from gender)
                 """);
     }
 
@@ -370,7 +370,7 @@ class ValueSetCriterionTest {
                                 
                 define Criterion:
                   exists (from [Condition: Code '404684003' from snomed] C
-                    where C.severity.coding contains Code '24484000' from snomed)
+                    where C.severity ~ Code '24484000' from snomed)
                 """);
     }
 
@@ -393,7 +393,7 @@ class ValueSetCriterionTest {
                                 
                 define Criterion:
                   exists (from [Observation: Code '94500-6' from loinc] O
-                    where O.value.coding contains Code 'positive' from snomed and
+                    where O.value ~ Code 'positive' from snomed and
                       O.status = 'final')
                 """);
     }
@@ -402,7 +402,7 @@ class ValueSetCriterionTest {
     void toCql_WithFixedCriteria() {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(COVID), POSITIVE);
         var mappingContext = MappingContext.of(Map.of(
-                COVID, Mapping.of(COVID, "Observation", "value", null,
+                COVID, Mapping.of(COVID, "Observation", Mapping.PathMapping.of("value", Mapping.PathMapping.Type.CODEABLE_CONCEPT),
                         List.of(CodeModifier.of("status", "final")),
                         List.of())
         ), null, CODE_SYSTEM_ALIASES);
@@ -421,7 +421,7 @@ class ValueSetCriterionTest {
                                 
                 define Criterion:
                   exists (from [Observation: Code '94500-6' from loinc] O
-                    where O.value.coding contains Code 'positive' from snomed and
+                    where O.value ~ Code 'positive' from snomed and
                       O.status = 'final')
                 """);
     }
@@ -431,8 +431,8 @@ class ValueSetCriterionTest {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(ETHNIC_GROUP), MIXED);
         var mappingContext = MappingContext.of(Map.of(
                 ETHNIC_GROUP, Mapping.of(ETHNIC_GROUP, "Patient",
-                        "extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first()",
-                        "Coding")
+                        Mapping.PathMapping.of("extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first()",
+                        Mapping.PathMapping.Type.CODING))
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
@@ -447,7 +447,7 @@ class ValueSetCriterionTest {
                 context Patient
                                 
                 define Criterion:
-                  Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first() contains Code '26242008' from snomed
+                  Patient.extension.where(url='https://www.netzwerk-universitaetsmedizin.de/fhir/StructureDefinition/ethnic-group').value.first() ~ Code '26242008' from snomed
                 """);
     }
 
@@ -455,7 +455,7 @@ class ValueSetCriterionTest {
     void toCql_WithPatientGender() {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(GENDER), MALE);
         var mappingContext = MappingContext.of(Map.of(
-                GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
+                GENDER, Mapping.of(GENDER, "Patient", Mapping.PathMapping.of("gender", Mapping.PathMapping.Type.CODE))
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
@@ -476,7 +476,7 @@ class ValueSetCriterionTest {
     void toCql_WithPatientGender_TwoConcepts() {
         var criterion = ValueSetCriterion.of(ContextualConcept.of(GENDER), MALE, FEMALE);
         var mappingContext = MappingContext.of(Map.of(
-                GENDER, Mapping.of(GENDER, "Patient", "gender", "code")
+                GENDER, Mapping.of(GENDER, "Patient", Mapping.PathMapping.of("gender", Mapping.PathMapping.Type.CODE))
         ), null, CODE_SYSTEM_ALIASES);
 
         var container = criterion.toCql(mappingContext);
