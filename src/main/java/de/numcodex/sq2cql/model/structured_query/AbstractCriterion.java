@@ -189,7 +189,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
             // Mapping ensures that the termCodeMapping has exactly one type
             return switch (m.types().get(0)) {
                 case CODING, CODEABLE_CONCEPT ->
-                        CodeEquivalentModifier.of(m.path(), mapping.primaryCode());
+                        CodeEquivalentModifier.of(m.path(), m.cardinality(), mapping.primaryCode());
                 default ->
                     throw new IllegalArgumentException("Unsupported termCode mapping type `%s`.".formatted(m.types().get(0).fhirTypeName()));
             };

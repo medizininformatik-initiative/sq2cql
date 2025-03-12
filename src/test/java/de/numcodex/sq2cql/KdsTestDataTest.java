@@ -7,19 +7,11 @@ import ca.uhn.fhir.rest.param.StringParam;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.Library;
-import org.hl7.fhir.r4.model.Measure;
-import org.hl7.fhir.r4.model.MeasureReport;
-import org.hl7.fhir.r4.model.Parameters;
+import org.hl7.fhir.r4.model.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -47,9 +39,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
 @TestInstance(Lifecycle.PER_CLASS)
-public class AcceptanceTest {
+public class KdsTestDataTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(AcceptanceTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(KdsTestDataTest.class);
 
     private final GenericContainer<?> blaze = new GenericContainer<>(
             DockerImageName.parse("samply/blaze:0.32"))
@@ -64,7 +56,7 @@ public class AcceptanceTest {
     private Translator translator;
 
     private static Path resourcePath(String name) throws URISyntaxException {
-        return Paths.get(Objects.requireNonNull(AcceptanceTest.class.getResource(name), "resource `%s` is missing".formatted(name)).toURI());
+        return Paths.get(Objects.requireNonNull(KdsTestDataTest.class.getResource(name), "resource `%s` is missing".formatted(name)).toURI());
     }
 
     private static String slurp(String name) throws Exception {
@@ -89,17 +81,37 @@ public class AcceptanceTest {
         fhirContext.getRestfulClientFactory().setSocketTimeout(200 * 1000);
         fhirClient = fhirContext.newRestfulGenericClient(
                 format("http://localhost:%d/fhir", blaze.getFirstMappedPort()));
-        fhirClient.transaction().withBundle(parseResource(Bundle.class, slurp("testData.json")))
+        fhirClient.transaction().withBundle(parseResource(Bundle.class, slurp("Bundle-mii-exa-test-data-bundle.json")))
                 .execute();
 
         translator = createTranslator();
     }
 
-    @ParameterizedTest
-    @MethodSource("de.numcodex.sq2cql.AcceptanceTest#getTestQueriesReturningOnePatient")
-    public void runTestCase(Path path) throws Exception {
-        var structuredQuery = new ObjectMapper().readValue(Files.readString(path), StructuredQuery.class);
+    @Test
+    public void encounterInpatient() throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp("EncounterInpatient.json"), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
+        var measureUri = createMeasureAndLibrary(cql);
+        var report = evaluateMeasure(measureUri);
+
+        assertEquals(2, report.getGroupFirstRep().getPopulationFirstRep().getCount());
+    }
+
+    @Test
+    public void encounterInpatientEinrichtung() throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp("EncounterInpatientEinrichtung.json"), StructuredQuery.class);
+        var cql = translator.toCql(structuredQuery).print();
+        var measureUri = createMeasureAndLibrary(cql);
+        var report = evaluateMeasure(measureUri);
+
+        assertEquals(2, report.getGroupFirstRep().getPopulationFirstRep().getCount());
+    }
+
+    @Test
+    public void encounterInpatientEinrichtungTimeRestriction() throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp("EncounterInpatientEinrichtungTimeRestriction.json"), StructuredQuery.class);
+        var cql = translator.toCql(structuredQuery).print();
+        System.out.println("cql = " + cql);
         var measureUri = createMeasureAndLibrary(cql);
         var report = evaluateMeasure(measureUri);
 
@@ -107,52 +119,13 @@ public class AcceptanceTest {
     }
 
     @Test
-    public void allCriteriaTime() throws Exception {
-        var structuredQuery = new ObjectMapper().readValue(slurp("example-all-crits-time.json"), StructuredQuery.class);
+    public void encounterInpatientAbteilung() throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp("EncounterInpatientAbteilung.json"), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
         var measureUri = createMeasureAndLibrary(cql);
         var report = evaluateMeasure(measureUri);
 
         assertEquals(0, report.getGroupFirstRep().getPopulationFirstRep().getCount());
-    }
-
-    @Test
-    public void consent() throws Exception {
-        var structuredQuery = new ObjectMapper().readValue(slurp("consent.json"), StructuredQuery.class);
-        var cql = translator.toCql(structuredQuery).print();
-        var measureUri = createMeasureAndLibrary(cql);
-        var report = evaluateMeasure(measureUri);
-
-        assertEquals(1, report.getGroupFirstRep().getPopulationFirstRep().getCount());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"large-query-worst-case-with-time-constraints.json",
-            "test-large-query-more-crit-time-rest-1.json"})
-    public void largeQuery(String filename) throws Exception {
-        var structuredQuery = new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
-        var cql = translator.toCql(structuredQuery).print();
-        var measureUri = createMeasureAndLibrary(cql);
-        var report = evaluateMeasure(measureUri);
-
-        assertEquals(0, report.getGroupFirstRep().getPopulationFirstRep().getCount());
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "SpecimenSQ.json, 0",
-            "SpecimenSQExclusion.json, 159",
-            "SpecimenSQTwoInclusion.json, 0",
-            "SpecimenSQTwoReferenceCriteria.json, 0",
-            "SpecimenSQAndBodySite.json, 0"
-    })
-    public void specimenQuery(String filename, int count) throws Exception {
-        var structuredQuery = new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
-        var cql = translator.toCql(structuredQuery).print();
-        var measureUri = createMeasureAndLibrary(cql);
-        var report = evaluateMeasure(measureUri);
-
-        assertEquals(count, report.getGroupFirstRep().getPopulationFirstRep().getCount());
     }
 
     private String createMeasureAndLibrary(String cql) throws Exception {
