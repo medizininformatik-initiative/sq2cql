@@ -34,7 +34,9 @@ public interface Util {
             entry("urn:oid:2.16.840.1.113883.6.43.1", "icd_o_3"),
             entry("http://hl7.org/fhir/sid/icd-o-3", "icd_o_3_fhir"),
             entry("http://hl7.org/fhir/consent-provision-type", "provision_type"),
-            entry("http://fhir.de/CodeSystem/bfarm/ops", "oops"));
+            entry("http://fhir.de/CodeSystem/bfarm/ops", "oops"),
+            entry("http://terminology.hl7.org/CodeSystem/v3-ActCode", "v3ActCode"),
+            entry("http://fhir.de/CodeSystem/Kontaktebene", "Kontaktebene"));
 
     private static Map<ContextualTermCode, Mapping> readMappings(ZipFile zipFile) throws IOException {
         try (var in = zipFile.getInputStream(zipFile.getEntry("mapping/cql/mapping_cql.json"))) {

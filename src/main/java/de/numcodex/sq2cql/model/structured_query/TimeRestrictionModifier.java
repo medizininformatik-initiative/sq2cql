@@ -37,13 +37,12 @@ public record TimeRestrictionModifier(Mapping.TimeRestrictionMapping mapping, Lo
     @Override
     public Container<DefaultExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
         var invocationExpr = InvocationExpression.of(sourceAlias, mapping.path());
-        var intervalSelector = IntervalSelector.of(DateTimeExpression.of(afterDate.toString()), DateTimeExpression.of(beforeDate.toString()));
 
         //noinspection OptionalGetWithoutIsPresent
         return Container.of(mapping.types().stream().map(type -> switch (type) {
-            case DATE -> dateExpr(invocationExpr, intervalSelector);
-            case DATE_TIME -> dateTimeExpr(invocationExpr, intervalSelector);
-            case PERIOD -> OverlapsIntervalOperatorPhrase.of(invocationExpr, intervalSelector);
+            case DATE -> dateExpr(invocationExpr, IntervalSelector.of(DateExpression.of(afterDate), DateExpression.of(beforeDate)));
+            case DATE_TIME -> dateTimeExpr(invocationExpr, IntervalSelector.of(DateTimeExpression.of(afterDate), DateTimeExpression.of(beforeDate)));
+            case PERIOD -> OverlapsIntervalOperatorPhrase.of(invocationExpr, IntervalSelector.of(DateTimeExpression.of(afterDate), DateTimeExpression.of(beforeDate)));
         }).reduce(OrExpression::of).get());
     }
 }
