@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.*;
@@ -16,15 +17,20 @@ import static java.util.Objects.requireNonNull;
  * @param concepts possible multiple concepts
  * @author Alexander Kiel
  */
-public record CodeEquivalentModifier(String path, List<TermCode> concepts) implements SimpleModifier {
+public record CodeEquivalentModifier(String path, Mapping.Cardinality cardinality, List<TermCode> concepts) implements SimpleModifier {
 
     public CodeEquivalentModifier {
         requireNonNull(path);
+        requireNonNull(cardinality);
         concepts = List.copyOf(concepts);
     }
 
     public static CodeEquivalentModifier of(String path, TermCode... concepts) {
-        return new CodeEquivalentModifier(path, List.of(concepts));
+        return new CodeEquivalentModifier(path, Mapping.Cardinality.SINGLE, List.of(concepts));
+    }
+
+    public static CodeEquivalentModifier of(String path, Mapping.Cardinality cardinality, TermCode... concepts) {
+        return new CodeEquivalentModifier(path, cardinality, List.of(concepts));
     }
 
     @Override
@@ -37,7 +43,7 @@ public record CodeEquivalentModifier(String path, List<TermCode> concepts) imple
     }
 
     private DefaultExpression comparatorExpression(InvocationExpression leftHandSide, CodeSelector terminology) {
-        return "provision.provision.code".equals(path)
+        return cardinality == Mapping.Cardinality.MANY
                 ? multiValuedComparatorExpression(leftHandSide, terminology)
                 : ComparatorExpression.equivalent(leftHandSide, terminology);
     }

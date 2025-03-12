@@ -32,8 +32,8 @@ class TimeRestrictionModifierTest {
                     context Patient
                     
                     define Criterion:
-                      ToDate(O.effective as dateTime) in Interval[@2021-01-01, @2021-01-02] or
-                      O.effective overlaps Interval[@2021-01-01, @2021-01-02]
+                      ToDate(O.effective as dateTime) in Interval[@2021-01-01T, @2021-01-02T] or
+                      O.effective overlaps Interval[@2021-01-01T, @2021-01-02T]
                     """);
         }
 
@@ -53,7 +53,7 @@ class TimeRestrictionModifierTest {
                     context Patient
                     
                     define Criterion:
-                      ToDate(C.recordedDate as dateTime) in Interval[@2021-01-01, @2021-01-02]
+                      ToDate(C.recordedDate as dateTime) in Interval[@2021-01-01T, @2021-01-02T]
                     """);
         }
 

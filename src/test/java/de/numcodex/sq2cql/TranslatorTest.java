@@ -193,8 +193,8 @@ class TranslatorTest {
                     
                     define Criterion:
                       exists (from [Condition: Code 'C71.1' from icd10] C
-                        where ToDate(C.onset as dateTime) in Interval[@2020-01-01, @2020-01-02] or
-                          C.onset overlaps Interval[@2020-01-01, @2020-01-02])
+                        where ToDate(C.onset as dateTime) in Interval[@2020-01-01T, @2020-01-02T] or
+                          C.onset overlaps Interval[@2020-01-01T, @2020-01-02T])
                     
                     define InInitialPopulation:
                       Criterion
@@ -422,6 +422,7 @@ class TranslatorTest {
                             {
                                 "path": "provision.provision.code",
                                 "types": ["Coding"],
+                                "cardinality": "many",
                                 "value": [
                                     {
                                         "code": "2.16.840.1.113883.3.1937.777.24.5.3.5",
@@ -433,6 +434,7 @@ class TranslatorTest {
                             {
                                 "path": "provision.provision.code",
                                 "types": ["Coding"],
+                                "cardinality": "many",
                                 "value": [
                                     {
                                         "code": "2.16.840.1.113883.3.1937.777.24.5.3.2",
@@ -841,7 +843,8 @@ class TranslatorTest {
                         "path": "provision.provision.code",
                         "types": [
                           "CodeableConcept"
-                        ]
+                        ],
+                        "cardinality": "many"
                       }
                     }
                     """);

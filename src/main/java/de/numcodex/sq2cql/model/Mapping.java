@@ -134,13 +134,22 @@ public final class Mapping {
         return Optional.ofNullable(termCodeMapping);
     }
 
+    public enum Cardinality {
+
+        @JsonProperty("single")
+        SINGLE,
+
+        @JsonProperty("many")
+        MANY
+    }
+
     /**
      * Mapping information for a path including it's type.
      *
-     * @param path the FHIRPath path to the value to extract
+     * @param path  the FHIRPath path to the value to extract
      * @param types the possible types that extracted values can have
      */
-    public record PathMapping(String path, List<Type> types) {
+    public record PathMapping(String path, List<Type> types, Cardinality cardinality) {
 
         public PathMapping {
             requireNonNull(path);
@@ -148,10 +157,11 @@ public final class Mapping {
                 throw new IllegalArgumentException("Path mapping without types.");
             }
             types = List.copyOf(types);
+            cardinality = cardinality == null ? Cardinality.SINGLE : cardinality;
         }
 
         public static PathMapping of(String fhirPath, Type... types) {
-            return new PathMapping(fhirPath, List.of(types));
+            return new PathMapping(fhirPath, List.of(types), Cardinality.SINGLE);
         }
 
         public enum Type {
@@ -192,10 +202,10 @@ public final class Mapping {
     /**
      * Mapping information for a path including it's type.
      *
-     * @param path the FHIRPath path to the value to extract
+     * @param path  the FHIRPath path to the value to extract
      * @param types the possible types that extracted values can have
      */
-    public record TimeRestrictionMapping(String path, List<Type> types) {
+    public record TimeRestrictionMapping(String path, List<Type> types, Cardinality cardinality) {
 
         public TimeRestrictionMapping {
             requireNonNull(path);
@@ -203,10 +213,11 @@ public final class Mapping {
                 throw new IllegalArgumentException("at least one type required");
             }
             types = List.copyOf(types);
+            cardinality = cardinality == null ? Cardinality.SINGLE : cardinality;
         }
 
         public static TimeRestrictionMapping of(String fhirPath, Type... types) {
-            return new TimeRestrictionMapping(fhirPath, List.of(types));
+            return new TimeRestrictionMapping(fhirPath, List.of(types), Cardinality.SINGLE);
         }
 
         public enum Type {

@@ -41,7 +41,7 @@ public record ValueSetAttributeFilter(TermCode attributeCode, List<TermCode> sel
             case "code" ->
                     new CodeModifier(attributeMapping.path(), selectedConcepts.stream().map(TermCode::code).toList());
             case "Coding", "CodeableConcept" ->
-                    new CodeEquivalentModifier(attributeMapping.path(), selectedConcepts);
+                    new CodeEquivalentModifier(attributeMapping.path(), attributeMapping.cardinality(), selectedConcepts);
             default ->
                     throw new IllegalStateException("unknown attribute mapping type: %s".formatted(attributeMapping.types().get(0)));
         };

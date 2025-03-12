@@ -83,7 +83,7 @@ public class MedicationRequestTest {
                 define Criterion:
                   exists (from [MedicationRequest] M
                     where M.medication.reference in B01AB01Ref and
-                      ToDate(M.authoredOn as dateTime) in Interval[@2024-01-01, @2024-02-01])
+                      ToDate(M.authoredOn as dateTime) in Interval[@2024-01-01T, @2024-02-01T])
                 
                 define InInitialPopulation:
                   Criterion
