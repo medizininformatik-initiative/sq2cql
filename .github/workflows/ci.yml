@@ -1,16 +1,17 @@
 name: CI
 
 on:
+  schedule:
+  - cron: '0 10 * * *' # every day at 10am
   push:
     branches:
     - main
-    - develop
     tags:
     - 'v*.*.*'
   pull_request:
     branches:
     - main
-    - develop
+  merge_group:
 
 jobs:
   build:
@@ -40,6 +41,9 @@ jobs:
 
     - name: Build
       run: mvn -B verify
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
 
   deploy:
     runs-on: ubuntu-24.04
