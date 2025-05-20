@@ -1,4 +1,6 @@
-# CODEX - Structured Query to CQL Translator
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/medizininformatik-initiative/sq2cql/badge)](https://scorecard.dev/viewer/?uri=github.com/medizininformatik-initiative/sq2cql)
+
+# MII - CCDL to CQL Translator
 
 ## Usage
 
@@ -26,7 +28,7 @@ assertEquals("""
         """, library.print(PrintContext.ZERO));
 ```
 
-### JSON Deserialization of Structured Query
+### JSON Deserialization of CCDL
 
 ```
 var mapper = new ObjectMapper();
