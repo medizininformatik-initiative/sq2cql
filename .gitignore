@@ -36,3 +36,8 @@ build/
 .mvn
 mvnw
 mvnw.cmd
+
+# Local
+temp/*
+tmp/*
+.commit
