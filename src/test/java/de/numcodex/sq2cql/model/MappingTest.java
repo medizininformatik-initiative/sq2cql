@@ -3,6 +3,8 @@ package de.numcodex.sq2cql.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.common.TermCode;
+import de.numcodex.sq2cql.model.mapping.AttributeMapping;
+import de.numcodex.sq2cql.model.mapping.Mapping;
 import de.numcodex.sq2cql.model.structured_query.CodeModifier;
 import de.numcodex.sq2cql.model.structured_query.CodeEquivalentModifier;
 import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;

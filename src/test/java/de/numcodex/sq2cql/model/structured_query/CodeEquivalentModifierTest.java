@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import de.numcodex.sq2cql.PrintContext;
-import de.numcodex.sq2cql.model.MappingContext;
+import de.numcodex.sq2cql.model.mapping.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.StandardIdentifierExpression;
 import org.junit.jupiter.api.Test;

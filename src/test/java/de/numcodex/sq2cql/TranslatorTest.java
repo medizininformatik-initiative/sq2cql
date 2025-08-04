@@ -1,8 +1,11 @@
 package de.numcodex.sq2cql;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.*;
 import de.numcodex.sq2cql.model.common.TermCode;
+import de.numcodex.sq2cql.model.mapping.AttributeMapping;
+import de.numcodex.sq2cql.model.mapping.Mapping;
+import de.numcodex.sq2cql.model.mapping.MappingContext;
+import de.numcodex.sq2cql.model.mapping.MappingTreeBase;
 import de.numcodex.sq2cql.model.structured_query.*;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

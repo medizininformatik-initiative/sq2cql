@@ -1,6 +1,6 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.model.AttributeMapping;
+import de.numcodex.sq2cql.model.mapping.AttributeMapping;
 import de.numcodex.sq2cql.model.common.TermCode;
 
 import java.math.BigDecimal;

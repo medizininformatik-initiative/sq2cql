@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
+import de.numcodex.sq2cql.model.mapping.Mapping;
+import de.numcodex.sq2cql.model.mapping.MappingContext;
 import de.numcodex.sq2cql.model.cql.Container;
 import de.numcodex.sq2cql.model.cql.DefaultExpression;
 import de.numcodex.sq2cql.model.cql.IdentifierExpression;

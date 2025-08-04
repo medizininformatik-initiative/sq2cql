@@ -1,6 +1,6 @@
 package de.numcodex.sq2cql;
 
-import de.numcodex.sq2cql.model.MappingContext;
+import de.numcodex.sq2cql.model.mapping.MappingContext;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
 import de.numcodex.sq2cql.model.cql.Container;
 import de.numcodex.sq2cql.model.cql.DefaultExpression;
