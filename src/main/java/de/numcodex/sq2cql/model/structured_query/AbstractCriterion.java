@@ -1,8 +1,8 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import de.numcodex.sq2cql.model.AttributeMapping;
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
+import de.numcodex.sq2cql.model.mapping.AttributeMapping;
+import de.numcodex.sq2cql.model.mapping.Mapping;
+import de.numcodex.sq2cql.model.mapping.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.*;
 

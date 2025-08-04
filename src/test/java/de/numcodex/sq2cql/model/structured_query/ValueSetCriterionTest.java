@@ -2,9 +2,9 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.AttributeMapping;
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
+import de.numcodex.sq2cql.model.mapping.AttributeMapping;
+import de.numcodex.sq2cql.model.mapping.Mapping;
+import de.numcodex.sq2cql.model.mapping.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import org.junit.jupiter.api.Test;
 

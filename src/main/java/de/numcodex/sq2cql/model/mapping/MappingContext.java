@@ -1,4 +1,4 @@
-package de.numcodex.sq2cql.model;
+package de.numcodex.sq2cql.model.mapping;
 
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;

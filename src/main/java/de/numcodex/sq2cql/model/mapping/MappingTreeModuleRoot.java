@@ -1,4 +1,4 @@
-package de.numcodex.sq2cql.model;
+package de.numcodex.sq2cql.model.mapping;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;

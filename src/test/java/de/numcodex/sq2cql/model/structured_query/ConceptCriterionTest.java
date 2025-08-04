@@ -1,11 +1,15 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.AttributeMapping;
+<<<<<<< Updated upstream
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
+||||||| Stash base
+=======
+>>>>>>> Stashed changes
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.CodeSystemDefinition;
+import de.numcodex.sq2cql.model.mapping.AttributeMapping;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
