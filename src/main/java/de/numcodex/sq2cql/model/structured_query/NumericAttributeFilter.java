@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import de.numcodex.sq2cql.model.mapping.AttributeComponent;
 import de.numcodex.sq2cql.model.mapping.AttributeMapping;
 import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -45,7 +46,7 @@ public record NumericAttributeFilter(TermCode attributeCode,
     }
 
     @Override
-    public Modifier toModifier(AttributeMapping attributeMapping) {
-        return NumericModifier.of(attributeMapping.path(), comparator, value, unit);
+    public Modifier targetElementToModifier(AttributeComponent attributeComponent) {
+        return NumericModifier.of(attributeComponent.path(), comparator, value, unit);
     }
 }

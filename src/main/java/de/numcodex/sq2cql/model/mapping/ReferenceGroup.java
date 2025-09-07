@@ -8,13 +8,14 @@ import static java.util.Objects.*;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ReferenceGroup(String type, String path, List<AttributeTreeNode> components) implements AttributeTreeNode {
+public class ReferenceGroup extends ContextGroup {
 
-    public ReferenceGroup {
+    private final String type;
+
+    public ReferenceGroup(String type, String path, List<AttributeTreeNode> components) {
+        super(path, components);
         requireNonNull(type);
-        requireNonNull(path);
-        requireNonNull(components);
-        if (components.isEmpty()) throw new IllegalArgumentException("The component list should not be empty");
+        this.type = type;
     }
 
     @JsonCreator
@@ -25,4 +26,7 @@ public record ReferenceGroup(String type, String path, List<AttributeTreeNode> c
         return new ReferenceGroup(type, path, components);
     }
 
+    public String type() {
+        return type;
+    }
 }

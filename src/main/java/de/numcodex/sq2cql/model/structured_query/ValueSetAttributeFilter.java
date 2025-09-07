@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import de.numcodex.sq2cql.model.mapping.AttributeComponent;
 import de.numcodex.sq2cql.model.mapping.AttributeMapping;
 import de.numcodex.sq2cql.model.common.TermCode;
 
@@ -32,18 +33,18 @@ public record ValueSetAttributeFilter(TermCode attributeCode, List<TermCode> sel
     }
 
     @Override
-    public Modifier toModifier(AttributeMapping attributeMapping) {
-        if (attributeMapping.types().size() > 1) {
+    public Modifier targetElementToModifier(AttributeComponent attributeComponent) {
+        if (attributeComponent.types().size() > 1) {
             throw new IllegalArgumentException("unsupported attribute mapping with multiple types");
         }
 
-        return switch (attributeMapping.types().get(0)) {
+        return switch (attributeComponent.types().get(0).getName()) {
             case "code" ->
-                    new CodeModifier(attributeMapping.path(), selectedConcepts.stream().map(TermCode::code).toList());
+                    new CodeModifier(attributeComponent.path(), selectedConcepts.stream().map(TermCode::code).toList());
             case "Coding", "CodeableConcept" ->
-                    new CodeEquivalentModifier(attributeMapping.path(), attributeMapping.cardinality(), selectedConcepts);
+                    new CodeEquivalentModifier(attributeComponent.path(), attributeComponent.cardinality(), selectedConcepts);
             default ->
-                    throw new IllegalStateException("unknown attribute mapping type: %s".formatted(attributeMapping.types().get(0)));
+                    throw new IllegalStateException("Unknown attribute mapping type: %s".formatted(attributeComponent.types().get(0).getName()));
         };
     }
 }

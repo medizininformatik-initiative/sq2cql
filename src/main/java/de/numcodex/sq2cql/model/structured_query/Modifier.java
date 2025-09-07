@@ -4,17 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-<<<<<<< Updated upstream
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
-||||||| Stash base
-import de.numcodex.sq2cql.model.MappingContext;
-=======
-import de.numcodex.sq2cql.model.mapping.MappingContext;
->>>>>>> Stashed changes
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.Container;
 import de.numcodex.sq2cql.model.cql.QueryExpression;
+import de.numcodex.sq2cql.model.mapping.Mapping;
+import de.numcodex.sq2cql.model.mapping.MappingContext;
 
 import java.util.List;
 import java.util.stream.Stream;

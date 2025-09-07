@@ -2,7 +2,8 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
-import de.numcodex.sq2cql.model.mapping.AttributeMapping;
+import de.numcodex.sq2cql.model.cql.Expression;
+import de.numcodex.sq2cql.model.mapping.*;
 import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
 import org.slf4j.Logger;
@@ -75,4 +76,28 @@ public interface AttributeFilter {
     TermCode attributeCode();
 
     Modifier toModifier(AttributeMapping attributeMapping);
+
+    default Expression<?> toExpression(AttributeMapping attributeMapping)
+    {
+        var node = attributeMapping.composition();
+        if (node instanceof AttributeComponent) {
+            return targetElementToExpression((AttributeComponent) node);
+        } else if (node instanceof ContextGroup) {
+            if (node instanceof ReferenceGroup) {
+
+            } else {
+
+            }
+        }
+    }
+
+    /**
+     * Generates a query modifier for the actual element targeted by the attribute filter, e.g. for which the user
+     * selects the value to check against
+     *
+     * @param attributeComponent {@link AttributeComponent AttributeComponent} instance from the attribute mapping
+     *                           holding context information about the criterion attribute
+     * @return {@link Modifier Modifier} instance representing the resulting query constraint
+     */
+    Expression<?> targetElementToExpression(AttributeComponent attributeComponent);
 }

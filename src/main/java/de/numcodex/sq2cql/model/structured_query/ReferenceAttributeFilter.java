@@ -48,4 +48,23 @@ public record ReferenceAttributeFilter(TermCode attributeCode, List<Criterion> c
         }
         return ReferenceModifier.of(attributeMapping.path(), targetType, criteria);
     }
+
+    @Override
+    public Modifier targetEleemntToModifier(Attr) {
+        var types = attributeMapping.types();
+        if (types.size() != 1) {
+            throw new IllegalArgumentException("Expect exactly one type of the attribute mapping but was %d types."
+                    .formatted(types.size()));
+        }
+        var type = types.get(0);
+        if (!"Reference".equals(type)) {
+            throw new IllegalArgumentException("The type of the attribute mapping has to be `Reference` but was `%s`."
+                    .formatted(type));
+        }
+        var targetType = attributeMapping.referenceTargetType();
+        if (targetType == null) {
+            throw new IllegalArgumentException("The reference target type of the attribute mapping is missing.");
+        }
+        return ReferenceModifier.of(attributeMapping.path(), targetType, criteria);
+    }
 }

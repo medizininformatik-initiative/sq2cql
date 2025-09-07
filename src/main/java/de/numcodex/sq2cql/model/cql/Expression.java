@@ -4,7 +4,7 @@ import de.numcodex.sq2cql.PrintContext;
 
 import java.util.Map;
 
-public interface Expression<T extends Expression<T>> {
+public interface Expression<T extends Expression<T>> extends Clause {
 
     /**
      * An expression that always evaluates to {@code true}.

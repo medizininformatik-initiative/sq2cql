@@ -1,5 +1,6 @@
 package de.numcodex.sq2cql.model.structured_query;
 
+import de.numcodex.sq2cql.model.mapping.AttributeComponent;
 import de.numcodex.sq2cql.model.mapping.AttributeMapping;
 import de.numcodex.sq2cql.model.common.TermCode;
 
@@ -27,7 +28,7 @@ public record RangeAttributeFilter(TermCode attributeCode,
     }
 
     @Override
-    public Modifier toModifier(AttributeMapping attributeMapping) {
-        return RangeModifier.of(attributeMapping.path(), lowerBound, upperBound, unit);
+    public Modifier targetElementToModifier(AttributeComponent attributeComponent) {
+        return RangeModifier.of(attributeComponent.path(), lowerBound, upperBound, unit);
     }
 }

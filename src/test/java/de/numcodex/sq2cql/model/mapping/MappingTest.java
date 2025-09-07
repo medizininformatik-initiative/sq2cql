@@ -1,10 +1,9 @@
-package de.numcodex.sq2cql.model;
+package de.numcodex.sq2cql.model.mapping;
 
+import ca.uhn.fhir.context.FhirContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.common.TermCode;
-import de.numcodex.sq2cql.model.mapping.AttributeMapping;
-import de.numcodex.sq2cql.model.mapping.Mapping;
 import de.numcodex.sq2cql.model.structured_query.CodeModifier;
 import de.numcodex.sq2cql.model.structured_query.CodeEquivalentModifier;
 import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
@@ -15,8 +14,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 
-import static de.numcodex.sq2cql.model.Mapping.TimeRestrictionMapping.Type.DATE_TIME;
-import static de.numcodex.sq2cql.model.Mapping.TimeRestrictionMapping.Type.PERIOD;
+import static de.numcodex.sq2cql.model.mapping.Mapping.TimeRestrictionMapping.Type.DATE_TIME;
+import static de.numcodex.sq2cql.model.mapping.Mapping.TimeRestrictionMapping.Type.PERIOD;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -31,6 +30,8 @@ class MappingTest {
             "confirmed", "Confirmed");
     private static final TermCode TNM_T = TermCode.of("http://loinc.org", "21899-0", "Primary tumor.pathology Cancer");
     private static final TermCode DIAGNOSE = TermCode.of("http://hl7.org/fhir/StructureDefinition", "festgestellteDiagnose", "Festgestellte Diagnose");
+
+    private static final FhirContext FHIR_CONTEXT = FhirContext.forR4Cached();
 
     private static Mapping parse(String s) throws JsonProcessingException {
         return new ObjectMapper().readValue(s, Mapping.class);
@@ -164,13 +165,21 @@ class MappingTest {
                           "resourceType": "Observation",
                           "attributes": [
                             {
-                              "types": ["Coding"],
+                              "_type": "Attribute"
                               "key": {
                                 "system": "http://loinc.org",
                                 "code": "21899-0",
                                 "display": "Primary tumor.pathology Cancer"
                               },
-                              "path": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()"
+                              "component": [
+                                {
+                                  "_type": "AttributeComponent",
+                                  "types": ["Coding"],
+                                  "path": "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()",
+                                  "cardinality": "many",
+                                  "values": []
+                                }
+                              ]
                             }
                           ]
                         }
@@ -178,8 +187,14 @@ class MappingTest {
 
                 assertThat(mapping.key()).isEqualTo(TC_2);
                 assertThat(mapping.resourceType()).isEqualTo("Observation");
-                assertThat(mapping.attributeMappings()).containsEntry(TNM_T, AttributeMapping.of(List.of("Coding"), TNM_T,
-                        "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()"));
+                assertThat(mapping.attributeMappings()).containsEntry(TNM_T, AttributeMapping.of(
+                        TNM_T,
+                        List.of(AttributeComponent.of(
+                                List.of(FHIR_CONTEXT.getElementDefinition("Coding")),
+                                "component.where(code.coding.exists(system = 'http://loinc.org' and code = '21899-0')).value.first()",
+                                Mapping.Cardinality.MANY,
+                                List.of()
+                        ))));
             }
 
             @Test
@@ -213,8 +228,15 @@ class MappingTest {
 
                 assertThat(mapping.key()).isEqualTo(TC_2);
                 assertThat(mapping.resourceType()).isEqualTo("Observation");
-                assertThat(mapping.attributeMappings()).containsEntry(DIAGNOSE, AttributeMapping.of(List.of("Reference"), DIAGNOSE,
-                        "extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').value.code.coding"));
+                assertThat(mapping.attributeMappings()).containsEntry(DIAGNOSE, AttributeMapping.of(
+                        DIAGNOSE,
+                        List.of(AttributeComponent.of(
+                                List.of(FHIR_CONTEXT.getElementDefinition("Reference")),
+                                "extension.where(url='https://www.medizininformatik-initiative.de/fhir/ext/modul-biobank/StructureDefinition/Diagnose').value.code.coding",
+                                Mapping.Cardinality.MANY,
+                                List.of()
+                        ))
+                ));
             }
         }
 

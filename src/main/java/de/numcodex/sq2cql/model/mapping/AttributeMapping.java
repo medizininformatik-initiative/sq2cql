@@ -6,25 +6,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.numcodex.sq2cql.model.common.TermCode;
 
-import java.util.List;
-
 import static java.util.Objects.requireNonNull;
 
 /**
  * @author Lorenz Rosenau
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record AttributeMapping(TermCode key, List<AttributeTreeNode> components) {
+public record AttributeMapping(TermCode key, AttributeTreeNode composition) {
 
     public AttributeMapping {
         requireNonNull(key);
-        requireNonNull(components);
+        requireNonNull(composition);
+    }
+
+    public static AttributeMapping of(@JsonProperty("key") TermCode key,
+                                      @JsonProperty("composition") AttributeTreeNode composition) {
+        return new AttributeMapping(key, composition);
     }
 
     @JsonCreator
     public static AttributeMapping of(@JsonProperty("key") JsonNode key,
-                                      @JsonProperty("components") List<AttributeTreeNode> components) {
-        return new AttributeMapping(TermCode.fromJsonNode(key), components);
+                                      @JsonProperty("composition") AttributeTreeNode composition) {
+        return new AttributeMapping(TermCode.fromJsonNode(key), composition);
     }
 
 }

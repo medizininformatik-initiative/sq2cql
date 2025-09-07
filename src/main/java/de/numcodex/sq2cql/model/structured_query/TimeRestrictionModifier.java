@@ -1,14 +1,8 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-<<<<<<< Updated upstream
-import de.numcodex.sq2cql.model.Mapping;
-import de.numcodex.sq2cql.model.MappingContext;
-||||||| Stash base
-import de.numcodex.sq2cql.model.MappingContext;
-=======
-import de.numcodex.sq2cql.model.mapping.MappingContext;
->>>>>>> Stashed changes
 import de.numcodex.sq2cql.model.cql.*;
+import de.numcodex.sq2cql.model.mapping.Mapping;
+import de.numcodex.sq2cql.model.mapping.MappingContext;
 
 import java.time.LocalDate;
 import java.util.List;
