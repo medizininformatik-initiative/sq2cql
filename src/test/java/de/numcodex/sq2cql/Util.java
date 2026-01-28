@@ -4,11 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Functions;
 import de.numcodex.sq2cql.model.*;
 import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
+import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 
@@ -82,5 +88,17 @@ public interface Util {
     static MappingTreeModuleRoot createTreeRootWithoutChildren(ContextualTermCode c) {
         return new MappingTreeModuleRoot(c.context(), c.termCode().system(), Map.of(
                 c.termCode().code(), new MappingTreeModuleEntry(c.termCode().code(), List.of())));
+    }
+
+    static Path resourcePath(String name) throws URISyntaxException {
+        return Paths.get(Objects.requireNonNull(Util.class.getResource(name)).toURI());
+    }
+
+    static String slurp(String name) throws Exception {
+        return Files.readString(resourcePath(name));
+    }
+
+    static StructuredQuery readStructuredQuery(String name) throws Exception {
+        return new ObjectMapper().readValue(slurp(name), StructuredQuery.class);
     }
 }

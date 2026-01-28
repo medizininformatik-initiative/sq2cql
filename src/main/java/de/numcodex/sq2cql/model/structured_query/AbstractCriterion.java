@@ -5,6 +5,7 @@ import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.cql.*;
+import de.numcodex.sq2cql.util.FhirModelInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -63,10 +64,16 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
                                                       ContextualTermCode termCode) {
         var mapping = mappingContext.findMapping(termCode)
                 .orElseThrow(() -> new MappingNotFoundException(termCode));
-
-        return mapping.termCodeMapping().isPresent()
-                ? Container.of(RetrieveExpression.of(mapping.resourceType()))
-                : codeSelector(mappingContext, mapping.primaryCode()).map(terminology -> RetrieveExpression.of(mapping.resourceType(), terminology));
+        // Use retrieve filter iff term code mapping exists and the path within the type is retrievable
+        return mapping.termCodeMapping().map(tcm ->
+                FhirModelInfo.isRetrievable(mapping.resourceType(), tcm.path()) ?
+                    codeSelector(mappingContext, termCode.termCode())
+                            .map(terminology -> RetrieveExpression.of(mapping.resourceType(), terminology, tcm.path()))
+                    :
+                    Container.of(RetrieveExpression.of(mapping.resourceType()))
+        ).orElseGet(() ->
+                codeSelector(mappingContext, mapping.primaryCode()).map(terminology -> RetrieveExpression.of(mapping.resourceType(), terminology))
+        );
     }
 
     private static String referenceName(TermCode termCode) {
@@ -169,7 +176,10 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
     private Container<QueryExpression> appendModifier(MappingContext mappingContext, Mapping mapping,
                                                       Container<QueryExpression> queryContainer) {
         var termCodeModifier = termCodeModifier(mapping);
-        if (termCodeModifier.isPresent()) {
+        var isRetrievable = mapping.termCodeMapping()
+                .map(v -> FhirModelInfo.isRetrievable(mapping.resourceType(), v.path()))
+                .orElse(false);
+        if (termCodeModifier.isPresent() && !isRetrievable) {
             queryContainer = termCodeModifier.get().updateQuery(mappingContext, queryContainer);
         }
         for (var modifier : mapping.fixedCriteria()) {
