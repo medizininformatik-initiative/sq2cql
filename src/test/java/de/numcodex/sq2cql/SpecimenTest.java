@@ -1,31 +1,12 @@
 package de.numcodex.sq2cql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.junit.jupiter.api.Test;
-
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Objects;
 
 import static de.numcodex.sq2cql.Assertions.assertThat;
 import static de.numcodex.sq2cql.Util.createTranslator;
+import static de.numcodex.sq2cql.Util.readStructuredQuery;
 
 public class SpecimenTest {
-
-    private static Path resourcePath(String name) throws URISyntaxException {
-        return Paths.get(Objects.requireNonNull(SpecimenTest.class.getResource(name)).toURI());
-    }
-
-    private static String slurp(String name) throws Exception {
-        return Files.readString(resourcePath(name));
-    }
-
-    private static StructuredQuery readStructuredQuery(String name) throws Exception {
-        return new ObjectMapper().readValue(slurp(name), StructuredQuery.class);
-    }
 
     @Test
     public void translate() throws Exception {

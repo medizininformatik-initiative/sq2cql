@@ -45,9 +45,8 @@ public class EncounterTest {
                 context Patient
                 
                 define Criterion:
-                  exists (from [Encounter] E
-                    where E.class ~ Code 'IMP' from v3ActCode and
-                      exists (from E.type C
+                  exists (from [Encounter: class ~ Code 'IMP' from v3ActCode] E
+                    where exists (from E.type C
                         where C ~ Code 'einrichtungskontakt' from Kontaktebene))
                 
                 define InInitialPopulation:

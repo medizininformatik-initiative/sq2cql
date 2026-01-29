@@ -101,11 +101,11 @@ class TranslatorTest {
     static final AttributeMapping VERIFICATION_STATUS_ATTR_MAPPING = AttributeMapping.of(List.of("Coding"),
             VERIFICATION_STATUS, "verificationStatus");
 
-    private static Mapping readMapping(String s) throws Exception {
+    private static Mapping parseMapping(String s) throws Exception {
         return new ObjectMapper().readValue(s, Mapping.class);
     }
 
-    private static StructuredQuery readStructuredQuery(String s) throws Exception {
+    private static StructuredQuery parseStructuredQuery(String s) throws Exception {
         return new ObjectMapper().readValue(s, StructuredQuery.class);
     }
 
@@ -404,7 +404,7 @@ class TranslatorTest {
 
         @Test
         void onlyFixedCriteria() throws Exception {
-            var mapping = readMapping("""
+            var mapping = parseMapping("""
                     {
                         "resourceType": "Consent",
                         "fixedCriteria": [
@@ -462,7 +462,7 @@ class TranslatorTest {
                     }
                     """);
 
-            var structuredQuery = readStructuredQuery("""
+            var structuredQuery = parseStructuredQuery("""
                     {
                       "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
                       "display": "",
@@ -518,7 +518,7 @@ class TranslatorTest {
 
         @Test
         void numericAgeTranslation() throws Exception {
-            var mapping = readMapping("""
+            var mapping = parseMapping("""
                     {
                         "resourceType": "Patient",
                         "context": {
@@ -534,7 +534,7 @@ class TranslatorTest {
                     }
                     """);
 
-            var structuredQuery = readStructuredQuery("""
+            var structuredQuery = parseStructuredQuery("""
                     {
                       "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
                       "display": "",
@@ -591,7 +591,7 @@ class TranslatorTest {
 
         @Test
         void ageRangeTranslation() throws Exception {
-            var mapping = readMapping("""
+            var mapping = parseMapping("""
                     {
                         "resourceType": "Patient",
                         "context": {
@@ -611,7 +611,7 @@ class TranslatorTest {
                     }
                     """);
 
-            var structuredQuery = readStructuredQuery("""
+            var structuredQuery = parseStructuredQuery("""
                     {
                       "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
                       "display": "",
@@ -668,7 +668,7 @@ class TranslatorTest {
 
         @Test
         void numericAgeTranslationInHours() throws Exception {
-            var mapping = readMapping("""
+            var mapping = parseMapping("""
                     {
                         "resourceType": "Patient",
                         "context": {
@@ -688,7 +688,7 @@ class TranslatorTest {
                     }
                     """);
 
-            var structuredQuery = readStructuredQuery("""
+            var structuredQuery = parseStructuredQuery("""
                     {
                       "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
                       "display": "",
@@ -745,7 +745,7 @@ class TranslatorTest {
 
         @Test
         void patientGender() throws Exception {
-            var mapping = readMapping("""
+            var mapping = parseMapping("""
                     {
                       "context": {
                         "code": "Patient",
@@ -767,7 +767,7 @@ class TranslatorTest {
                       }
                     }
                     """);
-            var structuredQuery = readStructuredQuery("""
+            var structuredQuery = parseStructuredQuery("""
                     {
                       "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
                       "display": "",
@@ -824,7 +824,7 @@ class TranslatorTest {
 
         @Test
         void consent() throws Exception {
-            var mapping = readMapping("""
+            var mapping = parseMapping("""
                     {
                       "context": {
                         "code": "Einwilligung",
@@ -849,7 +849,7 @@ class TranslatorTest {
                     }
                     """);
 
-            var structuredQuery = readStructuredQuery("""
+            var structuredQuery = parseStructuredQuery("""
                     {
                       "version": "http://to_be_decided.com/draft-1/schema#",
                       "display": "",
@@ -901,7 +901,7 @@ class TranslatorTest {
 
         @Test
         void encounter() throws Exception {
-            var mapping = readMapping("""
+            var mapping = parseMapping("""
                     {
                       "context": {
                         "code": "Fall",
@@ -925,7 +925,7 @@ class TranslatorTest {
                     }
                     """);
 
-            var structuredQuery = readStructuredQuery("""
+            var structuredQuery = parseStructuredQuery("""
                     {
                       "version": "http://to_be_decided.com/draft-1/schema#",
                       "display": "",
@@ -967,8 +967,7 @@ class TranslatorTest {
                     context Patient
                     
                     define Criterion:
-                      exists (from [Encounter] E
-                        where E.class ~ Code 'VR' from act_code)
+                      exists [Encounter: class ~ Code 'VR' from act_code]
                     
                     define InInitialPopulation:
                       Criterion
@@ -977,7 +976,7 @@ class TranslatorTest {
 
         @Test
         void bloodPressure() throws Exception {
-            var mapping = readMapping("""
+            var mapping = parseMapping("""
                     {
                         "context": {
                           "code": "Laboruntersuchung",
@@ -1005,7 +1004,7 @@ class TranslatorTest {
                     }
                     """);
 
-            var structuredQuery = readStructuredQuery("""
+            var structuredQuery = parseStructuredQuery("""
                     {
                       "version": "https://medizininformatik-initiative.de/fdpg/StructuredQuery/v3/schema",
                       "display": "",
@@ -1333,6 +1332,87 @@ class TranslatorTest {
                           not Exclusion
                         """);
             }
+        }
+
+        @Nested
+        class RetrievalTypes {
+
+            @Test
+            void primaryPath() throws Exception {
+                var translator = createTranslator();
+                var structuredQuery = readStructuredQuery("PrimaryPathSQ.json");
+
+                var library = translator.toCql(structuredQuery);
+
+                assertThat(library).printsTo("""
+                       library Retrieve version '1.0.0'
+                       using FHIR version '4.0.0'
+                       include FHIRHelpers version '4.0.0'
+                       
+                       codesystem snomed: 'http://snomed.info/sct'
+                       
+                       context Patient
+                       
+                       define Criterion:
+                         exists [Procedure: Code '726427004' from snomed] or
+                         exists [Procedure: Code '232638008' from snomed] or
+                         exists [Procedure: Code '3654008' from snomed]
+                       
+                       define InInitialPopulation:
+                         Criterion
+                       """);
+            }
+
+            @Test
+            void nonPrimarySearchPath() throws Exception {
+                var translator = createTranslator();
+                var structuredQuery = readStructuredQuery("NonPrimarySearchPathSQ.json");
+
+                var library = translator.toCql(structuredQuery);
+
+                assertThat(library).printsTo("""
+                       library Retrieve version '1.0.0'
+                       using FHIR version '4.0.0'
+                       include FHIRHelpers version '4.0.0'
+                       
+                       codesystem snomed: 'http://snomed.info/sct'
+                       
+                       context Patient
+                       
+                       define Criterion:
+                         exists [Procedure: category ~ Code '387713003' from snomed]
+                       
+                       define InInitialPopulation:
+                         Criterion
+                       """);
+            }
+
+            @Test
+            void noSearchPath() throws Exception {
+                var translator = createTranslator();
+                var structuredQuery = readStructuredQuery("NoSearchPathSQ.json");
+
+                var library = translator.toCql(structuredQuery);
+
+                assertThat(library).printsTo("""
+                       library Retrieve version '1.0.0'
+                       using FHIR version '4.0.0'
+                       include FHIRHelpers version '4.0.0'
+                       
+                       codesystem consent_policy: 'urn:oid:2.16.840.1.113883.3.1937.777.24.5.3'
+                       
+                       context Patient
+                       
+                       define Criterion:
+                         exists (from [Consent] C
+                           where exists (from C.provision.provision.code C
+                               where C ~ Code '2.16.840.1.113883.3.1937.777.24.5.3.6' from consent_policy))
+                       
+                       define InInitialPopulation:
+                         Criterion
+                       """);
+            }
+
         }
     }
 }
