@@ -41,9 +41,7 @@ abstract class AbstractCriterion<T extends AbstractCriterion<T>> implements Crit
      * CodeSystemDefinition}
      */
     static Container<CodeSelector> codeSelector(MappingContext mappingContext, TermCode termCode) {
-        var codeSystemDefinition = mappingContext.findCodeSystemDefinition(termCode.system())
-                .orElseThrow(() -> new IllegalStateException("code system alias for `%s` not found"
-                        .formatted(termCode.system())));
+        var codeSystemDefinition = mappingContext.getCodeSystemDefinition(termCode.system());
         return Container.of(CodeSelector.of(termCode.code(), codeSystemDefinition.name()),
                 codeSystemDefinition);
     }

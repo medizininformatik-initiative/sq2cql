@@ -8,6 +8,7 @@ import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,6 +24,7 @@ public class MappingContext {
     private final Map<ContextualTermCode, Mapping> mappings;
     private final MappingTreeBase conceptTree;
     private final Map<String, CodeSystemDefinition> codeSystemDefinitions;
+    private final AtomicInteger aliasId = new AtomicInteger(1);
 
     private MappingContext(Map<ContextualTermCode, Mapping> mappings, MappingTreeBase conceptTree,
                            Map<String, CodeSystemDefinition> codeSystemDefinitions) {
@@ -82,12 +84,13 @@ public class MappingContext {
     }
 
     /**
-     * Tries to find the {@link CodeSystemDefinition} with the given {@code system} URL.
+     * Gets the {@link CodeSystemDefinition} with the given {@code system} URL. If none is present a new one will be
+     * created, stored, and returned.
      *
      * @param system the URL of the code system
-     * @return either the CodeSystemDefinition or {@code Optional#empty() nothing}
+     * @return the CodeSystemDefinition
      */
-    public Optional<CodeSystemDefinition> findCodeSystemDefinition(String system) {
-        return Optional.ofNullable(codeSystemDefinitions.get(requireNonNull(system)));
+    public CodeSystemDefinition getCodeSystemDefinition(String system) {
+        return codeSystemDefinitions.computeIfAbsent(system, (k) -> CodeSystemDefinition.of("codeSystem%d".formatted(aliasId.getAndIncrement()), k));
     }
 }
