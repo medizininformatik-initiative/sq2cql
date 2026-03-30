@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +23,7 @@ class CriterionTest {
         @Test
         void emptyObject() {
             assertThatThrownBy(() -> mapper.readValue("{}", Criterion.class))
-                    .isInstanceOf(JsonProcessingException.class)
+                    .isInstanceOf(JacksonException.class)
                     .hasRootCauseMessage("missing JSON property: context");
         }
 
@@ -42,12 +42,12 @@ class CriterionTest {
                       }
                     }
                     """, Criterion.class))
-                    .isInstanceOf(JsonProcessingException.class)
+                    .isInstanceOf(JacksonException.class)
                     .hasRootCauseMessage("unknown valueFilter type: foo");
         }
 
         @Test
-        void emptyTimeRestrictionIsIgnored() throws JsonProcessingException {
+        void emptyTimeRestrictionIsIgnored() throws JacksonException {
             assertThat(mapper.readValue("""
                     {
                       "context": {
@@ -76,7 +76,7 @@ class CriterionTest {
                       }
                     }
                     """, Criterion.class))
-                    .isInstanceOf(JsonProcessingException.class)
+                    .isInstanceOf(JacksonException.class)
                     .hasRootCauseMessage("Invalid date 'February 29' as '2023' is not a leap year");
         }
 
@@ -96,7 +96,7 @@ class CriterionTest {
                       }
                     }
                     """, Criterion.class))
-                    .isInstanceOf(JsonProcessingException.class)
+                    .isInstanceOf(JacksonException.class)
                     .hasRootCauseMessage("Invalid date 'February 29' as '2023' is not a leap year");
         }
 
@@ -116,12 +116,12 @@ class CriterionTest {
                       }
                     }
                     """, Criterion.class))
-                    .isInstanceOf(JsonProcessingException.class)
+                    .isInstanceOf(JacksonException.class)
                     .hasRootCauseMessage("Invalid time restriction: beforeDate `2024-11-19` is before afterDate `2024-11-20` but should not be.");
         }
 
         @Test
-        void timeRestrictionSameDay() throws JsonProcessingException {
+        void timeRestrictionSameDay() throws JacksonException {
             assertThat(mapper.readValue("""
                     {
                       "context": {
@@ -194,12 +194,12 @@ class CriterionTest {
                            ]
                         }
                         """, Criterion.class))
-                        .isInstanceOf(JsonProcessingException.class)
+                        .isInstanceOf(JacksonException.class)
                         .hasRootCauseMessage("Invalid time restriction: beforeDate `2024-11-19` is before afterDate `2024-11-20` but should not be.");
             }
 
             @Test
-            void timeRestrictionSameDay() throws JsonProcessingException {
+            void timeRestrictionSameDay() throws JacksonException {
                 var criterion = mapper.readValue("""
                         {
                            "context": {

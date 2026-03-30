@@ -1,6 +1,6 @@
 package de.numcodex.sq2cql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,6 @@
 package de.numcodex.sq2cql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.base.Functions;
 import de.numcodex.sq2cql.model.*;
 import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;

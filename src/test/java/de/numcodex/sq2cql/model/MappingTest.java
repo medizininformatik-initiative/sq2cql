@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.CodeModifier;
 import de.numcodex.sq2cql.model.structured_query.CodeEquivalentModifier;
@@ -30,7 +30,7 @@ class MappingTest {
     private static final TermCode TNM_T = TermCode.of("http://loinc.org", "21899-0", "Primary tumor.pathology Cancer");
     private static final TermCode DIAGNOSE = TermCode.of("http://hl7.org/fhir/StructureDefinition", "festgestellteDiagnose", "Festgestellte Diagnose");
 
-    private static Mapping parse(String s) throws JsonProcessingException {
+    private static Mapping parse(String s) throws JacksonException {
         return new ObjectMapper().readValue(s, Mapping.class);
     }
 

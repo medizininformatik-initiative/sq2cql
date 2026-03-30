@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import de.numcodex.sq2cql.model.common.TermCode;
 
 import java.util.List;

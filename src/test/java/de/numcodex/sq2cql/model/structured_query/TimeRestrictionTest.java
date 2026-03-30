@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.SoftContainerAssertions;
 import de.numcodex.sq2cql.model.Mapping;
 import de.numcodex.sq2cql.model.MappingContext;
@@ -61,13 +61,13 @@ public class TimeRestrictionTest {
         @Test
         @DisplayName("Deserialization of a TimeRestriction instance should handle neither attribute 'afterDate' nor " +
                 "'beforeDate' being present")
-        void neitherAfterDateNorBeforeDate() throws JsonProcessingException {
+        void neitherAfterDateNorBeforeDate() throws JacksonException {
             assertThat(TimeRestriction.fromJsonNode(MAPPER.readTree("{ }"))).isNull();
         }
 
         @Test
         @DisplayName("Deserialization of a TimeRestriction instance should not require attribute 'beforeDate'")
-        void noBeforeDate() throws JsonProcessingException {
+        void noBeforeDate() throws JacksonException {
             assertThat(TimeRestriction.fromJsonNode(MAPPER.readTree(
                     "{\"afterDate\": \"%s\"}".formatted(AFTER_DATE.format(ISO_DATE)
                     ))))
@@ -77,7 +77,7 @@ public class TimeRestrictionTest {
 
         @Test
         @DisplayName("Deserialization of a TimeRestriction instance should not require attribute 'afterDate'")
-        void noAfterDate() throws JsonProcessingException {
+        void noAfterDate() throws JacksonException {
             assertThat(TimeRestriction.fromJsonNode(MAPPER.readTree(
                     "{\"beforeDate\": \"%s\"}".formatted(BEFORE_DATE.format(ISO_DATE))
                     )))
@@ -88,7 +88,7 @@ public class TimeRestrictionTest {
         @Test
         @DisplayName("Deserialization of a TimeRestriction instance should be able to handle both attributes " +
                 "'afterDate' and 'beforeDate' being present")
-        void bothAfterDateAndBeforeDate() throws JsonProcessingException {
+        void bothAfterDateAndBeforeDate() throws JacksonException {
             assertThat(TimeRestriction.fromJsonNode(MAPPER.readTree(
                     "{\"afterDate\": \"%s\", \"beforeDate\": \"%s\"}"
                             .formatted(AFTER_DATE.format(ISO_DATE), BEFORE_DATE.format(ISO_DATE))

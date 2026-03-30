@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +24,7 @@ class ModifierTest {
                     }
                     """, Modifier.class);
             fail();
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             assertEquals("missing modifier values", e.getCause().getMessage());
         }
 
@@ -37,7 +37,7 @@ class ModifierTest {
                     }
                     """, Modifier.class);
             fail();
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             assertEquals("empty modifier values", e.getCause().getMessage());
         }
     }
@@ -55,7 +55,7 @@ class ModifierTest {
                     }
                     """, Modifier.class);
             fail();
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             assertEquals("unknown types: foo", e.getCause().getMessage());
         }
     }
@@ -73,7 +73,7 @@ class ModifierTest {
                     }
                     """, Modifier.class);
             fail();
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             assertEquals("unknown types: foo, bar", e.getCause().getMessage());
         }
     }

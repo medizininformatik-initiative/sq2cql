@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import de.numcodex.sq2cql.model.AttributeMapping;
 import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -26,15 +26,15 @@ public interface AttributeFilter {
      */
     static Optional<AttributeFilter> fromJsonNode(JsonNode node) {
         var attributeCode = TermCode.fromJsonNode(node.get("attributeCode"));
-        var type = node.get("type").asText();
+        var type = node.get("type").asString();
         if ("quantity-comparator".equals(type)) {
-            var comparator = Comparator.fromJson(node.get("comparator").asText());
+            var comparator = Comparator.fromJson(node.get("comparator").asString());
             var value = node.get("value").decimalValue();
             var unit = node.get("unit");
             if (unit == null) {
                 return Optional.of(NumericAttributeFilter.of(attributeCode, comparator, value));
             } else {
-                return Optional.of(NumericAttributeFilter.of(attributeCode, comparator, value, unit.get("code").asText()));
+                return Optional.of(NumericAttributeFilter.of(attributeCode, comparator, value, unit.get("code").asString()));
             }
         }
         if ("quantity-range".equals(type)) {
@@ -44,7 +44,7 @@ public interface AttributeFilter {
             if (unit == null) {
                 return Optional.of(RangeAttributeFilter.of(attributeCode, lowerBound, upperBound));
             } else {
-                return Optional.of(RangeAttributeFilter.of(attributeCode, lowerBound, upperBound, unit.get("code").asText()));
+                return Optional.of(RangeAttributeFilter.of(attributeCode, lowerBound, upperBound, unit.get("code").asString()));
             }
         }
         if ("concept".equals(type)) {
