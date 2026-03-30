@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -30,18 +30,18 @@ public class FhirModelInfo {
         var typeInfo = tree.get("typeInfo");
         retrievableTypes = typeInfo.valueStream()
                 .filter(v -> v.get("retrievable").asBoolean())
-                .map(v -> v.get("name").asText())
+                .map(v -> v.get("name").asString())
                 .collect(Collectors.toSet());
         searchPaths = typeInfo.valueStream()
                 .collect(Collectors.toMap(
-                        v -> v.get("name").asText(),
+                        v -> v.get("name").asString(),
                         v ->  {
                             var search = v.get("search");
                             return search == null ?
                                     Collections.emptySet()
                                     :
                                     search.valueStream().filter(s -> s.has("path"))
-                                            .map(s -> s.get("path").asText()).collect(Collectors.toSet());
+                                            .map(s -> s.get("path").asString()).collect(Collectors.toSet());
                         }
                 ));
     }

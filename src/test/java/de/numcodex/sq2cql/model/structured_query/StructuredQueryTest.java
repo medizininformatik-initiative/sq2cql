@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model.structured_query;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.ValueInstantiationException;
 import de.numcodex.sq2cql.model.common.TermCode;
 import org.junit.jupiter.api.Test;
 

@@ -3,8 +3,8 @@ package de.numcodex.sq2cql.model.structured_query;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import de.numcodex.sq2cql.model.MappingContext;
 import de.numcodex.sq2cql.model.common.Comparator;
 import de.numcodex.sq2cql.model.common.TermCode;
@@ -104,15 +104,15 @@ public interface Criterion {
         if (valueFilter == null) {
             criterion = ConceptCriterion.of(concept, timeRestriction);
         } else {
-            var type = valueFilter.get("type").asText();
+            var type = valueFilter.get("type").asString();
             switch (type) {
                 case "quantity-comparator" -> {
-                    var comparator = Comparator.fromJson(valueFilter.get("comparator").asText());
+                    var comparator = Comparator.fromJson(valueFilter.get("comparator").asString());
                     var value = valueFilter.get("value").decimalValue();
                     var unit = valueFilter.get("unit");
                     criterion = unit == null
                             ? NumericCriterion.of(concept, comparator, value, timeRestriction)
-                            : NumericCriterion.of(concept, comparator, value, unit.get("code").asText(),
+                            : NumericCriterion.of(concept, comparator, value, unit.get("code").asString(),
                             timeRestriction);
                 }
                 case "quantity-range" -> {
@@ -122,7 +122,7 @@ public interface Criterion {
                     criterion = unit == null
                             ? RangeCriterion.of(concept, lowerBound, upperBound, timeRestriction)
                             : RangeCriterion.of(concept, lowerBound, upperBound,
-                            unit.get("code").asText(),
+                            unit.get("code").asString(),
                             timeRestriction);
                 }
                 case "concept" -> {

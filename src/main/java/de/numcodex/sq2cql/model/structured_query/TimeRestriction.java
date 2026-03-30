@@ -2,7 +2,7 @@ package de.numcodex.sq2cql.model.structured_query;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import de.numcodex.sq2cql.model.Mapping;
 
 import java.time.LocalDate;
@@ -52,8 +52,8 @@ public record TimeRestriction(LocalDate afterDate, LocalDate beforeDate) {
     }
 
     public static TimeRestriction fromJsonNode(JsonNode node) {
-        var afterDate = Optional.ofNullable(node.get("afterDate")).map(JsonNode::asText).orElse(null);
-        var beforeDate = Optional.ofNullable(node.get("beforeDate")).map(JsonNode::asText).orElse(null);
+        var afterDate = Optional.ofNullable(node.get("afterDate")).map(JsonNode::asString).orElse(null);
+        var beforeDate = Optional.ofNullable(node.get("beforeDate")).map(JsonNode::asString).orElse(null);
         return TimeRestriction.create(afterDate, beforeDate);
     }
 

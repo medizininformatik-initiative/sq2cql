@@ -1,7 +1,7 @@
 package de.numcodex.sq2cql.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.common.TermCode;
 import de.numcodex.sq2cql.model.structured_query.ContextualTermCode;
 import org.junit.jupiter.api.Test;
@@ -282,7 +282,7 @@ class MappingTreeBaseTest {
         assertThat(base.moduleRoots().get(0).entries().get("C2")).isNotNull();
     }
 
-    static MappingTreeBase parse(String s) throws JsonProcessingException {
+    static MappingTreeBase parse(String s) throws JacksonException {
         return new MappingTreeBase(Arrays.stream(new ObjectMapper().readValue(s, MappingTreeModuleRoot[].class)).toList());
     }
 }
