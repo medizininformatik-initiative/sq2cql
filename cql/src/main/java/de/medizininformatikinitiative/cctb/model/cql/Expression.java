@@ -1,0 +1,35 @@
+package de.medizininformatikinitiative.cctb.model.cql;
+
+import de.medizininformatikinitiative.cctb.PrintContext;
+
+import java.util.Map;
+
+public interface Expression<T extends Expression<T>> {
+
+    /**
+     * An expression that always evaluates to {@code true}.
+     */
+    DefaultExpression TRUE = printContext -> "true";
+
+    /**
+     * An expression that always evaluates to {@code false}.
+     */
+    DefaultExpression FALSE = printContext -> "false";
+
+    String print(PrintContext printContext);
+
+    /**
+     * Returns a map of identifier prefixes to numerical suffixes of this expression and all children.
+     *
+     * @return a map of identifier prefixes to numerical suffixes
+     */
+    default Map<String, Integer> suffixes() {
+        return Map.of();
+    }
+
+    T withIncrementedSuffixes(Map<String, Integer> increments);
+
+    default boolean isIdentifier() {
+        return false;
+    }
+}
