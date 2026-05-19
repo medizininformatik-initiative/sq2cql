@@ -1,0 +1,12 @@
+{
+  "inclusionCriteria": [
+    [
+      {
+        "context": {"system": "fdpg.mii.cds", "code": "Diagnose", "display": "Diagnose"},
+        "termCodes": [
+          {"system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm", "code": "C71.1", "display": "Malignant neoplasm of brain"}
+        ]
+      }
+    ]
+  ]
+}
