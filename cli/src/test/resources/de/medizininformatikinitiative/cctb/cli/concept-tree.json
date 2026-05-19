@@ -1,0 +1,9 @@
+[
+  {
+    "context": {"system": "fdpg.mii.cds", "code": "Diagnose", "display": "Diagnose"},
+    "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
+    "entries": [
+      {"key": "C71.1", "children": []}
+    ]
+  }
+]

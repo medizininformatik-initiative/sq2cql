@@ -36,8 +36,10 @@ build/
 .mvn
 mvnw
 mvnw.cmd
+**/.flattened-pom.xml
 
 # Local
 temp/*
 tmp/*
+.tmp/*
 .commit
