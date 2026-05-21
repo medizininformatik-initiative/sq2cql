@@ -4,13 +4,12 @@
 
     <groupId>de.medizininformatik-initiative</groupId>
     <artifactId>sq2cql-base</artifactId>
-    <version>${revision}</version>
+    <version>1.4.0-alpha-pr290-4</version>
     <packaging>pom</packaging>
 
     <name>base</name>
 
     <properties>
-        <revision>1.4.0-alpha-pr290-4</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
         <junit-jupiter.version>6.1.0</junit-jupiter.version>
