@@ -15,10 +15,6 @@
         <version>${revision}</version>
     </parent>
 
-    <properties>
-        <maven.deploy.skip>false</maven.deploy.skip>
-    </properties>
-
     <dependencies>
 
         <dependency>

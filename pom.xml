@@ -13,7 +13,6 @@
         <revision>1.4.0-alpha-pr290-3</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-        <maven.deploy.skip>true</maven.deploy.skip>
         <junit-jupiter.version>6.1.0</junit-jupiter.version>
         <hapi-fhir.version>7.6.1</hapi-fhir.version>
         <testcontainers.version>2.0.5</testcontainers.version>
