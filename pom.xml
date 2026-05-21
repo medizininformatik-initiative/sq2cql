@@ -4,7 +4,7 @@
 
     <groupId>de.medizininformatik-initiative</groupId>
     <artifactId>sq2cql-base</artifactId>
-    <version>1.4.0-alpha-pr290-4</version>
+    <version>1.4.0-alpha-pr290-5</version>
     <packaging>pom</packaging>
 
     <name>base</name>
