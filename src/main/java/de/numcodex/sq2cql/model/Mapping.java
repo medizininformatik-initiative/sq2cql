@@ -200,7 +200,7 @@ public final class Mapping {
     }
 
     /**
-     * Mapping information for a path including it's type.
+     * Mapping information for a path including its type.
      *
      * @param path  the FHIRPath path to the value to extract
      * @param types the possible types that extracted values can have
@@ -227,6 +227,9 @@ public final class Mapping {
 
             @JsonProperty("dateTime")
             DATE_TIME,
+
+            @JsonProperty("instant")
+            INSTANT,
 
             @JsonProperty("Period")
             PERIOD

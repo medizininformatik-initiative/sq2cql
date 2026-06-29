@@ -34,6 +34,12 @@ public record TimeRestrictionModifier(Mapping.TimeRestrictionMapping mapping, Lo
         return MembershipExpression.in(toDateFunction, intervalSelector);
     }
 
+    private static DefaultExpression instantExpr(InvocationExpression invocationExpr, IntervalSelector intervalSelector) {
+        var castExp = TypeExpression.of(invocationExpr, "instant");
+        var toDateFunction = FunctionInvocation.of("ToDate", List.of(castExp));
+        return MembershipExpression.in(toDateFunction, intervalSelector);
+    }
+
     @Override
     public Container<DefaultExpression> expression(MappingContext mappingContext, IdentifierExpression sourceAlias) {
         var invocationExpr = InvocationExpression.of(sourceAlias, mapping.path());
@@ -42,6 +48,7 @@ public record TimeRestrictionModifier(Mapping.TimeRestrictionMapping mapping, Lo
         return Container.of(mapping.types().stream().sorted().map(type -> switch (type) {
             case DATE -> dateExpr(invocationExpr, IntervalSelector.of(DateExpression.of(afterDate), DateExpression.of(beforeDate)));
             case DATE_TIME -> dateTimeExpr(invocationExpr, IntervalSelector.of(DateTimeExpression.of(afterDate), DateTimeExpression.of(beforeDate)));
+            case INSTANT -> instantExpr(invocationExpr, IntervalSelector.of(DateTimeExpression.of(afterDate), DateTimeExpression.of(beforeDate)));
             case PERIOD -> OverlapsIntervalOperatorPhrase.of(invocationExpr, IntervalSelector.of(DateTimeExpression.of(afterDate), DateTimeExpression.of(beforeDate)));
         }).reduce(OrExpression::of).get());
     }
