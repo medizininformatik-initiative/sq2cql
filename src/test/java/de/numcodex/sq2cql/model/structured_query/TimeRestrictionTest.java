@@ -112,6 +112,7 @@ public class TimeRestrictionTest {
             assertSoftly(softly -> {
                 assertForDate(softly, tr, AFTER_DATE, MAX_BEFORE_DATE);
                 assertForDateTime(softly, tr, AFTER_DATE, MAX_BEFORE_DATE);
+                assertForInstant(softly, tr, AFTER_DATE, MAX_BEFORE_DATE);
                 assertForPeriod(softly, tr, AFTER_DATE, MAX_BEFORE_DATE);
             });
         }
@@ -124,6 +125,7 @@ public class TimeRestrictionTest {
             assertSoftly(softly -> {
                 assertForDate(softly, tr, MIN_AFTER_DATE, BEFORE_DATE);
                 assertForDateTime(softly, tr, MIN_AFTER_DATE, BEFORE_DATE);
+                assertForInstant(softly, tr, MIN_AFTER_DATE, BEFORE_DATE);
                 assertForPeriod(softly, tr, MIN_AFTER_DATE, BEFORE_DATE);
             });
         }
@@ -136,6 +138,7 @@ public class TimeRestrictionTest {
             assertSoftly(softly -> {
                 assertForDate(softly, tr, AFTER_DATE, BEFORE_DATE);
                 assertForDateTime(softly, tr, AFTER_DATE, BEFORE_DATE);
+                assertForInstant(softly, tr, AFTER_DATE, BEFORE_DATE);
                 assertForPeriod(softly, tr, AFTER_DATE, BEFORE_DATE);
             });
         }
@@ -181,6 +184,28 @@ public class TimeRestrictionTest {
                     
                     define Criterion:
                       ToDate(X.elementDateTime as dateTime) in Interval[@%sT, @%sT]
+                    """.formatted(startDate, endDate));
+        }
+
+        private void assertForInstant(SoftContainerAssertions softly, TimeRestriction timeRestriction,
+                                       LocalDate startDate, LocalDate endDate) {
+            var mapping = liftToMapping(Mapping.TimeRestrictionMapping.of("elementInstant", Type.INSTANT));
+            var timeRestrictionModifier = (TimeRestrictionModifier) timeRestriction.toModifier(mapping);
+            var identifier = StandardIdentifierExpression.of("X");
+
+            var expression = timeRestrictionModifier.expression(EMPTY_MAPPING_CONTEXT, identifier);
+
+            softly.assertThat(expression.moveToPatientContext("Criterion"))
+                    .as("Failed for datatype 'instant'")
+                    .printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                    
+                    context Patient
+                    
+                    define Criterion:
+                      ToDate(X.elementInstant as instant) in Interval[@%sT, @%sT]
                     """.formatted(startDate, endDate));
         }
 

@@ -52,8 +52,24 @@ public interface Util {
         }
     }
 
+    private static Map<ContextualTermCode, Mapping> readMappings(Path mappingFile) throws IOException {
+        try (var in = Files.newInputStream(mappingFile)) {
+            var mapper = new ObjectMapper();
+            return Arrays.stream(mapper.readValue(in, Mapping[].class))
+                    .collect(Collectors.toMap(Mapping::key, Functions.identity()));
+        }
+    }
+
     private static MappingTreeBase readConceptTree(ZipFile zipFile) throws IOException {
         try (var in = zipFile.getInputStream(zipFile.getEntry("mapping/mapping_tree.json"))) {
+            var mapper = new ObjectMapper();
+            return new MappingTreeBase(
+                    Arrays.stream(mapper.readValue(in, MappingTreeModuleRoot[].class)).toList());
+        }
+    }
+
+    private static MappingTreeBase readConceptTree(Path conceptTreeFile) throws IOException {
+        try (var in = Files.newInputStream(conceptTreeFile)) {
             var mapper = new ObjectMapper();
             return new MappingTreeBase(
                     Arrays.stream(mapper.readValue(in, MappingTreeModuleRoot[].class)).toList());
@@ -67,6 +83,13 @@ public interface Util {
             var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
             return Translator.of(mappingContext);
         }
+    }
+
+    static Translator createTranslator(Path cqlMappingFile, Path conceptTreeFile) throws Exception {
+        var mappings = readMappings(cqlMappingFile);
+        var conceptTree = readConceptTree(conceptTreeFile);
+        var mappingContext = MappingContext.of(mappings, conceptTree, CODE_SYSTEM_ALIASES);
+        return Translator.of(mappingContext);
     }
 
     static MappingTreeBase createTreeWithoutChildren(ContextualTermCode c) {

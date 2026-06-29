@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.StringParam;
+import org.junit.jupiter.params.provider.Arguments;
 import tools.jackson.databind.ObjectMapper;
 import de.numcodex.sq2cql.model.structured_query.StructuredQuery;
 import org.hl7.fhir.instance.model.api.IBaseResource;
@@ -62,6 +63,7 @@ public class AcceptanceTest {
     private final FhirContext fhirContext = FhirContext.forR4();
     private IGenericClient fhirClient;
     private Translator translator;
+    private Translator diagnosticReportTranslator;
 
     private static Path resourcePath(String name) throws URISyntaxException {
         return Paths.get(Objects.requireNonNull(AcceptanceTest.class.getResource(name), "resource `%s` is missing".formatted(name)).toURI());
@@ -93,6 +95,10 @@ public class AcceptanceTest {
                 .execute();
 
         translator = createTranslator();
+        diagnosticReportTranslator = createTranslator(
+                resourcePath("DiagnosticReport/mapping_cql.json"),
+                resourcePath("DiagnosticReport/mapping_tree.json")
+        );
     }
 
     @ParameterizedTest
@@ -149,6 +155,19 @@ public class AcceptanceTest {
     public void specimenQuery(String filename, int count) throws Exception {
         var structuredQuery = new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
         var cql = translator.toCql(structuredQuery).print();
+        var measureUri = createMeasureAndLibrary(cql);
+        var report = evaluateMeasure(measureUri);
+
+        assertEquals(count, report.getGroupFirstRep().getPopulationFirstRep().getCount());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "DiagnosticReport/DiagnosticReportSQ.json, 1"
+    })
+    public void diagnosticReportQuery(String filename, int count) throws Exception {
+        var structuredQuery = new ObjectMapper().readValue(slurp(filename), StructuredQuery.class);
+        var cql = diagnosticReportTranslator.toCql(structuredQuery).print();
         var measureUri = createMeasureAndLibrary(cql);
         var report = evaluateMeasure(measureUri);
 

@@ -1,0 +1,18 @@
+[
+  {
+    "entries": [
+      {
+        "key": "51969-4",
+        "parents": [],
+        "children": []
+      }
+    ],
+    "context": {
+      "system": "fdpg.mii.cds",
+      "code": "Molekulargenetischer Befundbericht",
+      "display": "Molekulargenetischer Befundbericht",
+      "version": "1.0.0"
+    },
+    "system": "http://loinc.org"
+  }
+]

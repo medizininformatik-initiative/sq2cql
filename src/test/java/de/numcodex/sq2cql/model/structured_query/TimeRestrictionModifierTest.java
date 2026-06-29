@@ -76,5 +76,25 @@ class TimeRestrictionModifierTest {
                       ToDate(X.date as date) in Interval[@2021-01-01, @2021-01-02]
                     """);
         }
+
+        @Test
+        @DisplayName("potential instant test")
+        void issued() {
+            var timeRestriction = TimeRestrictionModifier.of(Mapping.TimeRestrictionMapping.of("issued", INSTANT), LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 2));
+            var identifier = StandardIdentifierExpression.of("X");
+
+            var expression = timeRestriction.expression(MappingContext.of(), identifier);
+
+            assertThat(expression.moveToPatientContext("Criterion")).printsTo("""
+                    library Retrieve version '1.0.0'
+                    using FHIR version '4.0.0'
+                    include FHIRHelpers version '4.0.0'
+                    
+                    context Patient
+                    
+                    define Criterion:
+                      ToDate(X.issued as instant) in Interval[@2021-01-01T, @2021-01-02T]
+                    """);
+        }
     }
 }

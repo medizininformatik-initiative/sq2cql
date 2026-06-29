@@ -1,0 +1,25 @@
+[
+  {
+    "attributes": [],
+    "context": {
+      "code": "Molekulargenetischer Befundbericht",
+      "display": "Molekulargenetischer Befundbericht",
+      "system": "fdpg.mii.cds",
+      "version": "1.0.0"
+    },
+    "key": {
+      "code": "51969-4",
+      "display": "Genetic analysis report",
+      "system": "http://loinc.org"
+    },
+    "name": "MolekulargenetischerBefundbericht",
+    "resourceType": "DiagnosticReport",
+    "timeRestriction": {
+      "cardinality": "single",
+      "path": "issued",
+      "types": [
+        "instant"
+      ]
+    }
+  }
+]
