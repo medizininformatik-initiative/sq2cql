@@ -1,11 +1,12 @@
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/medizininformatik-initiative/sq2cql/badge)](https://scorecard.dev/viewer/?uri=github.com/medizininformatik-initiative/sq2cql)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/medizininformatik-initiative/cctb/badge)](https://scorecard.dev/viewer/?uri=github.com/medizininformatik-initiative/cctb)
 
-# MII - CCDL to CQL Translator
+# MII - Clinical Cohort Toolbox (CCTB)
 
 ## Usage
 
 ### Translator
 
+Example of a translation of a simple CCDL query to HL7 CQL:
 ```
 var c71_1 = TermCode.of("http://fhir.de/CodeSystem/bfarm/icd-10-gm", "C71.1", "Malignant neoplasm of brain");
 var mappings = Map.of(c71_1, Mapping.of(c71_1, "Condition"));
